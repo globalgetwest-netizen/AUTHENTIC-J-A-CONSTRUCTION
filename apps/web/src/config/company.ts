@@ -86,15 +86,16 @@ export const REQUEST_TYPES: Record<RequestTypeKey, { label: string; short: strin
 };
 
 /**
- * Image slots for the public site. Set `src` to a path under `/company/…` once
- * the real photograph is available (see `public/company/README.md`). A `null`
- * src renders a clean branded panel instead — sections never show broken images.
+ * Image slots for the public site, pre-wired to fixed paths under `public/company/`.
+ * Drop a photo at the documented filename (see `public/company/README.md`) and it
+ * renders here — no code change needed. If the file isn't present yet, PhotoBlock
+ * shows a clean branded panel instead of a broken image.
  */
 export const COMPANY_IMAGES = {
-  hero: { src: null as string | null, alt: "AUTHENTIC J.A. construction site in Ghana" },
-  construction: { src: null as string | null, alt: "Building construction and reinforcement works" },
-  materials: { src: null as string | null, alt: "Factory-made blocks, sand and quarry stones" },
-  equipment: { src: null as string | null, alt: "Excavators, wheel loaders and heavy equipment" },
+  hero: { src: "/company/hero-site.jpg" as string | null, alt: "AUTHENTIC J.A. construction site in Ghana" },
+  construction: { src: "/company/construction.jpg" as string | null, alt: "Building construction and reinforcement works" },
+  materials: { src: "/company/materials.jpg" as string | null, alt: "Factory-made blocks, sand and quarry stones" },
+  equipment: { src: "/company/equipment.jpg" as string | null, alt: "Excavators, wheel loaders and heavy equipment" },
 } as const;
 
 export const LEGAL_LINKS = [
