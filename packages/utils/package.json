@@ -1,0 +1,20 @@
+{
+  "name": "@ajac/utils",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared utilities for the AUTHENTIC J.A. ecosystem (slugs, references, formatting).",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

@@ -1,0 +1,12 @@
+node_modules
+dist
+build
+.next
+out
+export
+coverage
+*.tsbuildinfo
+package-lock.json
+apps/mobile/ios
+apps/mobile/android
+.env

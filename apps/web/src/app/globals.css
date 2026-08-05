@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+/*
+ * AUTHENTIC J.A. CONSTRUCTION LTD. — Tailwind adapter for the shared design
+ * system. The canonical values live in `@ajac/ui` (`src/tokens.ts` →
+ * `src/tokens.css`, exposed as `--ajac-*` custom properties). This file only
+ * maps those into Tailwind's utility namespace so classes like `bg-primary`,
+ * `text-neutral-600`, `rounded-lg`, `shadow-md` resolve to the same tokens the
+ * React primitives use.
+ */
+
+@theme inline {
+  --color-background: var(--ajac-background);
+  --color-foreground: var(--ajac-foreground);
+  --color-surface: var(--ajac-surface);
+  --color-surface-muted: var(--ajac-surface-muted);
+  --color-border: var(--ajac-border);
+  --color-border-muted: var(--ajac-border-muted);
+  --color-primary: var(--ajac-primary);
+  --color-primary-hover: var(--ajac-primary-hover);
+  --color-accent: var(--ajac-accent);
+  --color-success: var(--ajac-success);
+  --color-warning: var(--ajac-warning);
+  --color-danger: var(--ajac-danger);
+  --color-info: var(--ajac-info);
+  --color-muted: var(--ajac-muted);
+
+  --color-green-50: var(--ajac-green-50);
+  --color-green-100: var(--ajac-green-100);
+  --color-green-200: var(--ajac-green-200);
+  --color-green-300: var(--ajac-green-300);
+  --color-green-400: var(--ajac-green-400);
+  --color-green-500: var(--ajac-green-500);
+  --color-green-600: var(--ajac-green-600);
+  --color-green-700: var(--ajac-green-700);
+  --color-green-800: var(--ajac-green-800);
+  --color-green-900: var(--ajac-green-900);
+  --color-green-950: var(--ajac-green-950);
+
+  --color-blue-50: var(--ajac-blue-50);
+  --color-blue-100: var(--ajac-blue-100);
+  --color-blue-200: var(--ajac-blue-200);
+  --color-blue-300: var(--ajac-blue-300);
+  --color-blue-400: var(--ajac-blue-400);
+  --color-blue-500: var(--ajac-blue-500);
+  --color-blue-600: var(--ajac-blue-600);
+  --color-blue-700: var(--ajac-blue-700);
+  --color-blue-800: var(--ajac-blue-800);
+  --color-blue-900: var(--ajac-blue-900);
+  --color-blue-950: var(--ajac-blue-950);
+
+  --color-red-50: var(--ajac-red-50);
+  --color-red-100: var(--ajac-red-100);
+  --color-red-200: var(--ajac-red-200);
+  --color-red-300: var(--ajac-red-300);
+  --color-red-400: var(--ajac-red-400);
+  --color-red-500: var(--ajac-red-500);
+  --color-red-600: var(--ajac-red-600);
+  --color-red-700: var(--ajac-red-700);
+  --color-red-800: var(--ajac-red-800);
+  --color-red-900: var(--ajac-red-900);
+  --color-red-950: var(--ajac-red-950);
+
+  --color-yellow-50: var(--ajac-yellow-50);
+  --color-yellow-100: var(--ajac-yellow-100);
+  --color-yellow-200: var(--ajac-yellow-200);
+  --color-yellow-300: var(--ajac-yellow-300);
+  --color-yellow-400: var(--ajac-yellow-400);
+  --color-yellow-500: var(--ajac-yellow-500);
+  --color-yellow-600: var(--ajac-yellow-600);
+  --color-yellow-700: var(--ajac-yellow-700);
+  --color-yellow-800: var(--ajac-yellow-800);
+  --color-yellow-900: var(--ajac-yellow-900);
+  --color-yellow-950: var(--ajac-yellow-950);
+
+  --color-neutral-50: var(--ajac-neutral-50);
+  --color-neutral-100: var(--ajac-neutral-100);
+  --color-neutral-200: var(--ajac-neutral-200);
+  --color-neutral-300: var(--ajac-neutral-300);
+  --color-neutral-400: var(--ajac-neutral-400);
+  --color-neutral-500: var(--ajac-neutral-500);
+  --color-neutral-600: var(--ajac-neutral-600);
+  --color-neutral-700: var(--ajac-neutral-700);
+  --color-neutral-800: var(--ajac-neutral-800);
+  --color-neutral-900: var(--ajac-neutral-900);
+  --color-neutral-950: var(--ajac-neutral-950);
+
+  /* Compatibility aliases — the Phase-1 palette names still resolve. */
+  --color-brand-green: var(--ajac-green-500);
+  --color-brand-green-600: var(--ajac-green-600);
+  --color-brand-blue: var(--ajac-blue-600);
+  --color-brand-blue-500: var(--ajac-blue-500);
+  --color-brand-red: var(--ajac-red-500);
+  --color-brand-gold: var(--ajac-yellow-400);
+
+  /* Typography — one modern family for the whole site (display inherits sans) */
+  --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --text-xs: var(--ajac-text-xs);
+  --text-sm: var(--ajac-text-sm);
+  --text-base: var(--ajac-text-base);
+  --text-lg: var(--ajac-text-lg);
+  --text-xl: var(--ajac-text-xl);
+  --text-2xl: var(--ajac-text-2xl);
+  --text-3xl: var(--ajac-text-3xl);
+  --text-4xl: var(--ajac-text-4xl);
+  --text-5xl: var(--ajac-text-5xl);
+  --text-6xl: var(--ajac-text-6xl);
+
+  /* Radii & shadows */
+  --radius-sm: var(--ajac-radius-sm);
+  --radius-md: var(--ajac-radius-md);
+  --radius-lg: var(--ajac-radius-lg);
+  --radius-xl: var(--ajac-radius-xl);
+  --radius-2xl: var(--ajac-radius-2xl);
+  --radius-full: var(--ajac-radius-full);
+
+  --shadow-sm: var(--ajac-shadow-sm);
+  --shadow-md: var(--ajac-shadow-md);
+  --shadow-lg: var(--ajac-shadow-lg);
+}
+
+body {
+  background: var(--ajac-background);
+  color: var(--ajac-foreground);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle fade for the support widget — no bounce/pulse, per brand guidelines. */
+@keyframes ajac-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ajac-fade-in {
+  animation: ajac-fade-in 0.25s ease-out;
+}

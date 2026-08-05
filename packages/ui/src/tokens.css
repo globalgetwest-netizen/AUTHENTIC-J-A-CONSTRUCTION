@@ -1,0 +1,153 @@
+/**
+ * AUTHENTIC J.A. CONSTRUCTION LTD. — design tokens as CSS custom properties.
+ *
+ * Namespaced `--ajac-*` so scalars never collide with a consumer's own tokens.
+ * This is a plain CSS projection of `src/tokens.ts` (the canonical source) and
+ * carries no Tailwind dependency — the web app maps these into its `@theme` in
+ * its own globals.css (see apps/web). Keep the two files in sync.
+ */
+
+:root {
+  /* Color scales — anchors: royal blue #0047ab, green #00a651, red #d32f2f, gold #ffd700 */
+  --ajac-blue-50: #edf2fb;
+  --ajac-blue-100: #d6e2f6;
+  --ajac-blue-200: #adc6ee;
+  --ajac-blue-300: #7fa3e2;
+  --ajac-blue-400: #4c7ccf;
+  --ajac-blue-500: #1e5bb9;
+  --ajac-blue-600: #0047ab;
+  --ajac-blue-700: #003a8e;
+  --ajac-blue-800: #002e70;
+  --ajac-blue-900: #002254;
+  --ajac-blue-950: #001736;
+
+  --ajac-green-50: #e8f8f0;
+  --ajac-green-100: #c7efd9;
+  --ajac-green-200: #90e0b8;
+  --ajac-green-300: #54cc93;
+  --ajac-green-400: #22b970;
+  --ajac-green-500: #00a651;
+  --ajac-green-600: #008c42;
+  --ajac-green-700: #006b33;
+  --ajac-green-800: #004e26;
+  --ajac-green-900: #00351b;
+  --ajac-green-950: #002412;
+
+  --ajac-red-50: #fcebec;
+  --ajac-red-100: #f8d0d1;
+  --ajac-red-200: #f0a1a4;
+  --ajac-red-300: #e67073;
+  --ajac-red-400: #dd4b4e;
+  --ajac-red-500: #d32f2f;
+  --ajac-red-600: #b0211f;
+  --ajac-red-700: #8f1d1b;
+  --ajac-red-800: #6f1a18;
+  --ajac-red-900: #511716;
+  --ajac-red-950: #3a1010;
+
+  --ajac-yellow-50: #fffdeb;
+  --ajac-yellow-100: #fef3c7;
+  --ajac-yellow-200: #fde68a;
+  --ajac-yellow-300: #fcd34d;
+  --ajac-yellow-400: #ffd700;
+  --ajac-yellow-500: #ffc107;
+  --ajac-yellow-600: #f59e0b;
+  --ajac-yellow-700: #d97706;
+  --ajac-yellow-800: #b45309;
+  --ajac-yellow-900: #92400e;
+  --ajac-yellow-950: #78350f;
+
+  --ajac-neutral-50: #f7f9fa;
+  --ajac-neutral-100: #eef1f3;
+  --ajac-neutral-200: #dce2e6;
+  --ajac-neutral-300: #c3cbd2;
+  --ajac-neutral-400: #9aa4ad;
+  --ajac-neutral-500: #7a868f;
+  --ajac-neutral-600: #5b6670;
+  --ajac-neutral-700: #3b424a;
+  --ajac-neutral-800: #23292f;
+  --ajac-neutral-900: #1a1f24;
+  --ajac-neutral-950: #121212;
+
+  --ajac-white: #ffffff;
+  --ajac-black: #000000;
+
+  /* Semantic (maps the same meaning the TS `semanticColors` carries) */
+  --ajac-background: var(--ajac-neutral-50);
+  --ajac-foreground: var(--ajac-neutral-950);
+  --ajac-surface: var(--ajac-white);
+  --ajac-surface-muted: var(--ajac-neutral-100);
+  --ajac-border: var(--ajac-neutral-200);
+  --ajac-border-muted: var(--ajac-neutral-100);
+  --ajac-primary: var(--ajac-blue-600);
+  --ajac-primary-hover: var(--ajac-blue-700);
+  --ajac-primary-active: var(--ajac-blue-800);
+  --ajac-primary-foreground: var(--ajac-white);
+  --ajac-secondary: var(--ajac-green-600);
+  --ajac-secondary-hover: var(--ajac-green-700);
+  --ajac-secondary-foreground: var(--ajac-white);
+  --ajac-accent: var(--ajac-yellow-500);
+  --ajac-accent-foreground: var(--ajac-blue-950);
+  --ajac-success: var(--ajac-green-600);
+  --ajac-success-foreground: var(--ajac-white);
+  --ajac-warning: var(--ajac-yellow-700);
+  --ajac-warning-foreground: var(--ajac-white);
+  --ajac-danger: var(--ajac-red-500);
+  --ajac-danger-hover: var(--ajac-red-600);
+  --ajac-danger-foreground: var(--ajac-white);
+  --ajac-info: var(--ajac-blue-500);
+  --ajac-info-foreground: var(--ajac-white);
+  --ajac-muted: var(--ajac-neutral-600);
+  --ajac-muted-foreground: var(--ajac-neutral-500);
+
+  /* Font families */
+  --ajac-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --ajac-font-display: Georgia, "Times New Roman", serif;
+  --ajac-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Type scale */
+  --ajac-text-xs: 0.75rem;
+  --ajac-text-sm: 0.875rem;
+  --ajac-text-base: 1rem;
+  --ajac-text-lg: 1.125rem;
+  --ajac-text-xl: 1.25rem;
+  --ajac-text-2xl: 1.5rem;
+  --ajac-text-3xl: 1.875rem;
+  --ajac-text-4xl: 2.25rem;
+  --ajac-text-5xl: 3rem;
+  --ajac-text-6xl: 3.75rem;
+
+  --ajac-weight-regular: 400;
+  --ajac-weight-medium: 500;
+  --ajac-weight-semibold: 600;
+  --ajac-weight-bold: 700;
+  --ajac-weight-extrabold: 800;
+
+  --ajac-leading-tight: 1.15;
+  --ajac-leading-snug: 1.3;
+  --ajac-leading-normal: 1.5;
+  --ajac-leading-relaxed: 1.625;
+  --ajac-leading-loose: 1.75;
+
+  --ajac-tracking-tightest: -0.05em;
+  --ajac-tracking-tight: -0.025em;
+  --ajac-tracking-normal: 0;
+  --ajac-tracking-wide: 0.025em;
+  --ajac-tracking-wider: 0.05em;
+  --ajac-tracking-widest: 0.2em;
+
+  /* Radii */
+  --ajac-radius-none: 0;
+  --ajac-radius-sm: 0.25rem;
+  --ajac-radius-md: 0.5rem;
+  --ajac-radius-lg: 0.75rem;
+  --ajac-radius-xl: 1rem;
+  --ajac-radius-2xl: 1.5rem;
+  --ajac-radius-full: 9999px;
+
+  /* Shadows */
+  --ajac-shadow-sm: 0 1px 2px rgba(18, 22, 26, 0.06);
+  --ajac-shadow-md: 0 2px 6px rgba(18, 22, 26, 0.05), 0 8px 24px rgba(18, 22, 26, 0.08);
+  --ajac-shadow-lg: 0 12px 32px rgba(18, 22, 26, 0.12);
+  --ajac-shadow-none: none;
+}

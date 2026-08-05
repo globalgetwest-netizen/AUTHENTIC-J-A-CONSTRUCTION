@@ -1,0 +1,70 @@
+# CI — GitHub Actions
+#
+# Pipeline per the spec: lint → typecheck → test → build, with a Postgres 16
+# service so the Prisma client can be generated and migrations verified against
+# a real database. The production build/deploy pipeline is added in Phase 23.
+#
+# NOTE: `npm ci` requires a committed package-lock.json. After the first
+# successful `npm install` (repo root), commit the generated lockfile.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    name: Lint · Typecheck · Test · Build
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ajac
+          POSTGRES_PASSWORD: ajac_dev_password
+          POSTGRES_DB: ajac
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ajac"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://ajac:ajac_dev_password@localhost:5432/ajac?schema=public
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: packages/database
+        run: npx prisma generate
+
+      - name: Apply migrations
+        working-directory: packages/database
+        run: npx prisma migrate deploy
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build

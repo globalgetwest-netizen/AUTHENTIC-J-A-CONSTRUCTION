@@ -1,0 +1,104 @@
+/**
+ * AUTHENTIC J.A. CONSTRUCTION LTD. — public company profile.
+ *
+ * Single source of truth for every editable piece of company data the public
+ * website renders (contacts, registration, addresses, hours, social media).
+ * Change values here once and every page reflects them. When the admin
+ * Company-Settings module (DB-backed) lands, this file becomes the fallback
+ * and the API record becomes the source of truth.
+ *
+ * Social entries: set `url` to `null` while an account is unconfigured — the
+ * footer then renders the icon in a disabled state instead of linking nowhere.
+ */
+
+export const COMPANY = {
+  name: "AUTHENTIC J.A. CONSTRUCTION LTD.",
+  shortName: "AUTHENTIC J.A.",
+  motto: "Quality Structures. Trusted Solutions.",
+  country: "Ghana",
+  registrationNo: "CS212101021",
+  taxId: "C0061318752",
+  headOffice: "Kumasi, Ghana",
+  registeredAddress: "Accra, Ghana",
+  email: "authenticjaconstruction.gh@gmail.com",
+  /** International display format. `telHref()` derives the dialable link. */
+  phones: ["+233 245 295 866", "+233 545 008 282", "+233 553 864 636"] as const,
+  /** Purpose label shown alongside each number (same order as `phones`). */
+  phoneLabels: ["Sales", "Customer Service", "General Support"] as const,
+  /** E.164 digits (no +) used for WhatsApp deep links. */
+  whatsappNumber: "233245295866",
+  officeHours: [
+    { days: "Monday – Friday", hours: "8:00 – 17:00" },
+    { days: "Saturday", hours: "9:00 – 14:00" },
+    { days: "Sunday / Public holidays", hours: "Closed" },
+  ],
+} as const;
+
+export function telHref(phone: string): string {
+  return `tel:+${phone.replace(/\D/g, "")}`;
+}
+
+/** WhatsApp deep link from an E.164 number (digits only, no +). */
+export function whatsappHref(number: string): string {
+  return `https://wa.me/${number.replace(/\D/g, "")}`;
+}
+
+export type SocialPlatform =
+  | "facebook"
+  | "instagram"
+  | "tiktok"
+  | "whatsapp"
+  | "youtube"
+  | "linkedin";
+
+export interface SocialEntry {
+  platform: SocialPlatform;
+  label: string;
+  url: string | null;
+}
+
+export const SOCIAL_MEDIA: SocialEntry[] = [
+  { platform: "facebook", label: "Facebook", url: null },
+  { platform: "instagram", label: "Instagram", url: null },
+  { platform: "tiktok", label: "TikTok", url: null },
+  { platform: "whatsapp", label: "WhatsApp", url: whatsappHref(COMPANY.whatsappNumber) },
+  { platform: "youtube", label: "YouTube", url: null },
+  { platform: "linkedin", label: "LinkedIn", url: null },
+];
+
+export type RequestTypeKey =
+  | "quote"
+  | "project"
+  | "site-inspection"
+  | "property"
+  | "land"
+  | "sales"
+  | "consultation";
+
+export const REQUEST_TYPES: Record<RequestTypeKey, { label: string; short: string }> = {
+  quote: { label: "Request a Quote", short: "Quote" },
+  project: { label: "Start a Project", short: "Project" },
+  "site-inspection": { label: "Book a Site Inspection", short: "Site Inspection" },
+  property: { label: "Request Property Information", short: "Property" },
+  land: { label: "Request Land Information", short: "Land" },
+  sales: { label: "Contact Sales", short: "Sales" },
+  consultation: { label: "Book an Appointment", short: "Consultation" },
+};
+
+/**
+ * Image slots for the public site. Set `src` to a path under `/company/…` once
+ * the real photograph is available (see `public/company/README.md`). A `null`
+ * src renders a clean branded panel instead — sections never show broken images.
+ */
+export const COMPANY_IMAGES = {
+  hero: { src: null as string | null, alt: "AUTHENTIC J.A. construction site in Ghana" },
+  construction: { src: null as string | null, alt: "Building construction and reinforcement works" },
+  materials: { src: null as string | null, alt: "Factory-made blocks, sand and quarry stones" },
+  equipment: { src: null as string | null, alt: "Excavators, wheel loaders and heavy equipment" },
+} as const;
+
+export const LEGAL_LINKS = [
+  { label: "Privacy Policy", href: "#" },
+  { label: "Terms of Service", href: "#" },
+  { label: "Cookie Policy", href: "#" },
+] as const;

@@ -1,0 +1,9 @@
+{
+  "name": "@ajac/config",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared tooling configuration for the AUTHENTIC J.A. ecosystem (eslint, tsconfig reference).",
+  "exports": {
+    "./eslint.config.mjs": "./eslint.config.mjs"
+  }
+}
