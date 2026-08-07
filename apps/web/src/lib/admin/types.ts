@@ -390,9 +390,9 @@ export type BadgeTone = "neutral" | "brand" | "success" | "warning" | "danger" |
 /** Maps a status value to a Badge tone cluster (defaults by keyword). */
 export function toneFor(value: string | null | undefined): BadgeTone {
   const v = (value ?? "").toUpperCase();
-  if (/WON|COMPLETED|ACTIVE|QUALIFIED|PROPOSAL/.test(v)) return "success";
-  if (/NEW|PLANNING/.test(v)) return "info";
-  if (/CONTACTED|NEGOTIATION|IN_PROGRESS|ON_HOLD|DELAYED/.test(v)) return "warning";
+  if (/WON|COMPLETED|ACTIVE|QUALIFIED|PROPOSAL|PAID|IN/.test(v)) return "success";
+  if (/NEW|PLANNING|OUT|TRANSFER|ADJUST|RETURN/.test(v)) return "info";
+  if (/CONTACTED|NEGOTIATION|IN_PROGRESS|ON_HOLD|DELAYED|PART_PAID/.test(v)) return "warning";
   if (/LOST|CANCELLED|BLACKLISTED|INACTIVE/.test(v)) return "danger";
   if (/REAL_ESTATE|INDIVIDUAL|CORPORATE/.test(v)) return "brand";
   return "neutral";
@@ -424,4 +424,150 @@ export function formatDateTime(value: string | null | undefined): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+// ── Materials & block factory (Phase 15) ────────────────────────────────────
+
+export type InventoryTransactionType = "IN" | "OUT" | "ADJUST" | "RETURN" | "TRANSFER";
+export const INVENTORY_TRANSACTION_TYPES: readonly InventoryTransactionType[] = [
+  "IN",
+  "OUT",
+  "ADJUST",
+  "RETURN",
+  "TRANSFER",
+];
+
+export type PaymentStatus = "PENDING" | "PART_PAID" | "PAID" | "REFUNDED" | "FAILED" | "CANCELLED";
+export const PAYMENT_STATUSES: readonly PaymentStatus[] = [
+  "PENDING",
+  "PART_PAID",
+  "PAID",
+  "REFUNDED",
+  "FAILED",
+  "CANCELLED",
+];
+
+export interface MaterialCategory {
+  id: string;
+  name: string;
+  code: string;
+  description?: string | null;
+  createdAt: string;
+  _count?: { materials?: number };
+}
+
+export interface Material {
+  id: string;
+  categoryId: string;
+  name: string;
+  sku: string;
+  unit: string;
+  currentStock: number | string;
+  reorderLevel?: number | string | null;
+  costPerUnit?: number | string | null;
+  description?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  category?: MaterialCategory | null;
+  inventory?: Inventory[] | null;
+}
+
+export interface Warehouse {
+  id: string;
+  name: string;
+  code: string;
+  location?: string | null;
+  address?: string | null;
+  managerId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count?: { inventory?: number };
+}
+
+export interface Inventory {
+  id: string;
+  materialId: string;
+  warehouseId: string;
+  quantity: number | string;
+  createdAt: string;
+  updatedAt: string;
+  material?: Material | null;
+  warehouse?: Warehouse | null;
+}
+
+export interface InventoryTransaction {
+  id: string;
+  materialId: string;
+  warehouseId: string;
+  type: InventoryTransactionType;
+  quantity: number | string;
+  unitCost?: number | string | null;
+  referenceType?: string | null;
+  referenceId?: string | null;
+  notes?: string | null;
+  createdById?: string | null;
+  createdAt: string;
+  material?: { id: string; name: string; sku: string; unit: string } | null;
+  warehouse?: { id: string; name: string; code: string } | null;
+}
+
+export interface StockMovement {
+  id: string;
+  inventoryId: string;
+  transactionId?: string | null;
+  fromWarehouseId?: string | null;
+  toWarehouseId?: string | null;
+  quantity: number | string;
+  movedAt: string;
+  notes?: string | null;
+  inventory?: {
+    material?: { id: string; name: string; sku: string; unit: string } | null;
+    warehouse?: { id: string; name: string } | null;
+  } | null;
+  fromWarehouse?: { id: string; name: string } | null;
+  toWarehouse?: { id: string; name: string } | null;
+}
+
+export interface BlockProduct {
+  id: string;
+  name: string;
+  code: string;
+  description?: string | null;
+  unitPrice: number | string;
+  specs?: unknown | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  _count?: { productions?: number; sales?: number };
+}
+
+export interface BlockProduction {
+  id: string;
+  productId: string;
+  batchNo: string;
+  quantity: number;
+  producedOn: string;
+  notes?: string | null;
+  status: string;
+  supervisorId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  product?: BlockProduct | null;
+}
+
+export interface BlockSale {
+  id: string;
+  productId: string;
+  clientId?: string | null;
+  quantity: number;
+  unitPrice: number | string;
+  totalAmount: number | string;
+  soldOn: string;
+  reference?: string | null;
+  status: PaymentStatus;
+  createdAt: string;
+  updatedAt: string;
+  product?: BlockProduct | null;
+  client?: { id: string; companyName?: string | null; contactName?: string | null } | null;
 }

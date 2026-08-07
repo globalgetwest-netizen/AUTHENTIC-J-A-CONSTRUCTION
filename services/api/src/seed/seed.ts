@@ -29,6 +29,8 @@ const PERMISSIONS = [
   'properties.write',
   'land.read',
   'land.write',
+  'materials.read',
+  'materials.write',
   'system.settings.read',
   'system.settings.write',
   'system.flags.read',
@@ -425,6 +427,133 @@ async function main(): Promise<void> {
             });
           }
         }
+      }
+    }
+
+    // 4e. Demo MATERIALS & BLOCK FACTORY — stock the inventory and block-factory
+    // admin screens with content on first boot. Idempotent — safe to re-run.
+    const demoCategories = [
+      { code: 'CAT-DEMO-CMT', name: 'Cement & Binders' },
+      { code: 'CAT-DEMO-AGG', name: 'Aggregates' },
+      { code: 'CAT-DEMO-BLK', name: 'Blocks' },
+      { code: 'CAT-DEMO-STL', name: 'Steel' },
+    ] as const;
+    const categoryIds = new Map<string, string>();
+    for (const cat of demoCategories) {
+      let category = await prisma.materialCategory.findFirst({ where: { code: cat.code } });
+      if (!category) {
+        category = await prisma.materialCategory.create({
+          data: { code: cat.code, name: cat.name },
+        });
+      }
+      categoryIds.set(cat.code, category.id);
+    }
+
+    const demoMaterials = [
+      { sku: 'MAT-DEMO-CMT', name: 'Cement (Ghacem 42.5R)', unit: 'bag', categoryCode: 'CAT-DEMO-CMT' },
+      { sku: 'MAT-DEMO-GVL', name: 'Gravel', unit: 'tonne', categoryCode: 'CAT-DEMO-AGG' },
+      { sku: 'MAT-DEMO-DST', name: 'Quarry dust', unit: 'tonne', categoryCode: 'CAT-DEMO-AGG' },
+    ] as const;
+    const materialIds = new Map<string, string>();
+    for (const mat of demoMaterials) {
+      let material = await prisma.material.findFirst({ where: { sku: mat.sku } });
+      if (!material) {
+        material = await prisma.material.create({
+          data: {
+            sku: mat.sku,
+            name: mat.name,
+            unit: mat.unit,
+            categoryId: categoryIds.get(mat.categoryCode) ?? '',
+          },
+        });
+      }
+      materialIds.set(mat.sku, material.id);
+    }
+
+    const demoWarehouses = [
+      { code: 'WH-DEMO-0001', name: 'Main yard — Kenyase', location: 'Kenyase – Brofoyedru' },
+      { code: 'WH-DEMO-0002', name: 'Block factory', location: 'Brofoyedru' },
+    ] as const;
+    const warehouseIds = new Map<string, string>();
+    for (const wh of demoWarehouses) {
+      let warehouse = await prisma.warehouse.findFirst({ where: { code: wh.code } });
+      if (!warehouse) {
+        warehouse = await prisma.warehouse.create({
+          data: { code: wh.code, name: wh.name, location: wh.location },
+        });
+      }
+      warehouseIds.set(wh.code, warehouse.id);
+    }
+
+    // Opening stock for one material so the inventory board is populated.
+    const cementId = materialIds.get('MAT-DEMO-CMT');
+    const mainYardId = warehouseIds.get('WH-DEMO-0001');
+    if (cementId && mainYardId) {
+      const existingInv = await prisma.inventory.findUnique({
+        where: { materialId_warehouseId: { materialId: cementId, warehouseId: mainYardId } },
+      });
+      if (!existingInv) {
+        await prisma.inventory.create({
+          data: { materialId: cementId, warehouseId: mainYardId, quantity: 200 },
+        });
+        await prisma.inventoryTransaction.create({
+          data: {
+            materialId: cementId,
+            warehouseId: mainYardId,
+            type: 'IN',
+            quantity: 200,
+            notes: 'Opening stock (seed)',
+          },
+        });
+      }
+    }
+
+    const demoProducts = [
+      { code: 'BLC-DEMO-0001', name: '6-inch solid block', unitPrice: 12.5 },
+      { code: 'BLC-DEMO-0002', name: '9-inch solid block', unitPrice: 15 },
+    ] as const;
+    const productIds = new Map<string, string>();
+    for (const prod of demoProducts) {
+      let product = await prisma.blockProduct.findFirst({ where: { code: prod.code } });
+      if (!product) {
+        product = await prisma.blockProduct.create({
+          data: { code: prod.code, name: prod.name, unitPrice: prod.unitPrice },
+        });
+      }
+      productIds.set(prod.code, product.id);
+    }
+
+    const sixInchId = productIds.get('BLC-DEMO-0001');
+    if (sixInchId) {
+      const existingProduction = await prisma.blockProduction.findFirst({
+        where: { batchNo: 'PRD-DEMO-0001' },
+      });
+      if (!existingProduction) {
+        await prisma.blockProduction.create({
+          data: {
+            batchNo: 'PRD-DEMO-0001',
+            productId: sixInchId,
+            quantity: 500,
+            producedOn: new Date('2026-08-06'),
+            status: 'COMPLETED',
+          },
+        });
+      }
+      const existingSale = await prisma.blockSale.findFirst({
+        where: { reference: 'SALE-DEMO-0001' },
+      });
+      if (!existingSale) {
+        await prisma.blockSale.create({
+          data: {
+            productId: sixInchId,
+            quantity: 120,
+            unitPrice: 12.5,
+            totalAmount: 1500,
+            soldOn: new Date('2026-08-07'),
+            reference: 'SALE-DEMO-0001',
+            status: 'PAID',
+          },
+        });
       }
     }
 

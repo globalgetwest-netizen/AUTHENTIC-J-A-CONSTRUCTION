@@ -23,6 +23,15 @@ const DEFAULT_NAV: NavItem[] = [
   { href: "/admin/land-projects", label: "Land projects" },
   { href: "/admin/land-plots", label: "Land plots" },
   { href: "/admin/land-allocations", label: "Land allocations" },
+  { href: "/admin/materials", label: "Materials" },
+  { href: "/admin/material-categories", label: "Material categories" },
+  { href: "/admin/warehouses", label: "Warehouses" },
+  { href: "/admin/inventory", label: "Inventory" },
+  { href: "/admin/inventory-transactions", label: "Inventory transactions" },
+  { href: "/admin/stock-movements", label: "Stock movements" },
+  { href: "/admin/block-products", label: "Block products" },
+  { href: "/admin/block-productions", label: "Block production" },
+  { href: "/admin/block-sales", label: "Block sales" },
 ];
 
 export function AdminShell({

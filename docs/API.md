@@ -291,6 +291,45 @@ The web `/client` portal consumes these via `api/client/{profile,quotations}` pr
 the per-quotation PDF is served from `api/client/quotation/[id]/pdf` — ownership is enforced
 by the API's self-scoped GET, so a client can never download another client's document.
 
+## Endpoints (Phase 15 — Materials & block factory)
+
+Permission-gated modules under `materials.read`/`materials.write` and
+`blocks.read`/`blocks.write`. Inventory ops (receive/issue/adjust/transfer) each write an
+`InventoryTransaction` + `StockMovement` row and adjust `material.currentStock`.
+
+### Materials
+
+| Method | Path                         | Permission | Notes |
+| ------ | ---------------------------- | ---------- | ----- |
+| GET/POST | `/material-categories`     | materials.read/write | list (search, `page`/`pageSize`/`sortBy`/`sortOrder`), create (auto `MATCAT-` code) |
+| GET/PATCH/DELETE | `/material-categories/:id` | materials.read/write | get / update / soft delete |
+| GET/POST | `/materials`                | materials.read/write | list (search, `categoryId`, `isActive`), create (`categoryId`, `unit`, `costPerUnit`, `reorderLevel`, `currentStock`) |
+| GET/PATCH/DELETE | `/materials/:id`        | materials.read/write | nested `category`; update / soft-delete |
+| GET/POST | `/warehouses`               | materials.read/write | list, create (`managerId` optional) |
+| GET/PATCH/DELETE | `/warehouses/:id`       | materials.read/write | nested `_count.inventory` |
+| GET    | `/inventory`                  | materials.read | stock on hand; `warehouseId`/`categoryId` filters; nested `material` + `material.category` + `warehouse` |
+| POST   | `/inventory/receipts`         | materials.write | add stock to a warehouse (`materialId`, `warehouseId`, `quantity`, optional `unitCost`) |
+| POST   | `/inventory/issuances`        | materials.write | remove stock from a warehouse |
+| POST   | `/inventory/adjustments`      | materials.write | set counted stock to `quantity` (physical count, up or down) |
+| POST   | `/inventory/transfers`        | materials.write | move `quantity` between `fromWarehouseId` → `toWarehouseId` |
+| GET    | `/inventory-transactions`     | materials.read | immutable ledger; `type`/`materialId`/`warehouseId` filters |
+| GET    | `/stock-movements`            | materials.read | audit trail; `materialId`/`warehouseId` filters |
+
+### Blocks
+
+| Method | Path                     | Permission | Notes |
+| ------ | ------------------------ | ---------- | ----- |
+| GET/POST | `/block-products`        | blocks.read/write | list (search, `isActive`), create (`unitPrice`, `specs`) |
+| GET/PATCH/DELETE | `/block-products/:id` | blocks.read/write | get / update / delete |
+| GET/POST | `/block-productions`      | blocks.read/write | list (search, `productId`, `status`), create (`productId`, `quantity`, `producedOn`, `status`, `notes`) |
+| GET/PATCH/DELETE | `/block-productions/:id` | blocks.read/write | get / update / delete |
+| GET/POST | `/block-sales`             | blocks.read/write | list (search, `productId`, `status`), create (`productId`, optional `clientId`, `quantity`, `unitPrice`, `soldOn`, `reference`) — `totalAmount` computed server-side |
+| GET/PATCH/DELETE | `/block-sales/:id`     | blocks.read/write | nested `product` + `client`; status editable |
+
+Seed supplies idempotent demo data (categories, materials incl. 200 bags cement opening
+stock, warehouses, block products, one `PRD-DEMO-0001` production batch, one sale
+`SALE-DEMO-0001`) and grows the permission catalog to **30** (SUPER_ADMIN inherits).
+
 ## Module roadmap
 
 | Route prefix        | Ships in |
@@ -306,8 +345,9 @@ by the API's self-scoped GET, so a client can never download another client's do
 | `staff` (self-scoped profile + notifications, powers the `/staff` portal) | **Phase 10 — done** |
 | `client` (self-scoped profile + quotations, powers the `/client` portal) | **Phase 11 — done** |
 | `projects` (lifecycle: planning, budgets, milestones, work log, team) | **Phase 12 — done** |
-| `land`              | Phase 13 |
-| `materials`, `inventory`, `equipment` | Phase 14–15 |
+| `land`              | Phase 13 — done |
+| `materials`, `inventory`, `blocks` | Phase 15 — done |
+| `equipment`         | Phase 16 |
 | `finance`, `invoices`, `payments`      | Phase 16 |
 | `payroll`           | Phase 17 |
 | `documents`, `notifications` | Phase 20 |

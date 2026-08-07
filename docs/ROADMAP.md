@@ -19,7 +19,7 @@ migrations/endpoints/frontend/mobile, and fixing errors** before continuing.
 | 12  | Projects                           | **Complete** |
 | 13  | Real estate                        | **Complete** |
 | 14  | Land                               | **Complete** |
-| 15  | Materials & block factory          | Pending      |
+| 15  | Materials & block factory          | **Complete** |
 | 16  | Equipment                          | Pending      |
 | 17  | Finance                            | Pending      |
 | 18  | Payroll & payslips                 | Pending      |
@@ -435,6 +435,46 @@ to `User`), with ownership enforced on the API.
   web typecheck / lint / build clean. One `react-hooks/set-state-in-effect` lint
   error in `LandAllocationForm` was fixed by moving the plot-list reset into the
   project select's `onChange` instead of the effect body.
+
+## Phase 15 — done (Materials & block factory)
+
+Materials procurement, multi-warehouse stock (with a ledger + audit trail) and a
+block-products factory (production batches + sales) — all DB-backed via the Phase 3
+baseline migration, so **no new migration** was required.
+
+- **Materials API module** (`services/api/src/materials/`, permission-gated
+  `materials.read` / `materials.write`):
+  - `/material-categories` — CRUD (search, auto `MATCAT-` code, `_count` of materials).
+  - `/materials` — CRUD (search, `categoryId` / `isActive` filters, `currentStock`,
+    `costPerUnit`, `reorderLevel`, nested `category`, soft delete).
+  - `/warehouses` — CRUD (search, `managerId`, `_count` of inventory rows).
+  - `/inventory` — GET (replaces the flat reading: `warehouseId` / `categoryId`
+    filters, nested `material` + `material.category` + `warehouse`), plus stock-op
+    POSTs: `/receipts`, `/issuances`, `/adjustments` (physical count), `/transfers`
+    (between warehouses). Each op writes an `InventoryTransaction` + `StockMovement`
+    and adjusts the `material.currentStock`.
+  - `/inventory-transactions` (GET, `type` / `materialId` / `warehouseId` filters) and
+    `/stock-movements` (GET, warehouse filter) — the immutable ledger + audit trail.
+- **Blocks API module** (`services/api/src/blocks/`, `blocks.read` / `blocks.write`):
+  - `/block-products` — CRUD (`unitPrice` Decimal, spec JSON, `isActive`).
+  - `/block-productions` — CRUD (batch `QUALITY`/`QUANTITY` record, `status`).
+  - `/block-sales` — CRUD (auto sale reference, `clientId` optional → walk-in sale,
+    `totalAmount` computed from quantity × unitPrice, `PAYMENT_STATUSES`, nested
+    `product` + `client`).
+- **Seed**: grew to **30 permissions** (`materials.read`/`write` + `blocks.read`/`write`);
+  idempotent demo data — 4 categories, 3 materials (with 200 bags cement opening stock),
+  2 warehouses, 2 block products, 1 production batch `PRD-DEMO-0001`, 1 sale `SALE-DEMO-0001`.
+- **Admin UI** under `/admin/materials`, `/admin/material-categories` (OrgPanel),
+  `/admin/warehouses`, `/admin/inventory` (board + **Receive/Issue/Adjust/Transfer** via a
+  `StockOpModal`), `/admin/inventory-transactions`, `/admin/stock-movements`,
+  `/admin/block-products`, `/admin/block-productions`, `/admin/block-sales` — all reusing
+  `AdminTable`, `Pagination`, `StatusBadge`, proxy routes `/api/admin/*` (+ `[id]`).
+- **Gates green**: API typecheck / lint / build / **135 tests / 20 files** (up from 90);
+  web typecheck / lint / build clean. One `react-hooks/set-state-in-effect` lint error in
+  `StockOpModal` was fixed by remounting the modal on a changing `key` — which also
+  re-initializes its form state from the current op's defaults, removing the reset effect
+  entirely. The generated `[id]` proxy routes had single-quoted `"/resource/${id}"`
+  literals (would 404); they were corrected to template literals `` `/resource/${id}` ``.
 
 ## Phase 12 — done (Projects)
 
