@@ -805,3 +805,102 @@ export interface PaymentRecord {
   createdAt: string;
   updatedAt: string;
 }
+// ── Payroll & payslips (Phase 18) ──────────────────────────────────────────
+
+export type PayrollStatus = "DRAFT" | "PROCESSED" | "PAID" | "CANCELLED";
+export const PAYROLL_STATUSES: readonly PayrollStatus[] = [
+  "DRAFT",
+  "PROCESSED",
+  "PAID",
+  "CANCELLED",
+];
+
+/** Nested employee summary returned on payslips / payruns. */
+export interface PayrollEmployeeRef {
+  id: string;
+  employeeCode: string;
+  firstName: string;
+  lastName: string;
+  department?: { name: string } | null;
+  position?: { title: string } | null;
+}
+
+export interface PayrollPeriod {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  status: PayrollStatus;
+  closedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  payrolls?: PayrollRun[] | null;
+  payslips?: Payslip[] | null;
+}
+
+export interface DeductionLine {
+  name: string;
+  amount: number | string;
+}
+
+/** Shape of the `deductions` JSON on a run / payslip. */
+export interface DeductionsBreakdown {
+  ssnit: number | string;
+  paye: number | string;
+  total: number | string;
+  lines: DeductionLine[];
+  employer: { ssnit: number | string; nhil: number | string };
+}
+
+export interface PayrollRun {
+  id: string;
+  periodId: string;
+  employeeId: string;
+  grossPay: number | string;
+  deductions: DeductionsBreakdown | null;
+  netPay: number | string;
+  status: PayrollStatus;
+  processedById?: string | null;
+  processedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  employee?: PayrollEmployeeRef | null;
+  period?: Pick<PayrollPeriod, "id" | "name" | "startDate" | "endDate" | "status"> | null;
+}
+
+export interface Payslip {
+  id: string;
+  employeeId: string;
+  periodId: string;
+  payslipNo: string;
+  grossPay: number | string;
+  deductions: DeductionsBreakdown | null;
+  netPay: number | string;
+  issuedAt: string;
+  url?: string | null;
+  status: PayrollStatus;
+  createdAt: string;
+  updatedAt: string;
+  employee?: PayrollEmployeeRef | null;
+  period?: Pick<PayrollPeriod, "id" | "name" | "startDate" | "endDate" | "status"> | null;
+}
+
+/** Parses the stored deductions JSON, tolerating null/malformed values. */
+export function deductionsBreakdown(
+  value: DeductionsBreakdown | null | undefined,
+): DeductionsBreakdown | null {
+  if (!value || typeof value !== "object") return null;
+  const lines = Array.isArray(value.lines) ? value.lines : [];
+  return {
+    ssnit: value.ssnit ?? 0,
+    paye: value.paye ?? 0,
+    total: value.total ?? 0,
+    lines,
+    employer: value.employer ?? { ssnit: 0, nhil: 0 },
+  };
+}
+
+export function fullName(employee: PayrollEmployeeRef | null | undefined): string {
+  if (!employee) return "—";
+  return [employee.firstName, employee.lastName].filter(Boolean).join(" ") || "—";
+}

@@ -379,6 +379,45 @@ catalog to **32** and adds idempotent demo data: `EQP-DEMO-0001` (Excavator 30t 
 `GW-1234-20` + scheduled maintenance), `AST-DEMO-0001` (site laptop), `EXP-DEMO-0001` (fuel),
 `INV-DEMO-0001` (2 line items) + `RCP-DEMO-0001` receipt.
 
+## Endpoints (Phase 18 — Payroll & payslips)
+
+New permission set `payroll.read`/`payroll.write` (SUPER_ADMIN inherits). Net pay is
+computed **server-side** with Ghana statutory deductions — employee SSNIT 5.5% + progressive
+PAYE across six brackets (annualised chargeable income ÷ 12); NHIL 2.75% and employer SSNIT
+13% are returned as informational employer contributions, not take-home deductions. Money is
+`Decimal(18,2)`, serialised as JSON strings.
+
+### Pay periods
+| Route | Permissions | Notes |
+| ----- | ------ | ----- |
+| GET/POST | `/payroll-periods` | payroll.read/write | list (search on `name`, `status` filter), create (`name`, `startDate`, `endDate`) |
+| GET/PATCH/DELETE | `/payroll-periods/:id` | payroll.read/write | nested `payrolls` + `payslips`; meta editable only while `DRAFT`; hard delete refused once runs exist / status > DRAFT |
+| POST | `/payroll-periods/:id/generate` | payroll.write | create one `Payroll` per ACTIVE salaried employee not already covered (unique `[periodId, employeeId]`); returns `{ created }` |
+| POST | `/payroll-periods/:id/process` | payroll.write | set runs + period to `PROCESSED`, stamp `processedById`/`processedAt`, close the period |
+| POST | `/payroll-periods/:id/issue-payslips` | payroll.write | one `Payslip` per processed run (auto `PSL-` code, copies gross/deductions/net, status `PAID`), idempotent |
+
+### Payroll runs
+| Route | Permissions | Notes |
+| ----- | ------ | ----- |
+| GET/POST | `/payrolls` | payroll.read/write | list (`periodId`, `employeeId`, `status`, `search`) |
+| GET/PATCH/DELETE | `/payrolls/:id` | payroll.read/write | nested `employee` + `period`; PATCH adjusts a `DRAFT` run's `grossPay` and recomputes deductions + net; DELETE is a soft delete |
+
+### Payslips
+| Route | Permissions | Notes |
+| ----- | ------ | ----- |
+| GET | `/payslips` | payroll.read | list (`periodId`, `employeeId`, `status`, `search` on `payslipNo`) |
+| GET/DELETE | `/payslips/:id` | payroll.read/write | nested `employee` + `period`; DELETE is a hard delete |
+
+### Staff self-service (no permission — powers `/staff/payslips`)
+| Route | Permissions | Notes |
+| ----- | ------ | ----- |
+| GET | `/staff/payslips` | authenticated only | the caller's own payslips (resolved via `User.employeeId`), newest first |
+| GET | `/staff/payslips/:id` | authenticated only | only a slip owned by the caller; 404 otherwise |
+
+Seed grows the permission catalog to **34** and adds idempotent demo payroll: period
+**"August 2026"** (PROCESSED), a computed payrun (gross 4500 → net 3687.40) and
+`PSL-DEMO-0001` (PAID) so both portals render content on first boot.
+
 ## Module roadmap
 
 | Route prefix        | Ships in |
@@ -398,7 +437,7 @@ catalog to **32** and adds idempotent demo data: `EQP-DEMO-0001` (Excavator 30t 
 | `materials`, `inventory`, `blocks` | Phase 15 — done |
 | `equipment`, `vehicles`, `maintenance`, `assets` | Phase 16 — done |
 | `finance`, `invoices`, `receipts`, `expenses`, `payments` | Phase 16 — done |
-| `payroll`           | Phase 17 |
+| `payroll`           | Phase 18 — done |
 | `documents`, `notifications` | Phase 20 |
 
 **No fake endpoints.** Real business, DB-backed, permission-checked modules are added

@@ -20,6 +20,7 @@ import { MaterialsModule } from './materials/materials.module';
 import { BlocksModule } from './blocks/blocks.module';
 import { EquipmentModule } from './equipment/equipment.module';
 import { FinanceModule } from './finance/finance.module';
+import { PayrollModule } from './payroll/payroll.module';
 import { SystemModule } from './system/system.module';
 import { RequestsModule } from './requests/requests.module';
 import { StaffModule } from './staff/staff.module';
@@ -45,6 +46,7 @@ import { ClientModule } from './client/client.module';
     BlocksModule,
     EquipmentModule,
     FinanceModule,
+    PayrollModule,
     SystemModule,
     RequestsModule,
     StaffModule,

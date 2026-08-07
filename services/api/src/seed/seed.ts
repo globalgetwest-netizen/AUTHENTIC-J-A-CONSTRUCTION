@@ -35,6 +35,8 @@ const PERMISSIONS = [
   'equipment.write',
   'finance.read',
   'finance.write',
+  'payroll.read',
+  'payroll.write',
   'system.settings.read',
   'system.settings.write',
   'system.flags.read',
@@ -203,6 +205,7 @@ async function main(): Promise<void> {
             branchId: branch.id,
             employmentType: 'FULL_TIME',
             hireDate: new Date('2026-08-01'),
+            salary: 4500,
             status: 'ACTIVE',
           },
         });
@@ -662,6 +665,71 @@ async function main(): Promise<void> {
             amount: 600,
             method: 'MOBILE_MONEY',
             reference: `Payment toward ${invoice.invoiceNo}`,
+          },
+        });
+      }
+    }
+
+    // 4d. Demo PAYROLL — exercise payroll + payslips end-to-end.
+    // A PROCESSED "August 2026" period with one computed payrun + issued payslip
+    // for the demo staff employee (salary GHS 4,500). Idempotent by unique keys.
+    const payrollDemoEmployee = await prisma.employee.findFirst({
+      where: { employeeCode: 'EMP-DEMO-0001' },
+    });
+    if (payrollDemoEmployee) {
+      const demoPeriod = await prisma.payrollPeriod.upsert({
+        where: { name: 'August 2026' },
+        update: {},
+        create: {
+          name: 'August 2026',
+          startDate: new Date('2026-08-01'),
+          endDate: new Date('2026-08-31'),
+          status: 'PROCESSED',
+          closedAt: new Date('2026-08-05'),
+        },
+      });
+
+      const deductions = {
+        ssnit: 247.5,
+        paye: 565.1,
+        total: 812.6,
+        lines: [
+          { name: 'SSNIT (staff 5.5%)', amount: 247.5 },
+          { name: 'PAYE (income tax)', amount: 565.1 },
+        ],
+        employer: { ssnit: 585, nhil: 123.75 },
+      };
+
+      const existingRun = await prisma.payroll.findFirst({
+        where: { periodId: demoPeriod.id, employeeId: payrollDemoEmployee.id },
+      });
+      if (!existingRun) {
+        await prisma.payroll.create({
+          data: {
+            periodId: demoPeriod.id,
+            employeeId: payrollDemoEmployee.id,
+            grossPay: 4500,
+            deductions,
+            netPay: 3687.4,
+            status: 'PROCESSED',
+          },
+        });
+      }
+
+      const existingPayslip = await prisma.payslip.findFirst({
+        where: { periodId: demoPeriod.id, employeeId: payrollDemoEmployee.id },
+      });
+      if (!existingPayslip) {
+        await prisma.payslip.create({
+          data: {
+            employeeId: payrollDemoEmployee.id,
+            periodId: demoPeriod.id,
+            payslipNo: 'PSL-DEMO-0001',
+            grossPay: 4500,
+            deductions,
+            netPay: 3687.4,
+            status: 'PAID',
+            issuedAt: new Date('2026-08-05'),
           },
         });
       }

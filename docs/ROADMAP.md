@@ -22,7 +22,7 @@ migrations/endpoints/frontend/mobile, and fixing errors** before continuing.
 | 15  | Materials & block factory          | **Complete** |
 | 16  | Equipment & finance                | **Complete** |
 | 17  | Finance (payments & ledger)        | **Complete** |
-| 18  | Payroll & payslips                 | Pending      |
+| 18  | Payroll & payslips                 | **Complete** |
 | 19  | Employee IDs (QR verification)     | Pending      |
 | 20  | Native Expo application            | Pending      |
 | 21  | Notifications, documents           | Pending      |
@@ -508,6 +508,39 @@ All models sit in the Phase 3 baseline migration, so **no new migration** was re
 - **Gates green**: API typecheck / lint / build / **153 tests / 22 files** (up from 135);
   web typecheck / lint / build clean. New proxy routes required `next typegen` to refresh
   the App Router route registry before the `[id]` handlers would typecheck.
+
+## Phase 18 — done (Payroll & payslips)
+
+Monthly payroll cycles with **Ghana statutory deductions** (SSNIT + progressive PAYE),
+print-to-PDF-ready payslips, and a staff self-service view. `PayrollPeriod`, `Payroll`,
+`Payslip`, the `PayrollStatus` enum and `Employee.salary` all existed in the Phase 3
+baseline, so **no migration** was required.
+
+- **Statutory engine** (`services/api/src/payroll/ghana-tax.ts`, pure + unit-tested):
+  employee SSNIT 5.5%, employer SSNIT 13%, NHIL 2.75%; progressive PAYE on annualised
+  chargeable income across six brackets (0% → 35%) divided back to monthly. `computePayroll`
+  returns SSNIT / PAYE / total deductions / net plus a `{ name, amount }[]` breakdown and the
+  informational employer contributions.
+- **Payroll API module** (`payroll.read` / `payroll.write`, mirrors the finance module):
+  - `/payroll-periods` — CRUD + **Generate runs** (`POST :id/generate`, one `Payroll` per
+    ACTIVE salaried employee not already covered), **Process** (`POST :id/process`, stamps
+    `processedById`/`processedAt` on every run + closes the period), **Issue payslips**
+    (`POST :id/issue-payslips`, idempotent per `[employeeId, periodId]`).
+  - `/payrolls` — list/detail + `PATCH` (admin adjusts a DRAFT run's gross; net recomputed
+    server-side) + soft delete.
+  - `/payslips` — list/detail (hard delete).
+  - `/staff/payslips` — authenticated self-scoped list/detail (the caller's own slips only).
+- **Seed**: grew to **34 permissions** (`payroll.read`/`write`); demo period **"August 2026"**
+  (PROCESSED) with a computed payrun (gross 4500 → net 3687.40) and **PSL-DEMO-0001**
+  (PAID), so both portals render content on first boot.
+- **Admin UI** under `/admin/payrolls` (period list → detail with Generate/Process/Issue
+  workflow + runs table → per-run gross edit) and `/admin/payslips` (list + a branded,
+  **print-to-PDF-ready slip** with `@media print` isolation; "Print / Save as PDF" button).
+- **Staff portal** (`/staff/payslips`): card list of the caller's own slips → the same
+  print-ready view over the staff proxy route.
+- **Gates green**: API typecheck / lint / build / **173 tests / 24 files** (up from 153);
+  web `next typegen` + typecheck / lint / build clean. Payroll and staff self-service routes
+  all mapped at boot.
 
 ## Phase 12 — done (Projects)
 

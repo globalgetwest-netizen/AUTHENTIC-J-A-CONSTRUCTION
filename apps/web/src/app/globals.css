@@ -137,3 +137,22 @@ body {
 .ajac-fade-in {
   animation: ajac-fade-in 0.25s ease-out;
 }
+/* Print isolation for payslips: only the slip card prints; chrome + sidebar hidden. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .prints-only-area,
+  .prints-only-area * {
+    visibility: visible;
+  }
+  .prints-only-area {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    margin: 0;
+  }
+  .hide-on-print {
+    display: none !important;
+  }
+}

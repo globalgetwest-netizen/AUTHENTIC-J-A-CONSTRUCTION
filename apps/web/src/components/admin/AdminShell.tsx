@@ -42,6 +42,8 @@ const DEFAULT_NAV: NavItem[] = [
   { href: "/admin/expenses", label: "Expenses" },
   { href: "/admin/financial-transactions", label: "Transactions" },
   { href: "/admin/payments", label: "Payments" },
+  { href: "/admin/payrolls", label: "Payrolls" },
+  { href: "/admin/payslips", label: "Payslips" },
 ];
 
 export function AdminShell({
