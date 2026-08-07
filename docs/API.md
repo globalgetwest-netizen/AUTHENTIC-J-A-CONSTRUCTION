@@ -104,6 +104,23 @@ npm run seed --workspace=@ajac/api   # upserts permissions, roles, admin
 ### Projects
 
 `/projects` — same REST shape; `type`, `status`, `search` filters; auto `code`.
+`GET /projects/:id` is enriched with nested `manager`, `client`, `members` (with employee
+name), `milestones`, and the latest 100 `updates` (each with a resolved `authorName`).
+
+**Sub-resources** (added Phase 12 — milestones, work log, team):
+
+| Method | Path                                             | Permission   | Notes |
+| ------ | ------------------------------------------------ | ------------ | ----- |
+| GET    | `/projects/:projectId/milestones`                | `projects.read` | Ordered by dueDate, then createdAt |
+| POST   | `/projects/:projectId/milestones`                | `projects.write` | `{ title, description?, dueDate?, status? }` → 201 |
+| PATCH  | `/projects/:projectId/milestones/:milestoneId`   | `projects.write` | Partial update; setting `status=COMPLETED` sets `completedAt` |
+| DELETE | `/projects/:projectId/milestones/:milestoneId`   | `projects.write` | Hard delete → 204 |
+| POST   | `/projects/:projectId/milestones/:milestoneId/complete` | `projects.write` | Marks done (sets `status=COMPLETED` + `completedAt`); idempotent; notifies the project manager |
+| GET    | `/projects/:projectId/updates`                   | `projects.read` | Work log, newest first, with `authorName` |
+| POST   | `/projects/:projectId/updates`                   | `projects.write` | `{ content, publishedAt? }` → 201; `authorId` resolved server-side; notifies the manager |
+| GET    | `/projects/:projectId/members`                   | `projects.read` | Project team, with employee name |
+| POST   | `/projects/:projectId/members`                   | `projects.write` | `{ employeeId, role }` → 201; duplicate employee → 409 |
+| DELETE | `/projects/:projectId/members/:memberId`         | `projects.write` | Removes from team → 204 |
 
 ### System
 
@@ -242,6 +259,22 @@ or admins viewing their own record.
 
 Consumed by the web `/staff` portal via `api/staff/{profile,notifications}` proxies.
 
+### Staff projects (Phase 12)
+
+Self-scoped like the rest of the staff module, but scoping is **project-based** rather than
+"own record": the caller must be a `ProjectMember`, the project `manager`, or an
+admin/`projects.read` holder. Access decisions all flow through one helper
+(`projects.service.resolveAccess`), so the staff and admin surfaces enforce the same rules.
+
+| Method | Path                                          | Permission   | Notes |
+| ------ | --------------------------------------------- | ------------ | ----- |
+| GET    | `/staff/projects`                             | authenticated | Visible projects with summaries: `updateCount`, `milestoneCount`, `completedMilestones`, `latestUpdate`; managers/admins/`projects.read` see all, others see managed ∪ assigned |
+| GET    | `/staff/projects/:id`                         | authenticated | Detail with milestones + updates + members → `{ project, capabilities: { canManage, canLogWork } }`; **404** unless managed/assigned/admin |
+| POST   | `/staff/projects/:id/updates`                 | authenticated | **Member-gated** work log: `{ content, publishedAt? }`; 403 unless the caller can log work; notifies the manager |
+| POST   | `/staff/projects/:id/milestones/:milestoneId/complete` | authenticated | Manager/admin only; marks the phase done; notifies the manager |
+
+Consumed by the web `/staff` portal via `api/staff/projects*` proxies.
+
 ## Endpoints (Phase 11 — Client portal)
 
 Like the staff portal, these are **self-scoped**: they only ever return the caller's own
@@ -272,7 +305,7 @@ by the API's self-scoped GET, so a client can never download another client's do
 | `properties` (property-types, properties, property-sales + ownership certificate) | **Phase 10 — done** |
 | `staff` (self-scoped profile + notifications, powers the `/staff` portal) | **Phase 10 — done** |
 | `client` (self-scoped profile + quotations, powers the `/client` portal) | **Phase 11 — done** |
-| `projects` (lifecycle: planning, budgets, milestones) | Phase 12 |
+| `projects` (lifecycle: planning, budgets, milestones, work log, team) | **Phase 12 — done** |
 | `land`              | Phase 13 |
 | `materials`, `inventory`, `equipment` | Phase 14–15 |
 | `finance`, `invoices`, `payments`      | Phase 16 |

@@ -2,6 +2,7 @@ import { AdminShell, type NavItem } from "./admin/AdminShell";
 
 const STAFF_NAV: NavItem[] = [
   { href: "/staff", label: "Dashboard" },
+  { href: "/staff/projects", label: "Projects" },
   { href: "/staff/profile", label: "My profile" },
 ];
 

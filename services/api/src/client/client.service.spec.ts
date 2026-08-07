@@ -110,7 +110,10 @@ describe('ClientService', () => {
     const result = await service.quotations('u3');
 
     expect(quotation.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { clientId: null, deletedAt: null } }),
+      expect.objectContaining({
+        where: { clientId: null, deletedAt: null, status: { not: 'DRAFT' } },
+        take: 20,
+      }),
     );
     expect(result.data).toEqual([]);
     expect(result.meta.total).toBe(0);

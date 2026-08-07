@@ -316,6 +316,118 @@ async function main(): Promise<void> {
       }
     }
 
+    // 4d. Demo PROJECT — exercise the staff project portal end-to-end.
+    // Creates one ACTIVE project managed by the demo staff employee, with four
+    // phases (one COMPLETED), two work-log entries, a ProjectMember link, and
+    // PROJECT notifications. Idempotent — safe to re-run.
+    const demoEmployee = await prisma.employee.findFirst({
+      where: { employeeCode: 'EMP-DEMO-0001' },
+    });
+    if (demoEmployee) {
+      let demoProject = await prisma.project.findFirst({ where: { code: 'PRJ-DEMO-0001' } });
+      if (!demoProject) {
+        demoProject = await prisma.project.create({
+          data: {
+            code: 'PRJ-DEMO-0001',
+            name: 'AUTHENTIC J.A. demo site',
+            description: 'Demo residential development for exercising the Projects module.',
+            projectType: 'CONSTRUCTION',
+            status: 'ACTIVE',
+            managerId: demoEmployee.id,
+            location: 'Kenyase – Brofoyedru, Ghana',
+            budgetAmount: 1200000,
+            startDate: new Date('2026-08-01'),
+            endDate: new Date('2027-03-31'),
+          },
+        });
+        console.log(`[seed] created demo project ${demoProject.code} → manager ${demoEmployee.employeeCode}`);
+      }
+      if (demoProject.deletedAt) {
+        demoProject = await prisma.project.update({
+          where: { id: demoProject.id },
+          data: { deletedAt: null },
+        });
+        console.log(`[seed] restored deleted demo project ${demoProject.code}`);
+      }
+
+      await prisma.projectMember.upsert({
+        where: {
+          projectId_employeeId: { projectId: demoProject.id, employeeId: demoEmployee.id },
+        },
+        update: {},
+        create: { projectId: demoProject.id, employeeId: demoEmployee.id, role: 'SITE_SUPERVISOR' },
+      });
+
+      const demoMilestones = [
+        { title: 'Site clearing', dueDate: new Date('2026-08-15') },
+        { title: 'Foundation', dueDate: new Date('2026-09-30') },
+        { title: 'Structure', dueDate: new Date('2026-12-15') },
+        { title: 'Finishing', dueDate: new Date('2027-03-31') },
+      ];
+      for (const [index, ms] of demoMilestones.entries()) {
+        const existingMilestone = await prisma.projectMilestone.findFirst({
+          where: { projectId: demoProject.id, title: ms.title },
+        });
+        if (!existingMilestone) {
+          const first = index === 0;
+          await prisma.projectMilestone.create({
+            data: {
+              projectId: demoProject.id,
+              title: ms.title,
+              dueDate: ms.dueDate,
+              status: first ? 'COMPLETED' : 'NOT_STARTED',
+              completedAt: first ? new Date('2026-08-05') : null,
+            },
+          });
+        }
+      }
+
+      const demoStaffUser = await prisma.user.findUnique({ where: { email: staffEmail } });
+      if (demoStaffUser) {
+        const demoUpdates = [
+          { content: 'Site cleared and pegged. Excavation starts Monday.', publishedAt: new Date('2026-08-05') },
+          { content: 'Survey completed; foundation trench lines marked.', publishedAt: new Date('2026-08-10') },
+        ];
+        for (const upd of demoUpdates) {
+          const existingUpdate = await prisma.projectUpdate.findFirst({
+            where: { projectId: demoProject.id, content: upd.content },
+          });
+          if (!existingUpdate) {
+            await prisma.projectUpdate.create({
+              data: {
+                projectId: demoProject.id,
+                authorId: demoStaffUser.id,
+                content: upd.content,
+                publishedAt: upd.publishedAt,
+              },
+            });
+          }
+        }
+
+        const demoNotifications = [
+          { type: 'PROJECT', title: 'Milestone completed', body: 'Phase "Site clearing" was marked complete.' },
+          { type: 'PROJECT', title: 'New work log', body: 'Ama Owusu logged work on this project.' },
+        ] as const;
+        for (const notice of demoNotifications) {
+          const existingNotice = await prisma.notification.findFirst({
+            where: { userId: demoStaffUser.id, type: notice.type, title: notice.title },
+          });
+          if (!existingNotice) {
+            await prisma.notification.create({
+              data: {
+                userId: demoStaffUser.id,
+                type: notice.type,
+                title: notice.title,
+                body: notice.body,
+                data: { projectId: demoProject.id },
+                link: `/staff/projects/${demoProject.id}`,
+              },
+            });
+          }
+        }
+      }
+    }
+
     console.log(
       `[seed] done — ${PERMISSIONS.length} permissions, ${roles.size} roles, admin ${email} linked to SUPER_ADMIN, demo staff ${staffEmail}, demo client ${clientEmail}`,
     );

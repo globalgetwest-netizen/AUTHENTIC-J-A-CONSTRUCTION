@@ -16,7 +16,7 @@ migrations/endpoints/frontend/mobile, and fixing errors** before continuing.
 | 9   | Employee management & org structure | **Complete** |
 | 10  | Staff portal                       | **Complete** |
 | 11  | Client portal                      | **Complete** |
-| 12  | Projects                           | Pending      |
+| 12  | Projects                           | **Complete** |
 | 13  | Real estate                        | **Complete** |
 | 14  | Land                               | **Complete** |
 | 15  | Materials & block factory          | Pending      |
@@ -435,3 +435,60 @@ to `User`), with ownership enforced on the API.
   web typecheck / lint / build clean. One `react-hooks/set-state-in-effect` lint
   error in `LandAllocationForm` was fixed by moving the plot-list reset into the
   project select's `onChange` instead of the effect body.
+
+## Phase 12 — done (Projects)
+
+Real construction workflows on top of the existing Project model — phases (milestones),
+work logs (site updates), per-role staff dashboards, and a richer admin detail view. No
+Prisma migration required: `Project`, `ProjectMilestone`, `ProjectUpdate`, `ProjectMember`
+and `Notification` all existed since the Phase 3 baseline.
+
+- **Enriched `GET /projects/:id`** (`projects.service.get`): nested `manager` (Employee
+  name), `client`, `members` (with employee name), `milestones` (dueDate/createdAt order),
+  and the latest 100 `updates` (newest first) with `authorName` resolved from the author's
+  `User` (`ProjectUpdate.authorId` has no FK, so names are joined in the service).
+- **Project sub-resources** (`projects.controller.ts`, permission-gated `projects.read` /
+  `projects.write`):
+  - `/projects/:id/milestones` — GET list, POST create (`create-project-milestone.dto`),
+    PATCH + DELETE `:milestoneId`, POST `:milestoneId/complete` (sets
+    `status=COMPLETED` + `completedAt`, idempotent, notifies the project manager).
+  - `/projects/:id/updates` — GET list, POST work log (`create-project-update.dto`);
+    `authorId` is resolved server-side from the caller, `publishedAt` optional.
+  - `/projects/:id/members` — GET list, POST add (`add-project-member.dto`, deduped via
+    the unique `[projectId, employeeId]` → 409 Conflict), DELETE `:memberId`.
+- **Staff self-scoped controller** (`staff-projects.controller.ts`, authenticated-only, no
+  `@RequirePermissions` — mirrors the `/client` pattern):
+  - `GET /staff/projects` — visible projects with summaries: managers (the caller manages
+    any project), admins, and `projects.read` holders see all; everyone else sees projects
+    they manage or are a `ProjectMember` of. Rows carry `updateCount`, `milestoneCount`,
+    `completedMilestones` and the `latestUpdate` (top-200 dedup).
+  - `GET /staff/projects/:id` — detail with milestones + updates + members, 404 unless
+    managed/assigned/admin; returns `{ project, capabilities: { canManage, canLogWork } }`.
+  - `POST /staff/projects/:id/updates` — **member-gated** work log (`canLogWork`), notifies
+    the manager.
+  - `POST /staff/projects/:id/milestones/:milestoneId/complete` — manager/admin only
+    (`canManage`), notifies the manager.
+  - All access decisions flow through one `resolveAccess` helper (admin short-circuit →
+    `managerId` → `ProjectMember`), so staff/web both enforce the same rules.
+- **Seed**: idempotent demo project **PRJ-DEMO-0001** "AUTHENTIC J.A. demo site" (manager =
+  demo staff `EMP-DEMO-0001`, budget GHS 1,200,000, Kenyase–Brofoyedru), 4 phases (Site
+  clearing completed, Foundation/Structure/Finishing pending), 2 work-log updates, a
+  `ProjectMember` (SITE_SUPERVISOR), and milestone/update notifications — the staff
+  dashboard has content on first boot.
+- **Staff portal** (`/staff/projects`): server-rendered board of summary cards (status
+  badge, budget, "n/m phases done" progress bar, work-log count, latest update snippet)
+  linking to a client detail page with overview + **Phases** (mark-done button for
+  managers) + **Work log** (textarea for members, timeline with author + timestamp).
+  Read-only viewers see phases + budget only.
+- **Admin portal** (`/admin/projects/:id`): rebuilt from a flat card into four sections —
+  existing overview card + **Phases** (create/edit/mark-done/delete via `EntityForm`),
+  **Work log** (read-only timeline), **Team** (add/remove `ProjectMember`s via an employee
+  select). Web proxy routes added under `/api/admin/projects/[id]/{milestones,updates,members}`
+  and `/api/staff/projects`.
+- **Gates green**: 15 new `projects.service` unit tests (membership gate allow/deny,
+  manager + admin bypass, milestone completion transition + idempotency, notifications,
+  author-name join, list/detail scoping, member add/remove) → API suite at **117 tests /
+  18 files**; API + web typecheck / lint / build clean (`next typegen` after the new
+  routes). The API vitest config pins `NODE_ENV: 'test'` so the suite is immune to a
+  shell that exports `NODE_ENV=production` (which would otherwise trip the JWT-secret
+  guard in `auth-config`).

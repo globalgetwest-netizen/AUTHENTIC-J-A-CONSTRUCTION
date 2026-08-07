@@ -48,12 +48,78 @@ export interface Project {
   projectType: string;
   status: string;
   clientId?: string | null;
+  branchId?: string | null;
+  managerId?: string | null;
   location?: string | null;
   address?: string | null;
   startDate?: string | null;
   endDate?: string | null;
   budgetAmount?: number | string | null;
   createdAt: string;
+  updatedAt?: string;
+  /** Enriched relations returned by the detail endpoints. */
+  manager?: { id: string; firstName: string; lastName: string; employeeCode: string } | null;
+  client?: Client | null;
+  members?: ProjectMember[] | null;
+  milestones?: ProjectMilestone[] | null;
+  updates?: ProjectUpdate[] | null;
+}
+
+export type MilestoneStatus = "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED" | "DELAYED";
+export const MILESTONE_STATUSES: readonly MilestoneStatus[] = [
+  "NOT_STARTED",
+  "IN_PROGRESS",
+  "COMPLETED",
+  "DELAYED",
+];
+
+export interface ProjectMilestone {
+  id: string;
+  projectId: string;
+  title: string;
+  description?: string | null;
+  dueDate?: string | null;
+  status: MilestoneStatus;
+  completedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectUpdate {
+  id: string;
+  projectId: string;
+  authorId?: string | null;
+  content: string;
+  publishedAt: string;
+  /** Resolved from the author's User record — null when the author is gone. */
+  authorName?: string | null;
+}
+
+export interface ProjectMember {
+  id: string;
+  projectId: string;
+  employeeId: string;
+  role: string;
+  createdAt: string;
+  employee?: { id: string; firstName: string; lastName: string; employeeCode: string } | null;
+}
+
+/** A project row on the staff dashboard: base project + work-log/phase summaries. */
+export interface StaffProjectSummary extends Project {
+  updateCount: number;
+  milestoneCount: number;
+  completedMilestones: number;
+  latestUpdate?: ProjectUpdate | null;
+}
+
+export interface StaffProjectDetail {
+  project: Project;
+  capabilities: { canManage: boolean; canLogWork: boolean };
+}
+
+export interface StaffProjectsResult {
+  data: StaffProjectSummary[];
+  meta: { total: number };
 }
 
 export interface QuotationItem {
@@ -326,7 +392,7 @@ export function toneFor(value: string | null | undefined): BadgeTone {
   const v = (value ?? "").toUpperCase();
   if (/WON|COMPLETED|ACTIVE|QUALIFIED|PROPOSAL/.test(v)) return "success";
   if (/NEW|PLANNING/.test(v)) return "info";
-  if (/CONTACTED|NEGOTIATION|IN_PROGRESS|ON_HOLD/.test(v)) return "warning";
+  if (/CONTACTED|NEGOTIATION|IN_PROGRESS|ON_HOLD|DELAYED/.test(v)) return "warning";
   if (/LOST|CANCELLED|BLACKLISTED|INACTIVE/.test(v)) return "danger";
   if (/REAL_ESTATE|INDIVIDUAL|CORPORATE/.test(v)) return "brand";
   return "neutral";

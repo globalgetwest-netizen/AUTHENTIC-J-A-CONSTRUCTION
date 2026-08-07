@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { ProjectMilestonesSection } from "@/components/admin/ProjectMilestonesSection";
+import { ProjectWorkLogSection } from "@/components/admin/ProjectWorkLogSection";
+import { ProjectMembersSection } from "@/components/admin/ProjectMembersSection";
 import { formatDate, formatMoney, label, type Project } from "@/lib/admin/types";
 
 const PROJECT_STATUSES = ["PLANNING", "ACTIVE", "ON_HOLD", "COMPLETED", "CANCELLED"];
@@ -154,6 +157,10 @@ export default function ProjectDetail() {
           </button>
         </div>
       </div>
+
+      <ProjectMilestonesSection projectId={project.id} />
+      <ProjectWorkLogSection projectId={project.id} />
+      <ProjectMembersSection projectId={project.id} />
     </div>
   );
 }
