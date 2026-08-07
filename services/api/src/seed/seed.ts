@@ -31,6 +31,10 @@ const PERMISSIONS = [
   'land.write',
   'materials.read',
   'materials.write',
+  'equipment.read',
+  'equipment.write',
+  'finance.read',
+  'finance.write',
   'system.settings.read',
   'system.settings.write',
   'system.flags.read',
@@ -552,6 +556,112 @@ async function main(): Promise<void> {
             soldOn: new Date('2026-08-07'),
             reference: 'SALE-DEMO-0001',
             status: 'PAID',
+          },
+        });
+      }
+    }
+
+    // ── Equipment + finance demo data (idempotent) ──────────────────────────
+    const existingEquip = await prisma.equipment.findFirst({ where: { assetCode: 'EQP-DEMO-0001' } });
+    if (!existingEquip) {
+      const equip = await prisma.equipment.create({
+        data: {
+          assetCode: 'EQP-DEMO-0001',
+          name: 'Excavator 30t',
+          category: 'HEAVY',
+          status: 'AVAILABLE',
+          purchasePrice: 850000,
+          location: 'Main yard',
+        },
+      });
+      await prisma.vehicle.create({
+        data: {
+          equipmentId: equip.id,
+          registrationNo: 'GW-1234-20',
+          fuelType: 'Diesel',
+        },
+      });
+      await prisma.maintenanceRecord.create({
+        data: {
+          equipmentId: equip.id,
+          scheduledAt: new Date('2026-08-20'),
+          cost: 2400,
+          serviceProvider: 'SiteMech Services',
+          description: 'Scheduled hydraulic service',
+          status: 'SCHEDULED',
+        },
+      });
+    }
+
+    const existingAsset = await prisma.asset.findFirst({ where: { assetCode: 'AST-DEMO-0001' } });
+    if (!existingAsset) {
+      const asset = await prisma.asset.create({
+        data: {
+          assetCode: 'AST-DEMO-0001',
+          name: 'Site laptop',
+          category: 'IT',
+          purchasePrice: 5200,
+          currentValue: 4500,
+          status: 'ACTIVE',
+        },
+      });
+      if (demoEmployee) {
+        await prisma.assetAssignment.create({
+          data: { assetId: asset.id, assignedToId: demoEmployee.id, notes: 'Issued by seed' },
+        });
+      }
+    }
+
+    const existingExpense = await prisma.expense.findFirst({ where: { expenseNo: 'EXP-DEMO-0001' } });
+    if (!existingExpense) {
+      await prisma.expense.create({
+        data: {
+          expenseNo: 'EXP-DEMO-0001',
+          category: 'FUEL',
+          description: 'Generator diesel top-up',
+          amount: 450,
+          incurredOn: new Date('2026-08-06'),
+          status: 'PENDING',
+        },
+      });
+    }
+
+    const existingInvoice = await prisma.invoice.findFirst({ where: { invoiceNo: 'INV-DEMO-0001' } });
+    if (!existingInvoice) {
+      const demoClient = await prisma.client.findFirst({ where: { clientCode: 'CLI-DEMO-0001' } });
+      if (demoClient) {
+        const invoice = await prisma.invoice.create({
+          data: {
+            invoiceNo: 'INV-DEMO-0001',
+            clientId: demoClient.id,
+            issuedOn: new Date('2026-08-01'),
+            dueOn: new Date('2026-08-31'),
+            subtotal: 1200,
+            tax: 50,
+            discount: 10,
+            total: 1240,
+            status: 'PART_PAID',
+            items: {
+              create: [
+                {
+                  description: 'Foundation works — demo site',
+                  quantity: 2,
+                  unitPrice: 500,
+                  amount: 1000,
+                },
+                { description: 'General labour', quantity: 1, unitPrice: 200, amount: 200 },
+              ],
+            },
+          },
+        });
+        await prisma.receipt.create({
+          data: {
+            receiptNo: 'RCP-DEMO-0001',
+            invoiceId: invoice.id,
+            clientId: demoClient.id,
+            amount: 600,
+            method: 'MOBILE_MONEY',
+            reference: `Payment toward ${invoice.invoiceNo}`,
           },
         });
       }

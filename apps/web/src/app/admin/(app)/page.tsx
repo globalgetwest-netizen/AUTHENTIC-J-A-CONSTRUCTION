@@ -42,10 +42,12 @@ function StatCard({
 }
 
 export default async function AdminDashboard() {
-  const [leadCount, clientCount, projectCount, recentRes] = await Promise.all([
+  const [leadCount, clientCount, projectCount, equipmentCount, invoiceCount, recentRes] = await Promise.all([
     countTotal("/leads"),
     countTotal("/clients"),
     countTotal("/projects"),
+    countTotal("/equipment"),
+    countTotal("/invoices"),
     apiFetch("/leads?pageSize=6&sortBy=createdAt&sortOrder=desc"),
   ]);
 
@@ -66,6 +68,11 @@ export default async function AdminDashboard() {
         <StatCard label="Leads" value={String(leadCount)} href="/admin/leads" />
         <StatCard label="Clients" value={String(clientCount)} href="/admin/clients" />
         <StatCard label="Projects" value={String(projectCount)} href="/admin/projects" />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard label="Equipment" value={String(equipmentCount)} href="/admin/equipment" />
+        <StatCard label="Invoices" value={String(invoiceCount)} href="/admin/invoices" />
       </div>
 
       <div>

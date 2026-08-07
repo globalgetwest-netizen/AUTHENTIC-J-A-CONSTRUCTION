@@ -571,3 +571,237 @@ export interface BlockSale {
   product?: BlockProduct | null;
   client?: { id: string; companyName?: string | null; contactName?: string | null } | null;
 }
+
+// ── Equipment & fleet (Phase 16) ────────────────────────────────────────────
+
+export type EquipmentStatus = "AVAILABLE" | "IN_USE" | "MAINTENANCE" | "RESERVED" | "RETIRED";
+export const EQUIPMENT_STATUSES: readonly EquipmentStatus[] = [
+  "AVAILABLE",
+  "IN_USE",
+  "MAINTENANCE",
+  "RESERVED",
+  "RETIRED",
+];
+
+export type MaintenanceStatus = "SCHEDULED" | "IN_PROGRESS" | "COMPLETED" | "DEFERRED" | "CANCELLED";
+export const MAINTENANCE_STATUSES: readonly MaintenanceStatus[] = [
+  "SCHEDULED",
+  "IN_PROGRESS",
+  "COMPLETED",
+  "DEFERRED",
+  "CANCELLED",
+];
+
+export type AssetStatus = "ACTIVE" | "IN_REPAIR" | "RETIRED" | "DISPOSED";
+export const ASSET_STATUSES: readonly AssetStatus[] = ["ACTIVE", "IN_REPAIR", "RETIRED", "DISPOSED"];
+
+export const EQUIPMENT_CATEGORIES: readonly string[] = [
+  "GENERAL",
+  "HEAVY",
+  "LIGHT",
+  "TRANSPORT",
+  "TOOLING",
+];
+
+export interface Equipment {
+  id: string;
+  assetCode: string;
+  name: string;
+  model?: string | null;
+  serialNo?: string | null;
+  category: string;
+  status: EquipmentStatus;
+  purchaseDate?: string | null;
+  purchasePrice?: number | string | null;
+  location?: string | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  vehicle?: { id: string; licensePlate?: string | null; registrationNo: string } | null;
+  _count?: { maintenance?: number } | null;
+}
+
+export interface Vehicle {
+  id: string;
+  equipmentId: string;
+  registrationNo: string;
+  licensePlate?: string | null;
+  fuelType?: string | null;
+  insuranceExpiry?: string | null;
+  inspectionDue?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  equipment?: { id: string; name: string; assetCode: string } | null;
+}
+
+export interface MaintenanceRecord {
+  id: string;
+  equipmentId: string;
+  scheduledAt: string;
+  completedAt?: string | null;
+  cost?: number | string | null;
+  serviceProvider?: string | null;
+  description?: string | null;
+  status: MaintenanceStatus;
+  createdAt: string;
+  updatedAt: string;
+  equipment?: { id: string; name: string; assetCode: string } | null;
+}
+
+export interface Asset {
+  id: string;
+  assetCode: string;
+  name: string;
+  category: string;
+  purchaseDate?: string | null;
+  purchasePrice?: number | string | null;
+  currentValue?: number | string | null;
+  location?: string | null;
+  status: string;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  _count?: { assignments?: number } | null;
+}
+
+export interface AssetAssignment {
+  id: string;
+  assetId: string;
+  assignedToId: string;
+  assignedById?: string | null;
+  assignedAt: string;
+  returnedAt?: string | null;
+  notes?: string | null;
+  createdAt: string;
+  asset?: { id: string; name: string; assetCode: string } | null;
+}
+
+// ── Finance & accounting (Phase 16) ─────────────────────────────────────────
+
+export type InvoiceStatus = "DRAFT" | "SENT" | "PART_PAID" | "PAID" | "OVERDUE" | "CANCELLED" | "VOID";
+export const INVOICE_STATUSES: readonly InvoiceStatus[] = [
+  "DRAFT",
+  "SENT",
+  "PART_PAID",
+  "PAID",
+  "OVERDUE",
+  "CANCELLED",
+  "VOID",
+];
+
+export type ExpenseStatus = "PENDING" | "APPROVED" | "PAID" | "REJECTED";
+export const EXPENSE_STATUSES: readonly ExpenseStatus[] = ["PENDING", "APPROVED", "PAID", "REJECTED"];
+
+export type PaymentMethod = "CASH" | "BANK_TRANSFER" | "MOBILE_MONEY" | "CARD" | "CHEQUE" | "OTHER";
+export const PAYMENT_METHODS: readonly PaymentMethod[] = [
+  "CASH",
+  "BANK_TRANSFER",
+  "MOBILE_MONEY",
+  "CARD",
+  "CHEQUE",
+  "OTHER",
+];
+
+export type TransactionType = "INCOME" | "EXPENSE" | "TRANSFER" | "ADJUSTMENT";
+export const TRANSACTION_TYPES: readonly TransactionType[] = ["INCOME", "EXPENSE", "TRANSFER", "ADJUSTMENT"];
+
+export type TransactionDirection = "DEBIT" | "CREDIT";
+export const TRANSACTION_DIRECTIONS: readonly TransactionDirection[] = ["DEBIT", "CREDIT"];
+
+export interface InvoiceItem {
+  id: string;
+  description: string;
+  quantity: number | string;
+  unitPrice: number | string;
+  amount: number | string;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNo: string;
+  clientId: string;
+  projectId?: string | null;
+  issuedOn: string;
+  dueOn: string;
+  subtotal: number | string;
+  tax?: number | string | null;
+  discount?: number | string | null;
+  total: number | string;
+  currency: string;
+  status: InvoiceStatus;
+  paidOn?: string | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  client?: { id: string; companyName?: string | null; contactName?: string | null; clientCode?: string | null } | null;
+  project?: { id: string; name: string; code: string } | null;
+  items?: InvoiceItem[] | null;
+}
+
+export interface Receipt {
+  id: string;
+  receiptNo: string;
+  invoiceId?: string | null;
+  clientId: string;
+  amount: number | string;
+  receivedOn: string;
+  method: PaymentMethod;
+  reference?: string | null;
+  notes?: string | null;
+  receivedById?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  client?: { id: string; companyName?: string | null; contactName?: string | null } | null;
+  invoice?: { id: string; invoiceNo: string } | null;
+}
+
+export interface Expense {
+  id: string;
+  expenseNo: string;
+  category: string;
+  description: string;
+  amount: number | string;
+  incurredOn: string;
+  paidById?: string | null;
+  approvedById?: string | null;
+  receiptUrl?: string | null;
+  projectId?: string | null;
+  status: ExpenseStatus;
+  createdAt: string;
+  updatedAt: string;
+  project?: { id: string; name: string; code: string } | null;
+}
+
+export interface FinancialTransaction {
+  id: string;
+  transactionNo: string;
+  type: TransactionType;
+  direction: TransactionDirection;
+  amount: number | string;
+  category: string;
+  account?: string | null;
+  reference?: string | null;
+  occurredOn: string;
+  notes?: string | null;
+  createdById?: string | null;
+  projectId?: string | null;
+  invoiceId?: string | null;
+  status: PaymentStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaymentRecord {
+  id: string;
+  payeeType: string;
+  payeeId: string;
+  amount: number | string;
+  method: PaymentMethod;
+  reference?: string | null;
+  paidOn: string;
+  status: PaymentStatus;
+  notes?: string | null;
+  receiptUrl?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

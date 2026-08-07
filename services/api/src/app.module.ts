@@ -18,6 +18,8 @@ import { PropertiesModule } from './properties/properties.module';
 import { LandModule } from './land/land.module';
 import { MaterialsModule } from './materials/materials.module';
 import { BlocksModule } from './blocks/blocks.module';
+import { EquipmentModule } from './equipment/equipment.module';
+import { FinanceModule } from './finance/finance.module';
 import { SystemModule } from './system/system.module';
 import { RequestsModule } from './requests/requests.module';
 import { StaffModule } from './staff/staff.module';
@@ -41,6 +43,8 @@ import { ClientModule } from './client/client.module';
     LandModule,
     MaterialsModule,
     BlocksModule,
+    EquipmentModule,
+    FinanceModule,
     SystemModule,
     RequestsModule,
     StaffModule,

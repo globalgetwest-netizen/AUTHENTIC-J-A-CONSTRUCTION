@@ -20,8 +20,8 @@ migrations/endpoints/frontend/mobile, and fixing errors** before continuing.
 | 13  | Real estate                        | **Complete** |
 | 14  | Land                               | **Complete** |
 | 15  | Materials & block factory          | **Complete** |
-| 16  | Equipment                          | Pending      |
-| 17  | Finance                            | Pending      |
+| 16  | Equipment & finance                | **Complete** |
+| 17  | Finance (payments & ledger)        | **Complete** |
 | 18  | Payroll & payslips                 | Pending      |
 | 19  | Employee IDs (QR verification)     | Pending      |
 | 20  | Native Expo application            | Pending      |
@@ -475,6 +475,39 @@ baseline migration, so **no new migration** was required.
   re-initializes its form state from the current op's defaults, removing the reset effect
   entirely. The generated `[id]` proxy routes had single-quoted `"/resource/${id}"`
   literals (would 404); they were corrected to template literals `` `/resource/${id}` ``.
+
+## Phase 16 — done (Equipment & finance)
+
+Company-owned machinery, fleet, maintenance and non-equipment assets, plus a finance &
+accounting layer (invoices, receipts, expenses, financial transactions, outgoing payments).
+All models sit in the Phase 3 baseline migration, so **no new migration** was required.
+
+- **Equipment & fleet API module** (`services/api/src/equipment/`, permission-gated
+  `equipment.read` / `equipment.write`):
+  - `/equipment` — CRUD (auto `EQP-` code, `status`/`category` filters, soft delete).
+  - `/vehicles` — linked to equipment (upsert on the unique `equipmentId`), insurance /
+    inspection dates, nested `equipment` + `fuelRecords`.
+  - `/maintenance` — CRUD + `POST :id/complete` (sets `COMPLETED` + `completedAt`).
+  - `/assets` — non-equipment assets (auto `AST-` code, `currentValue`, soft delete).
+  - `/asset-assignments` — issue/return tracking (`POST :id/return`).
+- **Finance & accounting API module** (`services/api/src/finance/`, `finance.read` /
+  `finance.write`):
+  - `/invoices` (+ line items) — `subtotal`/`tax`/`discount`/`total` computed server-side.
+  - `/receipts` — money received; creating/editing/deleting a receipt **re-derives the
+    linked invoice's status** (`PAID` / `PART_PAID` / `SENT`), never hand-set.
+  - `/expenses`, `/financial-transactions`, `/payments` — auto `EXP-`/`TXN-`/`PAY-` codes.
+- **Seed**: grew to **32 permissions** (`equipment.read`/`write` + `finance.read`/`write`);
+  idempotent demo data — `EQP-DEMO-0001` Excavator 30t (vehicle `GW-1234-20`, scheduled
+  maintenance), `AST-DEMO-0001` site laptop, `EXP-DEMO-0001` fuel, `INV-DEMO-0001` (2 line
+  items) + `RCP-DEMO-0001` receipt.
+- **Admin UI** under `/admin/equipment`, `/admin/vehicles`, `/admin/maintenance`,
+  `/admin/assets`, `/admin/asset-assignments`, `/admin/invoices` (line-item editor),
+  `/admin/receipts`, `/admin/expenses`, `/admin/financial-transactions`, `/admin/payments` —
+  reusing `AdminTable`, `Pagination`, `StatusBadge` and the `/api/admin/*` proxy routes.
+  Dashboard gained Equipment + Invoices stat cards.
+- **Gates green**: API typecheck / lint / build / **153 tests / 22 files** (up from 135);
+  web typecheck / lint / build clean. New proxy routes required `next typegen` to refresh
+  the App Router route registry before the `[id]` handlers would typecheck.
 
 ## Phase 12 — done (Projects)
 

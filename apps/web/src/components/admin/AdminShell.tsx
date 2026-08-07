@@ -32,6 +32,16 @@ const DEFAULT_NAV: NavItem[] = [
   { href: "/admin/block-products", label: "Block products" },
   { href: "/admin/block-productions", label: "Block production" },
   { href: "/admin/block-sales", label: "Block sales" },
+  { href: "/admin/equipment", label: "Equipment & assets" },
+  { href: "/admin/vehicles", label: "Vehicles" },
+  { href: "/admin/maintenance", label: "Maintenance" },
+  { href: "/admin/assets", label: "Assets" },
+  { href: "/admin/asset-assignments", label: "Asset assignments" },
+  { href: "/admin/invoices", label: "Invoices" },
+  { href: "/admin/receipts", label: "Receipts" },
+  { href: "/admin/expenses", label: "Expenses" },
+  { href: "/admin/financial-transactions", label: "Transactions" },
+  { href: "/admin/payments", label: "Payments" },
 ];
 
 export function AdminShell({

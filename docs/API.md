@@ -294,7 +294,8 @@ by the API's self-scoped GET, so a client can never download another client's do
 ## Endpoints (Phase 15 — Materials & block factory)
 
 Permission-gated modules under `materials.read`/`materials.write` and
-`blocks.read`/`blocks.write`. Inventory ops (receive/issue/adjust/transfer) each write an
+`blocks.read`/`blocks.write` (the block factory reuses the `materials.read`/`write`
+permissions in code — the `blocks.*` permission strings are not seeded). Inventory ops (receive/issue/adjust/transfer) each write an
 `InventoryTransaction` + `StockMovement` row and adjust `material.currentStock`.
 
 ### Materials
@@ -330,6 +331,54 @@ Seed supplies idempotent demo data (categories, materials incl. 200 bags cement 
 stock, warehouses, block products, one `PRD-DEMO-0001` production batch, one sale
 `SALE-DEMO-0001`) and grows the permission catalog to **30** (SUPER_ADMIN inherits).
 
+## Endpoints (Phase 16 — Equipment & finance)
+
+New permission set `equipment.read`/`equipment.write` and `finance.read`/`finance.write`
+(SUPER_ADMIN inherits all). All models already exist in the Phase 3 baseline migration, so
+**no new migration** was required. Business codes auto-generated: `EQP-`, `AST-`, `INV-`,
+`RCP-`, `EXP-`, `TXN-`, `PAY-`.
+
+### Equipment & fleet
+
+| Method | Path                     | Permission | Notes |
+| ------ | ------------------------ | ---------- | ----- |
+| GET/POST | `/equipment`           | equipment.read/write | list (search, `status`, `category`), create (auto `EQP-` code; `name` required) |
+| GET/PATCH/DELETE | `/equipment/:id`   | equipment.read/write | nested `vehicle` + `_count.maintenance`; soft delete |
+| GET/POST | `/vehicles`            | equipment.read/write | list (search, `equipmentId`), create/upsert on unique `equipmentId` |
+| GET/PATCH/DELETE | `/vehicles/:id`    | equipment.read/write | nested `equipment` + recent `fuelRecords` |
+| GET/POST | `/maintenance`         | equipment.read/write | list (`equipmentId`, `status`), create (`equipmentId`, `scheduledAt` required) |
+| GET/PATCH/DELETE | `/maintenance/:id` | equipment.read/write | nested `equipment` |
+| POST | `/maintenance/:id/complete` | equipment.write | marks `COMPLETED` + sets `completedAt` |
+| GET/POST | `/assets`              | equipment.read/write | list (search, `category`, `status`), create (auto `AST-` code) |
+| GET/PATCH/DELETE | `/assets/:id`      | equipment.read/write | nested `_count.assignments`; soft delete |
+| GET/POST | `/asset-assignments`   | equipment.read/write | list (`assetId`, `assignedToId`, `activeOnly`), create (`assetId`, `assignedToId` required) |
+| GET/DELETE | `/asset-assignments/:id` | equipment.read/write | get / delete |
+| POST | `/asset-assignments/:id/return` | equipment.write | sets `returnedAt` |
+
+### Finance & accounting
+
+| Method | Path                     | Permission | Notes |
+| ------ | ------------------------ | ---------- | ----- |
+| GET/POST | `/invoices`            | finance.read/write | list (search, `status`, `clientId`, `projectId`), create (auto `INV-` code; `clientId`, `dueOn` required; line items create; subtotal/tax/discount/total computed server-side) |
+| GET/PATCH/DELETE | `/invoices/:id`    | finance.read/write | nested `client`, `project`, `items`; PATCH recomputes totals when tax/discount change |
+| POST | `/invoices/:id/items`      | finance.write | add line item + refresh totals (DRAFT/SENT only) |
+| DELETE | `/invoices/:id/items/:itemId` | finance.write | remove line item + refresh totals |
+| GET/POST | `/receipts`            | finance.read/write | list (search, `clientId`, `invoiceId`, `method`), create (auto `RCP-` code) |
+| GET/PATCH/DELETE | `/receipts/:id`    | finance.read/write | nested `client` + `invoice`; edit/delete re-reconciles invoice status |
+| GET/POST | `/expenses`            | finance.read/write | list (search, `category`, `status`, `projectId`), create (auto `EXP-` code; `category`, `description`, `amount` required) |
+| GET/PATCH/DELETE | `/expenses/:id`    | finance.read/write | nested `project`; status cast to `ExpenseStatus` |
+| GET/POST | `/financial-transactions` | finance.read/write | list (search, `type`, `direction`, `status`, `category`, `projectId`), create (auto `TXN-` code; `type`, `direction`, `amount`, `category` required) |
+| GET/PATCH/DELETE | `/financial-transactions/:id` | finance.read/write | get / update / delete |
+| GET/POST | `/payments`            | finance.read/write | list (`payeeType`, `payeeId`, `status`, `method`), create (auto `PAY-` code; `payeeType`, `payeeId`, `amount` required) |
+| GET/PATCH/DELETE | `/payments/:id`    | finance.read/write | get / update / delete |
+
+Invoice payment status is **derived, not hand-set**: creating/editing/deleting a receipt
+runs `reconcileInvoiceStatus`, which sets `PAID` when receipts cover `total`, `PART_PAID`
+when partly covered, else `SENT` (skips `CANCELLED`/`VOID`). Seed grows the permission
+catalog to **32** and adds idempotent demo data: `EQP-DEMO-0001` (Excavator 30t + vehicle
+`GW-1234-20` + scheduled maintenance), `AST-DEMO-0001` (site laptop), `EXP-DEMO-0001` (fuel),
+`INV-DEMO-0001` (2 line items) + `RCP-DEMO-0001` receipt.
+
 ## Module roadmap
 
 | Route prefix        | Ships in |
@@ -347,8 +396,8 @@ stock, warehouses, block products, one `PRD-DEMO-0001` production batch, one sal
 | `projects` (lifecycle: planning, budgets, milestones, work log, team) | **Phase 12 — done** |
 | `land`              | Phase 13 — done |
 | `materials`, `inventory`, `blocks` | Phase 15 — done |
-| `equipment`         | Phase 16 |
-| `finance`, `invoices`, `payments`      | Phase 16 |
+| `equipment`, `vehicles`, `maintenance`, `assets` | Phase 16 — done |
+| `finance`, `invoices`, `receipts`, `expenses`, `payments` | Phase 16 — done |
 | `payroll`           | Phase 17 |
 | `documents`, `notifications` | Phase 20 |
 
