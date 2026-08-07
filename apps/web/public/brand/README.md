@@ -1,28 +1,41 @@
-# Official brand & corporate assets — place supplied files here.
+# Brand assets
 
-This directory is reserved for the **official assets supplied by the company**:
+Drop official company brand assets here. The primary logo is the only file the
+public site renders — replace it to change the logo site-wide with no code change.
 
-- The official **AJ.A logo** (email/ask the company for the highest-resolution vector
-  and any monochrome / white variants).
-- The official **company letterhead** (used as the basis for corporate documents
-  and PDF payslip/quote/invoice layouts).
-- The **Certificate of Incorporation** and other registration documents — these
-  belong in the **Corporate Document Vault** (admin-restricted), NOT in the public
-  `public/` tree.
+## Current assets
 
-## Asset inventory (current)
+| Asset | File | Status |
+|-------|------|--------|
+| Official logo | `aja-logo.png` | In use — renders in the header, footer and CompanySignboard |
 
-- `brand/ajac-logo.jpg` — the **official logo**, supplied by the company and now
-  rendered by the `CompanySignboard` component on the homepage
-  (`apps/web/src/components/CompanySignboard.tsx`).
+## How the logo drop-in works
 
-## Placeholder policy
+`Logo.tsx` reads `COMPANY_LOGO.src` from `apps/web/src/config/company.ts` and
+expects the file at the exact path listed above (`/brand/aja-logo.png`).
 
-Until the official assets are added, the UI renders a neutral `BrandMark`
-placeholder (see `packages/ui`). The official logo is **never** replaced or
-redesigned; the placeholder is swapped out for the supplied asset.
+**To change the logo**: overwrite `public/brand/aja-logo.png` with the new file
+(same extension). The site picks it up on the next build — no code edit required.
 
-Still to source: an official letterhead (`brand/ajac-letterhead.pdf`) as the basis
-for corporate document layouts (quotes, invoices, payslips). The Certificate of
-Incorporation and other registration papers belong in the **Corporate Document
-Vault** (admin-restricted), NOT in the public `public/` tree.
+**Legacy names**: the component also tries `/brand/ajac-logo.jpg` as a fallback
+if the primary file is missing. To add more fallbacks, add paths to
+`COMPANY_LOGO.candidates` in `company.ts`.
+
+## Recommended logo specifications
+
+- **Format**: transparent-background PNG or SVG (preferred) for clean rendering
+  at any size and on any background.
+- **If using a photograph** (e.g. signboard photo): the component applies a soft
+  radial mask to fade the edges, blending the photo into the page background.
+  For best results, use a high-contrast image with the logo content centered.
+- **Resolution**: at least 512×512 for sharp rendering at all display sizes.
+
+## Still to source
+
+- Official **company letterhead** (`brand/ajac-letterhead.pdf`) for corporate
+  document layouts (quotes, invoices, payslips).
+- Clean **transparent-background logo** PNG or SVG for optimal rendering at all
+  sizes — the current signboard photo works but a transparent version would
+  elevate the entire site's presentation.
+- The **Certificate of Incorporation** and registration documents belong in the
+  **Corporate Document Vault** (admin-restricted), NOT in the public `public/` tree.

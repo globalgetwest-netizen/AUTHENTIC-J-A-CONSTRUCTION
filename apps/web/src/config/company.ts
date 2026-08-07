@@ -11,6 +11,23 @@
  * footer then renders the icon in a disabled state instead of linking nowhere.
  */
 
+/**
+ * Official company logo — drop-in path with fallback chain.
+ *
+ * To change the logo site-wide: overwrite `public/brand/aja-logo.png`
+ * with the new file (same extension). No code edit required — the
+ * `Logo` component and `CompanySignboard` both read this config.
+ *
+ * `candidates` lists legacy filenames tried as fallbacks when the
+ * primary file is missing, so historical naming drift never breaks
+ * the site.
+ */
+export const COMPANY_LOGO = {
+  src: "/brand/aja-logo.png",
+  candidates: ["/brand/ajac-logo.jpg"] as readonly string[],
+  alt: "AUTHENTIC J.A. CONSTRUCTION LTD. official logo",
+} as const;
+
 export const COMPANY = {
   name: "AUTHENTIC J.A. CONSTRUCTION LTD.",
   shortName: "AUTHENTIC J.A.",
@@ -96,6 +113,30 @@ export const COMPANY_IMAGES = {
   construction: { src: "/company/construction.jpg" as string | null, alt: "Building construction and reinforcement works" },
   materials: { src: "/company/materials.jpg" as string | null, alt: "Factory-made blocks, sand and quarry stones" },
   equipment: { src: "/company/equipment.jpg" as string | null, alt: "Excavators, wheel loaders and heavy equipment" },
+  /** Fleet photos shown on the Equipment Gallery section (right column, stacked). */
+  fleet: [
+    { src: "/company/gallery/tipper-trucks.jpg" as string | null, alt: "AUTHENTIC J.A. tipper trucks loading at quarry" },
+    { src: "/company/gallery/wheel-loader.jpg" as string | null, alt: "Wheel loader loading quarry stones into a tipper truck" },
+  ],
+  /** Ready-made Pillars section — process shot + product catalogs. */
+  pillars: {
+    construction: { src: "/company/gallery/pillars-construction.jpg" as string | null, alt: "Concrete pillar formwork being built on site by AUTHENTIC J.A. operatives" },
+    catalog: { src: "/company/gallery/pillars-catalog.jpg" as string | null, alt: "AUTHENTIC J.A. ready-made concrete pillar designs (12 designs)" },
+    premium: { src: "/company/gallery/pillars-premium.jpg" as string | null, alt: "AUTHENTIC J.A. premium ready-made pillar designs (24 options)" },
+  },
+  /** Materials product gallery (Materials section) — one photo per supplied product. */
+  materialsGallery: [
+    { src: "/company/gallery/quarry-stones.jpg" as string | null, alt: "Quarry stones and chips supplied by AUTHENTIC J.A." },
+    { src: "/company/gallery/foundation-sand.jpg" as string | null, alt: "Foundation sand supplied by AUTHENTIC J.A." },
+    { src: "/company/gallery/cement-binders.jpg" as string | null, alt: "Cement and binders supplied by AUTHENTIC J.A." },
+    { src: "/company/gallery/gravel.jpg" as string | null, alt: "Gravel supplied by AUTHENTIC J.A." },
+    { src: "/company/gallery/quarry-dust.jpg" as string | null, alt: "Quarry dust supplied by AUTHENTIC J.A." },
+    { src: "/company/gallery/factory-blocks.jpg" as string | null, alt: "Factory-made blocks from the AUTHENTIC J.A. block factory" },
+  ],
+  /** Land plots slot (Real Estate / Land section). */
+  land: { src: "/company/gallery/land-plot.jpg" as string | null, alt: "Plots of land available for allocation by AUTHENTIC J.A." },
+  /** Architectural designs showcase (Services section). */
+  architecturalDesigns: { src: "/company/gallery/architectural-design.jpg" as string | null, alt: "Architectural design drawings produced by AUTHENTIC J.A." },
 } as const;
 
 export const LEGAL_LINKS = [

@@ -10,7 +10,6 @@ import {
   Text,
 } from "@ajac/ui";
 import Link from "next/link";
-import { CompanySignboard } from "../components/CompanySignboard";
 import { Icon, SocialIcon, type IconName } from "../components/icons";
 import { Logo } from "../components/Logo";
 import { MobileNav } from "../components/MobileNav";
@@ -18,6 +17,7 @@ import { PhotoBlock } from "../components/PhotoBlock";
 import {
   COMPANY,
   COMPANY_IMAGES,
+  COMPANY_LOGO,
   REQUEST_TYPES,
   SOCIAL_MEDIA,
   telHref,
@@ -113,6 +113,16 @@ const MATERIALS = [
   "Factory-Made Blocks",
 ];
 
+/** Card labels for the MATERIALS product gallery, aligned to `COMPANY_IMAGES.materialsGallery`. */
+const MATERIAL_GALLERY_LABELS = [
+  "Quarry Stones & Chips",
+  "Foundation Sand",
+  "Cement & Binders",
+  "Gravel",
+  "Quarry Dust",
+  "Factory-Made Blocks",
+];
+
 const WHY_CHOOSE_US = [
   "Vertically integrated — land, materials and construction under one group.",
   "Own block factory and in-house plant & equipment.",
@@ -126,6 +136,32 @@ const PROPERTY_CAPABILITIES = [
   "Estate Development",
   "Land Allocation & Site Servicing",
   "Property Investment Support",
+];
+
+const PILLAR_TIERS = [
+  {
+    name: "Futuristic Designs",
+    detail: "8 statement designs with built-in LED lighting",
+    accent: "bg-blue-600",
+  },
+  {
+    name: "Premium Modern",
+    detail: "8 refined designs with wall-sconce detailing",
+    accent: "bg-green-600",
+  },
+  {
+    name: "Elegant & Bold Colors",
+    detail: "8 bold finishes — blue, gold, green, purple & white",
+    accent: "bg-yellow-500",
+  },
+];
+
+const PILLAR_FEATURES = [
+  "High Quality Concrete",
+  "Durable & Weather Resistant",
+  "Modern & Futuristic Finish",
+  "Perfect for Homes & Commercial Projects",
+  "Custom Sizes & Colors Available",
 ];
 
 const FOOTER_COLS: { title: string; rows: { label: string; href?: string }[] }[] = [
@@ -190,7 +226,7 @@ export default function Home() {
         <Container>
           <div className="flex items-center justify-between gap-6 py-3">
             <Link href="/" className="flex items-center gap-3">
-              <Logo width={44} />
+              <Logo width={80} />
               <span className="leading-tight">
                 <span className="block text-sm font-bold tracking-wide text-neutral-900">{COMPANY.shortName}</span>
                 <span className="block text-[11px] font-semibold tracking-[0.22em] text-neutral-600">
@@ -229,6 +265,17 @@ export default function Home() {
       <main className="flex-1">
         {/* Hero */}
         <section className="relative overflow-hidden bg-blue-900 text-white">
+          {COMPANY_IMAGES.hero.src && (
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(${COMPANY_IMAGES.hero.src})` }}
+            />
+          )}
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-blue-950/75"
+          />
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_80%_10%,rgba(255,215,0,0.14),transparent),radial-gradient(50%_50%_at_5%_95%,rgba(0,166,81,0.20),transparent)]"
@@ -267,7 +314,18 @@ export default function Home() {
               </Stack>
 
               <div className="flex justify-center">
-                <CompanySignboard />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={COMPANY_LOGO.src}
+                  alt={COMPANY_LOGO.alt}
+                  className="h-auto w-full max-w-[280px] object-contain drop-shadow-2xl sm:max-w-[320px]"
+                  style={{
+                    maskImage:
+                      "radial-gradient(ellipse 100% 100% at center, black 55%, transparent 88%)",
+                    WebkitMaskImage:
+                      "radial-gradient(ellipse 100% 100% at center, black 55%, transparent 88%)",
+                  }}
+                />
               </div>
             </div>
           </Container>
@@ -385,6 +443,24 @@ export default function Home() {
               ))}
             </div>
 
+            <div className="mt-14 grid items-center gap-8 rounded-2xl bg-neutral-50 p-8 ring-1 ring-black/5 lg:grid-cols-2">
+              <PhotoBlock
+                image={COMPANY_IMAGES.architecturalDesigns}
+                icon="architectural"
+                label="Architectural Designs"
+                className="min-h-56"
+              />
+              <Stack wrap={false} align="flex-start" gap={3}>
+                <Kicker>Architectural designs</Kicker>
+                <Heading level={3}>From concept drawings to construction-ready plans</Heading>
+                <Text size="sm" color="muted">
+                  Our design desk produces drawings, plans and structural detailing to support your
+                  project from first sketch to approved build.
+                </Text>
+                <ButtonLink href="/request?type=quote" size="sm">Request a design</ButtonLink>
+              </Stack>
+            </div>
+
             <div id="projects" className="mt-14 scroll-mt-24">
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {SERVICE_LINES.map((g) => (
@@ -431,6 +507,12 @@ export default function Home() {
                     <Text weight="medium">{item}</Text>
                   </div>
                 ))}
+                <PhotoBlock
+                  image={COMPANY_IMAGES.land}
+                  icon="land"
+                  label="Plots of Land for Allocation"
+                  className="min-h-48"
+                />
               </div>
             </div>
           </Container>
@@ -464,6 +546,80 @@ export default function Home() {
                 </Stack>
               </Stack>
             </div>
+
+            <div className="mt-14">
+              <div className="flex flex-wrap items-end justify-between gap-6">
+                <Stack wrap={false} gap={3}>
+                  <Kicker>Materials gallery</Kicker>
+                  <Heading level={3}>What we produce and supply</Heading>
+                  <Text color="muted">Real products from our quarry and block factory.</Text>
+                </Stack>
+                <ButtonLink href="/request?type=sales" size="sm" variant="outline">Order materials</ButtonLink>
+              </div>
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {COMPANY_IMAGES.materialsGallery.map((img, i) => (
+                  <PhotoBlock
+                    key={img.src}
+                    image={img}
+                    icon="sandstone"
+                    label={MATERIAL_GALLERY_LABELS[i]}
+                    className="min-h-48"
+                  />
+                ))}
+              </div>
+            </div>
+          </Container>
+        </section>
+
+        {/* Ready-made pillars */}
+        <section id="pillars" className="scroll-mt-24 bg-neutral-50 py-20">
+          <Container>
+            <div className="grid items-center gap-12 lg:grid-cols-2">
+              <div className="flex flex-col gap-5">
+                <PhotoBlock
+                  image={COMPANY_IMAGES.pillars.construction}
+                  icon="pillar"
+                  label="Ready-Made Pillar Construction"
+                  className="min-h-64"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  {PILLAR_FEATURES.map((f) => (
+                    <div key={f} className="flex items-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-neutral-800 ring-1 ring-black/5">
+                      <Icon name="check" className="h-4 w-4 shrink-0 text-green-600" />
+                      {f}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <Stack wrap={false} align="flex-start" gap={4}>
+                <Kicker>Ready-made pillars</Kicker>
+                <Heading level={2}>Pre-cast concrete pillars, made to order</Heading>
+                <Text color="muted" size="lg">
+                  Our block factory pre-casts concrete pillars in a wide range of designs, sizes and
+                  colours — delivered and installed for homes, commercial buildings and estate fences.
+                </Text>
+                <ul className="flex flex-col gap-2">
+                  {PILLAR_TIERS.map((t) => (
+                    <li key={t.name} className="flex items-center gap-3 rounded-lg bg-white p-4 ring-1 ring-black/5">
+                      <span aria-hidden className={`h-2.5 w-2.5 shrink-0 rounded-full ${t.accent}`} />
+                      <div>
+                        <Text weight="semibold" className="text-sm">{t.name}</Text>
+                        <Text size="xs" color="muted">{t.detail}</Text>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <Stack direction="row" gap={3} wrap>
+                  <ButtonLink href="/request?type=sales" size="sm">Order ready-made pillars</ButtonLink>
+                  <ButtonLink href="/request?type=quote" size="sm" variant="ghost">Request a quote</ButtonLink>
+                </Stack>
+              </Stack>
+            </div>
+
+            <div className="mt-10 grid gap-6 md:grid-cols-2">
+              <PhotoBlock image={COMPANY_IMAGES.pillars.catalog} icon="pillar" label="Standard Designs" className="min-h-72" />
+              <PhotoBlock image={COMPANY_IMAGES.pillars.premium} icon="architectural" label="Premium Designs" className="min-h-72" />
+            </div>
           </Container>
         </section>
 
@@ -491,6 +647,25 @@ export default function Home() {
                   ))}
                 </div>
               </div>
+            </div>
+          </Container>
+        </section>
+
+        {/* On-site gallery */}
+        <section id="fleet" className="scroll-mt-24 bg-white py-20">
+          <Container>
+            <div className="flex flex-wrap items-end justify-between gap-6">
+              <Stack wrap={false} gap={3}>
+                <Kicker>On site</Kicker>
+                <Heading level={2}>Our plant at work</Heading>
+                <Text color="muted">A look at our tipper fleet and loading equipment on the job.</Text>
+              </Stack>
+              <ButtonLink href="/request?type=project" size="sm" variant="outline">Enquire about plant hire</ButtonLink>
+            </div>
+            <div className="mt-10 grid gap-6 md:grid-cols-2">
+              {COMPANY_IMAGES.fleet.map((img, i) => (
+                <PhotoBlock key={img.src} image={img} icon={i === 0 ? "civil" : "sandstone"} className="min-h-80" />
+              ))}
             </div>
           </Container>
         </section>
@@ -605,7 +780,7 @@ export default function Home() {
             {/* Brand + follow us */}
             <div>
               <div className="flex items-center gap-3">
-                <Logo width={36} inverted />
+                <Logo width={56} inverted />
                 <span className="leading-tight">
                   <span className="block text-sm font-bold text-white">{COMPANY.shortName}</span>
                   <span className="block text-[11px] font-semibold tracking-[0.22em] text-neutral-400">

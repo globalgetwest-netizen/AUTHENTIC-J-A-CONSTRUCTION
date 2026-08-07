@@ -10,24 +10,25 @@ migrations/endpoints/frontend/mobile, and fixing errors** before continuing.
 | 3   | Database (schema + migrations) | **Complete** |
 | 4   | Backend (API modules)          | **Complete** |
 | 5   | Authentication & RBAC          | **Complete** |
-| 6   | Public website                 | **In progress** |
-| 7   | Admin portal                   | Pending      |
-| 8   | Staff portal                   | Pending      |
-| 9   | Client portal                  | Pending      |
-| 10  | Employee management            | Pending      |
-| 11  | Projects                       | Pending      |
-| 12  | Real estate                    | Pending      |
-| 13  | Land                           | Pending      |
-| 14  | Materials & block factory      | Pending      |
-| 15  | Equipment                      | Pending      |
-| 16  | Finance                        | Pending      |
-| 17  | Payroll & payslips             | Pending      |
-| 18  | Employee IDs (QR verification) | Pending      |
-| 19  | Native Expo application        | Pending      |
-| 20  | Notifications, documents       | Pending      |
-| 21  | Testing (expansion)            | Pending      |
-| 22  | Security audit                 | Pending      |
-| 23  | Production deployment          | Pending      |
+| 6   | Public website                 | **Complete** |
+| 7   | Admin portal                   | **Complete** |
+| 8   | Quotations & official documents | **Complete** |
+| 9   | Employee management & org structure | **Complete** |
+| 10  | Staff portal                       | **Complete** |
+| 11  | Client portal                      | **Complete** |
+| 12  | Projects                           | Pending      |
+| 13  | Real estate                        | **Complete** |
+| 14  | Land                               | **Complete** |
+| 15  | Materials & block factory          | Pending      |
+| 16  | Equipment                          | Pending      |
+| 17  | Finance                            | Pending      |
+| 18  | Payroll & payslips                 | Pending      |
+| 19  | Employee IDs (QR verification)     | Pending      |
+| 20  | Native Expo application            | Pending      |
+| 21  | Notifications, documents           | Pending      |
+| 22  | Testing (expansion)                | Pending      |
+| 23  | Security audit                     | Pending      |
+| 24  | Production deployment              | Pending      |
 
 ## Phase 1 — done
 
@@ -143,7 +144,7 @@ migrations/endpoints/frontend/mobile, and fixing errors** before continuing.
 - **Docs**: `SECURITY.md` Phase 5 (bearer, rotation + reuse detection, env vars),
   `API.md` auth/users/roles endpoints with required permissions.
 
-## Phase 6 — in progress (Public website)
+## Phase 6 — completed (Public website)
 
 - **Company config source of truth** (`apps/web/src/config/company.ts`): single
   editable profile — name, motto, registration **Reg. No. CS212101021**, **TIN
@@ -192,9 +193,245 @@ migrations/endpoints/frontend/mobile, and fixing errors** before continuing.
   `public/company/README.md` manifest naming the real photographs to supply (hero,
   construction, materials, equipment); sections render a clean branded panel until
   a photo is configured — never a broken image or a fabricated one.
-- **Official logo**: header and footer render the real `/brand/ajac-logo.jpg`
-  (with a graceful fallback), replacing the "AJ.A" placeholder text in the public site.
+- **Official logo**: header, footer and CompanySignboard render the real
+  `/brand/aja-logo.png` (config-driven via `COMPANY_LOGO`, with a graceful
+  fallback chain), replacing the "AJ.A" placeholder text in the public site.
 - **Tests**: `requests` unit + e2e (validation-only) added; repo gate green:
   typecheck, lint, test (57 API tests), build.
 
-Next: **Phase 7 — Admin portal** (staff login, Clients/Leads/Projects boards).
+## Phase 7 — done (Admin portal)
+
+Admin portal lives inside `apps/web` at `/admin/*`, reusing `@ajac/ui` + tokens;
+server-side API proxying (never from the browser bundle) with httpOnly cookies.
+
+- **Server-to-server proxy** (`apps/web/src/lib/admin/auth.ts` + `resources.ts`):
+  cookie read/write, `apiFetch(path, init)` attaches the cookie bearer and does a
+  transparent **401 → refresh → retry** via `POST /auth/refresh`; a shared `toNext`
+  passthrough preserves API status + JSON body, and emits an empty response for
+  204/205 so DELETE works.
+- **Auth route handlers** (`/api/admin/auth/{login,logout,refresh}`): login calls
+  `POST /api/v1/auth/login` → stores `ajac_at` + `ajac_rt` httpOnly cookies →
+  returns the user; logout revokes the session and clears cookies; refresh rotates
+  the pair.
+- **Resource route handlers** (`/api/admin/{leads,clients,projects}` + `[id]`):
+  GET lists pass through `page/pageSize/sortBy/sortOrder` + per-resource filters
+  (`source/status/search`, `type/status/search`, `projectType/status/search`),
+  leaving DTO whitelisting to the API. `GET/PATCH/DELETE /:id` use dynamic segments.
+- **Auth guard + shell** (`admin/(app)/layout.tsx` redirects to `/admin/login` when
+  no access cookie; `AdminShell` sidebar — Dashboard/Leads/Clients/Projects, brand
+  topbar, Sign out, "View public site"). Login page is a standalone route outside
+  the guarded group.
+- **Boards**: Dashboard (server-rendered counts + recent leads) and Leads/Clients/
+  Projects lists with filters + pagination + inline create form; detail pages show
+  fields with a **status select** (PATCH) and delete. Reusable `AdminTable`,
+  `Pagination`, `StatusBadge`, `EntityForm` components built from `@ajac/ui`.
+- **Widget gating**: `SupportWidget` already only renders on public paths (`show`
+  checks customer routes), so it stays off `/admin/*` with no code change.
+
+## Phase 8 — done (Quotations & official documents)
+
+- **Quotations API module** (`services/api/src/quotations/`): full CRUD mirroring
+  `clients` — controller/service/module, `create`/`update`/`query`/`quotation-item`
+  DTOs, `@RequirePermissions('quotations.read' / 'quotations.write')`, soft delete,
+  pagination with `status` / `clientId` / `projectId` / `search` filters. The
+  service computes authoritative totals server-side with `Prisma.Decimal`
+  (Σ qty×unit → subtotal, tax at `taxRate`, discount, total), stores items in a
+  transaction, auto-numbers `QT-YYYYMMDD-XXXXXX`, sets `issuedAt`, and includes
+  nested `client` / `project` / `lead` / `items`. Status-only updates keep the
+  stored figures and line items intact. Seed catalog grew to **18 permissions**
+  (`quotations.read` / `quotations.write`); SUPER_ADMIN inherits them (re-login to
+  pick them up). 8 new unit tests for the service (totals math, filters, item
+  replacement, status-only preservation, soft delete).
+- **PDF generation** (`apps/web`): `@react-pdf/renderer` 4.5.1 with
+  `serverExternalPackages` in `next.config.ts`; the Node-runtime route handler
+  `GET /api/admin/quotations/:id/pdf` authenticates via the admin cookie, fetches
+  the record (relations included), renders the React-PDF template, and streams
+  `application/pdf` with `Content-Disposition: attachment`. PDFs regenerate on
+  demand from the DB — no file storage.
+- **Swappable letterhead** (`apps/web/src/config/documents.ts`): single source of
+  truth for every generated document — name, Reg No **CS212101021**, TIN
+  **C0061318752**, head office **Plot 13, Block K, Kenyase–Brofoyedru**, phones,
+  email, the three banks (UMB / Fidelity / Sekyedomase Rural Bank; account numbers
+  left as placeholders), VAT default 15%, 30-day validity, default terms.
+  `letterheadImage: null` composes a clean text header (logo + contact band); set
+  it to a `public/` path to switch the header to the real letterhead artwork.
+  Verified live: editing a config value changes every regenerated PDF immediately.
+- **Admin Documents UI**: "Documents" nav item → `/admin/documents` board (search,
+  status filter, pagination, per-row PDF download), `/admin/documents/new`
+  (client/project selects, title, validity, VAT rate, discount, line-item editor
+  with live totals), `/admin/documents/[id]` (items table, computed totals, status
+  select → PATCH, Download PDF, inline Edit, Delete). Reuses `useList`,
+  `AdminTable`, `Pagination`, `StatusBadge`, `Button`.
+- **Currency in PDFs**: cedi symbol `₵` has no mapping in the base-14 PDF fonts, so
+  document amounts render as **GHS** (e.g. "GHS 250,000.00") instead of garbage.
+- **Web gates green**: typecheck, lint, build (Turbopack bundles
+  `@react-pdf/renderer` cleanly). Live end-to-end verified: login → create client +
+  project → create quotation (2 line items, 15% VAT) → correct totals
+  (268,750.00 / 40,312.50 / 309,062.50) → PDF shows the full letterhead, itemized
+  table, totals, bank details, signature blocks, page numbering → status
+  DRAFT→SENT persisted with totals intact → list filter + search → signed-out
+  requests to `/api/admin/quotations*` return 401.
+
+## Phase 9 — done (Employee management & org structure)
+
+- **Employees API module** (`services/api/src/employees/`): full CRUD mirroring
+  `clients` — controller/service/module, `create`/`update`/`query` DTOs,
+  `@RequirePermissions('employees.read' / 'employees.write')`, auto `EMP-YYYYMMDD-XXXXXX`
+  code, `Date` conversion on `hireDate`/`dateOfBirth`/`terminationDate`, Decimal
+  `salary`, nested `department` / `position` / `branch` relations, pagination with
+  `status` / `employmentType` / `departmentId` / `positionId` / `branchId` / `search`
+  filters (case-insensitive code/name/email search), soft delete via `deletedAt`.
+  Seed catalog grew to **20 permissions**; SUPER_ADMIN inherits them (re-login to
+  pick them up). 7 new unit tests (auto code + dates, filters, NotFound, partial
+  update, null termination clear, soft delete).
+- **Org structure API module** (`services/api/src/org/`): `/company-branches`,
+  `/departments`, `/positions` CRUD scoped to the seeded company record
+  (`Authentic J.A. Construction Limited`, created by the seed), auto codes
+  (`BR-`/`DPT-`/`POS-YYYYMMDD-XXXXXX`), `_count.employees` on lists, soft delete.
+  One permission pair (`org.read` / `org.write`) covers all three. Seed catalog
+  grew to **22 permissions** and now seeds the Company. 5 new unit tests.
+- **Admin Org UI**: "Org structure" nav item → `/admin/org` with three inline
+  panels (Branches, Departments, Positions) — create form, inline rename,
+  employee-count chip, delete. `/admin/employees` forms now populate their
+  department/position/branch selects from these endpoints.
+- **Admin Employees UI**: "Employees" nav item → `/admin/employees` board (search,
+  status filter, pagination, columns Emp. No / Name / Department / Position /
+  Status / Salary), `/admin/employees/new` (department/position/branch selects
+  populate once Org structure exists), `/admin/employees/[id]` (full detail,
+  status select → PATCH, inline Edit, Delete). Reuses `useList`, `AdminTable`,
+  `Pagination`, `StatusBadge`, `Button`.
+- **Gates green**: API typecheck / lint / build / 72 tests; web typecheck / lint /
+  build (route types regenerated via `next typegen`). Live end-to-end verified:
+  create employee → `EMP-…` auto code + `hireDate` + Decimal salary → list /
+  search → PATCH status (salary preserved) → DELETE 204 + GET 404 + list empty →
+  signed-out 401.
+
+## Phase 10 — done (Staff portal)
+
+A role-gated, self-scoped `/staff` area for company staff, plus `/admin` authorization
+hardening. (Table numbering is authoritative; some later narrative sections use drifted
+phase numbers.)
+
+- **Staff API module** (`services/api/src/staff/`): controller/service/module, registered
+  in `app.module.ts`. `GET /staff/profile` loads the caller's linked `Employee`
+  (department/position/branch relations) and returns `{ user, employee }` (200 even when no
+  employee is linked — the UI shows a prompt instead of an error). `GET /staff/notifications`
+  returns the caller's own latest 20 notifications plus a `totalUnread` count. Both are
+  authenticated-only — no permission decorator — because they only ever return the caller's
+  **own** data.
+- **Demo STAFF seed**: idempotent block creates a `CompanyBranch` ("Kumasi HQ"),
+  `Department` ("Construction Operations"), `Position` ("Site Foreman") only if absent, then
+  an `Employee` (`EMP-DEMO-0001`) linked to a `STAFF`-role `User`
+  (`SEED_STAFF_EMAIL`/`SEED_STAFF_PASSWORD`, generated + printed when unset) plus a welcome
+  notification.
+- **Portal roles**: `apps/web/src/lib/auth/roles.ts` exposes `ADMIN_ROLES`
+  (`SUPER_ADMIN`/`ADMIN`/`MANAGEMENT`) and `STAFF_ROLES` (`STAFF`/`EMPLOYEE`) with
+  `isAdmin`/`isStaff`; `lib/auth/token.ts` base64-decodes the JWT `roles` claim so the
+  Next.js guards bucket the signed-in user cheaply (the API remains the enforcement point).
+- **`/admin` hardening**: `admin/(app)/layout.tsx` now redirects non-admin roles — staff to
+  `/staff`, everyone else to `/admin/login` — even when they hold a valid token (previously
+  any signed-in user reached the shell).
+- **`/staff` portal** (`apps/web/src/app/staff/`): shared `LoginForm` (posts to the existing
+  login handler, then routes by role → `/admin` or `/staff`), guarded `(app)/layout.tsx`,
+  `StaffShell` (reuses `AdminShell` with dashboard/profile nav), server-rendered Dashboard
+  (profile summary + notifications), and a client **My profile** page (full record +
+  change-password via `/api/staff/password` → `/auth/change-password`). Route handlers
+  `api/staff/{profile,notifications,password}` reuse `apiFetch` + `toNext`.
+- **Gates green**: 4 new `staff.service` unit tests; API typecheck / lint / build / tests,
+  web typecheck / lint / build (route types regenerated via `next typegen`).
+
+## Phase 11 — done (Client portal)
+
+A role-gated, self-scoped `/client` area where a company's clients see their own profile and
+quotations. Mirrors the staff-portal architecture exactly (`Client.userId` is the unique link
+to `User`), with ownership enforced on the API.
+
+- **Client API module** (`services/api/src/client/`): controller/service/module, registered
+  in `app.module.ts`. `GET /client/profile` loads the caller's linked `Client` and returns
+  `{ user, client }` (200 even when no client is linked). `GET /client/quotations` returns the
+  caller's own latest 20 **client-facing** quotations (DRAFT excluded) with `meta.total`.
+  `GET /client/quotations/:id` returns one owned quotation with nested `client`/`project`/`items`
+  and **404s** on anything not the caller's — this is the ownership check the PDF download
+  rides on. All authenticated-only (no permission decorator) because they only ever return the
+  caller's own data.
+- **Demo CLIENT seed**: idempotent block creates a `Client` record (`CLI-DEMO-0001`, Kwame
+  Mensah) linked to a `CLIENT`-role `User` (`SEED_CLIENT_EMAIL`/`SEED_CLIENT_PASSWORD`,
+  generated + printed when unset), plus one demo `SENT` quotation with two line items so the
+  portal has a downloadable document, and a welcome notification.
+- **Portal roles**: `roles.ts` now exposes `CLIENT_ROLES` + `isClient()`; the shared
+  `LoginForm` routes CLIENT-role users to `/client`. The `/client` guard turns away admins
+  (→ `/admin`), staff (→ `/staff`), and unknown tokens (→ `/client/login`).
+- **`/client` portal** (`apps/web/src/app/client/`): login page, guarded `(app)/layout.tsx`,
+  `ClientShell` (reuses `AdminShell` with Dashboard/My profile nav), server-rendered Dashboard
+  (profile card + quotations list with status/validity/total), and a client **My profile** page
+  (full record + change-password via `/api/client/password` → `/auth/change-password`). Route
+  handlers `api/client/{profile,quotations,password}` reuse `apiFetch` + `toNext`.
+- **Client PDF download**: `api/client/quotation/[id]/pdf` fetches via the **self-scoped**
+  `/client/quotations/:id` (not the admin `/quotations/:id`), so a client can never download a
+  document that isn't theirs; then renders the standard quotation letterhead PDF.
+- **Gates green**: 8 new `client.service` unit tests; API typecheck / lint / build / tests,
+  web typecheck / lint / build (route types regenerated via `next typegen`).
+
+## Phase 10 — done (Real estate & Properties + ownership certificates) [narrative numbering drifted — see the table]
+
+- **Properties API module** (`services/api/src/properties/`): three controllers
+  sharing `properties.read` / `properties.write` —
+  `/property-types` (auto `PTY-` code, hard delete — no `deletedAt` on the model),
+  `/properties` (auto `PROP-` code, `status`/`typeId`/`search` filters, nested
+  `propertyType`/`project`, soft delete), and `/property-sales` (auto `SALE-` code,
+  `balanceAmount` computed as `price − deposit` when not supplied, a COMPLETED sale
+  marks the property `SOLD` via `syncPropertyStatus`, closedAt set on completion,
+  hard delete — `PropertySale` also has no `deletedAt`). Seed catalog grew to
+  **24 permissions**. 7 new unit tests (auto codes, list filters, balance compute,
+  property-status sync, NotFound, soft/hard delete).
+- **Ownership certificate PDF** (`apps/web`): `PropertyCertificateTemplate` reuses
+  the letterhead (`Letterhead` + `DOC_COLORS`), lists the property, owner, price,
+  deposit, balance and signatures; `renderPropertyCertificatePdf` mirrors
+  `renderQuotationPdf`; served from `/api/admin/property-sales/[id]/certificate`
+  (nodejs runtime). Download link appears on COMPLETED sales.
+- **Admin UI**: "Properties" → `/admin/properties` board (search, status filter,
+  columns Code / Property / Type / Status / Price), new + detail (status select →
+  PATCH, inline Edit, Delete); "Property sales" → `/admin/property-sales` board +
+  new + detail (certificate download); "Property types" → `/admin/property-types`
+  reusing `OrgPanel`. Web proxy routes `/api/admin/property-types`,
+  `/api/admin/properties`, `/api/admin/property-sales` (+ `[id]`, certificate).
+- **Gates green**: API typecheck / lint / build / 84 tests; web typecheck / lint /
+  build (`next typegen` after the new routes). Live end-to-end verified: create
+  type → `PTY-` code → property → `PROP-` code → sale with deposit → `SALE-` code +
+  balance = price − deposit (property stays AVAILABLE) → COMPLETED sale → property
+  becomes SOLD + closedAt set → search by client → PATCH deposit recomputes balance →
+  hard delete sale → 404 → signed-out 401; certificate PDF decoded and checked for
+  owner / property / codes / money.
+
+## Phase 14 — done (Land)
+
+- **Land API module** (`services/api/src/land/`): four controllers sharing
+  `land.read` / `land.write` —
+  `/land-projects` (auto `LND-` code, search by name/code/location, per-project
+  `_count` of plots + allocations, soft delete),
+  `/land-plots` (`landProjectId` / `status` filters, search by plot number/address,
+  nested `landProject` + `allocation`, soft delete),
+  `/land-allocations` (auto `ALC-` code, `landProjectId` / `clientId` / `status`
+  filters, `allocatedAt`/`signedAt` Date conversion, an ACTIVE/COMPLETED allocation
+  marks its plot `SOLD` via `syncPlotStatus`, hard delete — `LandAllocation` has no
+  `deletedAt`), and
+  `/land-documents` (project-scoped file records, list/get/create/delete, hard
+  delete). Seed catalog grew to **26 permissions** (`land.read` / `land.write`);
+  SUPER_ADMIN inherits them (re-login to pick them up). 6 new unit tests in
+  `land.service.spec` (auto codes, filters, plot-status sync, NotFound, soft/hard
+  delete).
+- **No new migration**: `LandProject`, `LandPlot`, `LandAllocation`, `LandDocument`
+  (and `LandPayment`) all landed in the Phase 3 baseline migration, so the module is
+  fully DB-backed as-is.
+- **Admin UI**: "Land" → `/admin/land-projects`, `/admin/land-plots`,
+  `/admin/land-allocations` boards (search, status filter, pagination, create as new +
+  detail with status select → PATCH, Edit, Delete) reusing `AdminTable`,
+  `Pagination`, `StatusBadge`; `LandAllocationForm` scopes its plot select to the
+  selected project (when a project is removed the plot list is cleared from the
+  selection's `onChange`, never synchronously in the effect). Web proxy routes
+  `/api/admin/land-projects`, `/land-plots`, `/land-allocations`, `/land-documents`
+  (+ `[id]`).
+- **Gates green**: API typecheck / lint / build / **90 tests** (up from 84);
+  web typecheck / lint / build clean. One `react-hooks/set-state-in-effect` lint
+  error in `LandAllocationForm` was fixed by moving the plot-list reset into the
+  project select's `onChange` instead of the effect body.

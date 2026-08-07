@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { json } from 'express';
 import type { INestApplication } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -9,7 +10,12 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
  * Builds and configures the Nest application (shared by bootstrap and tests).
  */
 export async function createApp(): Promise<INestApplication> {
-  const app = await NestFactory.create(AppModule);
+  // Body parsing is wired below with an explicit limit: self-hosted uploads
+  // (schematic diagrams, signed documents, images) arrive as JSON/base64 and
+  // regularly exceed Express's default 100kb body limit, which surfaced as
+  // `PayloadTooLargeError`. Raise it to a self-hosted-friendly cap.
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+  app.use(json({ limit: '25mb' }));
 
   // Versioned API under one prefix. OpenAPI/Swagger arrives with the API docs phase.
   app.setGlobalPrefix('api/v1');

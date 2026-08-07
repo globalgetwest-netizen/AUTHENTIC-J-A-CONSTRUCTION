@@ -1,34 +1,56 @@
 "use client";
 
 import { useState } from "react";
+import { COMPANY_LOGO } from "../config/company";
+
+const CANDIDATES = [COMPANY_LOGO.src, ...COMPANY_LOGO.candidates];
 
 /**
- * The official company logo (`/brand/ajac-logo.jpg`). Renders the image, falling
- * back to the neutral "AJ.A" wordmark only if the asset is missing — so headers
- * and footers never show a broken image.
+ * Official company logo with config-driven drop-in and graceful fallback.
+ *
+ * Drop a logo at the path documented in `COMPANY_LOGO.src` (`public/brand/`)
+ * and it renders site-wide — no code change. If the file is missing the
+ * component tries legacy filenames; when all fail, a neutral "AJ.A"
+ * wordmark renders instead.
  */
-export function Logo({ width = 48, inverted = false }: { width?: number; inverted?: boolean }) {
-  const [failed, setFailed] = useState(false);
+export function Logo({ width = 60, inverted = false }: { width?: number; inverted?: boolean }) {
+  const [attempt, setAttempt] = useState(0);
+  const src = CANDIDATES[attempt];
+  const exhausted = attempt >= CANDIDATES.length;
 
   return (
     <span
-      className="inline-flex shrink-0 items-center justify-center overflow-hidden rounded-md bg-white p-1 ring-1 ring-black/5"
-      style={{ width, height: width * 0.78 }}
+      className="inline-flex shrink-0 items-center justify-center overflow-hidden rounded-lg"
+      style={{
+        width,
+        height: width,
+        background: inverted ? "rgba(255,255,255,0.08)" : "#ffffff",
+        boxShadow: inverted ? "0 1px 3px rgba(0,0,0,0.4)" : "0 1px 3px rgba(0,0,0,0.1)",
+      }}
     >
-      {failed ? (
+      {exhausted ? (
         <span
           className="font-display font-extrabold tracking-wide"
-          style={{ fontSize: Math.round(width * 0.26), color: inverted ? "#ffffff" : "#0047AB" }}
+          style={{
+            fontSize: Math.round(width * 0.26),
+            color: inverted ? "#ffffff" : "#0047AB",
+          }}
         >
           AJ.A
         </span>
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src="/brand/ajac-logo.jpg"
-          alt="AUTHENTIC J.A. CONSTRUCTION LTD. logo"
+          src={src}
+          alt={COMPANY_LOGO.alt}
           className="h-full w-full object-contain"
-          onError={() => setFailed(true)}
+          style={{
+            maskImage:
+              "radial-gradient(ellipse 100% 100% at center, black 65%, transparent 92%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 100% 100% at center, black 65%, transparent 92%)",
+          }}
+          onError={() => setAttempt((a) => a + 1)}
         />
       )}
     </span>

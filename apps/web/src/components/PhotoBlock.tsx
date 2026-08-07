@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Text } from "@ajac/ui";
 import { Icon, type IconName } from "./icons";
 
@@ -22,7 +22,18 @@ interface PhotoBlockProps {
  */
 export function PhotoBlock({ image, label, icon = "building", className = "" }: PhotoBlockProps) {
   const [loaded, setLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
   const showPhoto = Boolean(image.src);
+
+  // If the image was already cached/loaded before React attached `onLoad`,
+  // the load event never re-fires and the photo would stay invisible at
+  // opacity-0. Detect that case on mount and reveal it.
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      setLoaded(true);
+    }
+  }, []);
 
   return (
     <div
@@ -31,6 +42,7 @@ export function PhotoBlock({ image, label, icon = "building", className = "" }: 
       {showPhoto && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
+          ref={imgRef}
           src={image.src ?? ""}
           alt={image.alt}
           onLoad={() => setLoaded(true)}

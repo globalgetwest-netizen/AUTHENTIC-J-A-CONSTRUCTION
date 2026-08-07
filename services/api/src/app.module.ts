@@ -11,8 +11,15 @@ import { CompanyModule } from './company/company.module';
 import { ClientsModule } from './clients/clients.module';
 import { LeadsModule } from './leads/leads.module';
 import { ProjectsModule } from './projects/projects.module';
+import { QuotationsModule } from './quotations/quotations.module';
+import { EmployeesModule } from './employees/employees.module';
+import { OrgModule } from './org/org.module';
+import { PropertiesModule } from './properties/properties.module';
+import { LandModule } from './land/land.module';
 import { SystemModule } from './system/system.module';
 import { RequestsModule } from './requests/requests.module';
+import { StaffModule } from './staff/staff.module';
+import { ClientModule } from './client/client.module';
 
 @Module({
   imports: [
@@ -25,8 +32,15 @@ import { RequestsModule } from './requests/requests.module';
     ClientsModule,
     LeadsModule,
     ProjectsModule,
+    QuotationsModule,
+    EmployeesModule,
+    OrgModule,
+    PropertiesModule,
+    LandModule,
     SystemModule,
     RequestsModule,
+    StaffModule,
+    ClientModule,
   ],
   providers: [
     // Registered in order: AuthGuard first (attaches the user), then PermissionsGuard.

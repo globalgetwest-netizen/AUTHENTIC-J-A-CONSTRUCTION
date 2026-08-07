@@ -1,14 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { Logo } from './Logo';
 
 /**
  * Faithful reproduction of the company's physical signboard: logo + gold
  * "AUTHENTIC J.A" / navy "CONSTRUCTION LIMITED" header, blue accent line,
  * and the real service lines. Contacts live in the site footer.
  *
- * The official logo asset lives at `public/brand/ajac-logo.jpg`
- * (see `apps/web/public/brand/README.md`).
+ * The official logo asset lives at `public/brand/aja-logo.png`
+ * (see `apps/web/public/brand/README.md`). Config-driven via `COMPANY_LOGO`
+ * in `apps/web/src/config/company.ts` — drop a new logo to replace it.
  */
 
 const SERVICES = [
@@ -21,27 +22,11 @@ const SERVICES = [
 ];
 
 export function CompanySignboard() {
-  const [logoFailed, setLogoFailed] = useState(false);
-
   return (
     <div className="w-full max-w-2xl overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black/10">
       {/* Header — logo + company title */}
       <div className="flex items-center gap-4 bg-blue-900 px-5 py-4">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded bg-white p-1">
-          {logoFailed ? (
-            <span className="font-display text-sm font-extrabold tracking-wide text-blue-600">
-              AJ.A
-            </span>
-          ) : (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src="/brand/ajac-logo.jpg"
-              alt="AUTHENTIC J.A. CONSTRUCTION LTD. logo"
-              className="h-full w-full object-contain"
-              onError={() => setLogoFailed(true)}
-            />
-          )}
-        </div>
+        <Logo width={64} />
         <div className="min-w-0">
           <div className="text-xl font-extrabold leading-tight tracking-wide text-brand-gold sm:text-2xl">
             AUTHENTIC J.A

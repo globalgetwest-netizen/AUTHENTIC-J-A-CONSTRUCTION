@@ -19,6 +19,35 @@ falls back automatically) instead of a broken image or a placeholder.
 Keep filenames exactly as listed (same names, same case). Any common image
 format works (JPG/WebP/PNG); JPG/WebP preferred.
 
+## Wired gallery slots (already on the homepage)
+
+These drop into `public/company/gallery/` and render on the page — same
+drop-in rule as above. Drop a photo and it appears; remove it and the
+section shows a clean branded panel.
+
+| Slot                  | File to drop in `public/company/gallery/` | Homepage section           |
+| -------------------- | ----------------------------------------- | ------------------------- |
+| Fleet (tipper trucks)  | `tipper-trucks.jpg`                    | "On site" gallery          |
+| Fleet (wheel loader)   | `wheel-loader.jpg`                    | "On site" gallery          |
+| Pillars — process shot | `pillars-construction.jpg`            | Ready-Made Pillars (large) |
+| Pillars — standard     | `pillars-catalog.jpg`                  | Ready-Made Pillars (left)  |
+| Pillars — premium      | `pillars-premium.jpg`                  | Ready-Made Pillars (right) |
+| Quarry stones & chips  | `quarry-stones.jpg`                    | Materials gallery          |
+| Foundation sand        | `foundation-sand.jpg`                  | Materials gallery          |
+| Cement & binders       | `cement-binders.jpg`                   | Materials gallery          |
+| Gravel                 | `gravel.jpg`                           | Materials gallery          |
+| Quarry dust            | `quarry-dust.jpg`                      | Materials gallery          |
+| Factory-made blocks    | `factory-blocks.jpg`                   | Materials gallery          |
+| Land plots             | `land-plot.jpg`                        | Real Estate — Land          |
+| Architectural designs  | `architectural-design.jpg`            | Architectural Designs      |
+
+The `gallery/` folder also holds `production.jpg` and `construction-crew.jpg`
+for future use — neither is wired to a homepage slot yet, so they will not
+appear until a gallery or projects section that references them ships.
+
+Project photography (schools, markets, banks, buildings) is planned for the
+Featured Projects section — more photos will arrive as their own slots.
+
 ## Galleries & future sections
 
 - **`public/company/gallery/`** — drop any additional photos here (projects,
@@ -26,8 +55,9 @@ format works (JPG/WebP/PNG); JPG/WebP preferred.
   the Featured Projects gallery and photo galleries that ship in later phases.
   Name files meaningfully (e.g. `project-01.jpg`); they'll be surfaced from the
   admin panel once DB-backed media storage lands — nothing here will need to move.
-- **Logo** — `public/brand/ajac-logo.jpg` (already in place). To change the logo
-  site-wide, overwrite that one file; it renders in the header and footer.
+- **Logo** — `public/brand/aja-logo.png` (already in place). To change the logo
+  site-wide, overwrite that one file; it renders in the header, footer and
+  CompanySignboard (config-driven via `COMPANY_LOGO` in `company.ts`).
 
 ## Guidance
 
