@@ -904,3 +904,70 @@ export function fullName(employee: PayrollEmployeeRef | null | undefined): strin
   if (!employee) return "—";
   return [employee.firstName, employee.lastName].filter(Boolean).join(" ") || "—";
 }
+
+// ── Employee ID card & QR verification (Phase 19) ────────────────────────────
+
+export type VerificationStatus = "VERIFIED" | "INVALID" | "REVOKED" | "EXPIRED";
+export const VERIFICATION_STATUSES: readonly VerificationStatus[] = [
+  "VERIFIED",
+  "INVALID",
+  "REVOKED",
+  "EXPIRED",
+];
+
+/** Nested employee summary on an ID card. */
+export interface EmployeeIdRef {
+  id: string;
+  employeeCode: string;
+  firstName: string;
+  lastName: string;
+  department?: { name: string } | null;
+  position?: { title: string } | null;
+  branch?: { name: string } | null;
+}
+
+export function idFullName(employee: EmployeeIdRef | null | undefined): string {
+  if (!employee) return "—";
+  return [employee.firstName, employee.lastName].filter(Boolean).join(" ") || "—";
+}
+
+/** One logged QR scan on a card. */
+export interface VerificationRecord {
+  id: string;
+  cardNumber: string;
+  result: VerificationStatus;
+  method: string;
+  ipAddress?: string | null;
+  verifiedAt: string;
+}
+
+export interface EmployeeIdCard {
+  id: string;
+  employeeId: string;
+  cardNumber: string;
+  qrToken?: string | null;
+  issuedAt: string;
+  expiresAt?: string | null;
+  status: VerificationStatus;
+  replacedById?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  employee?: EmployeeIdRef | null;
+  verifications?: VerificationRecord[] | null;
+}
+
+/** Shape returned by the public verify endpoint. */
+export interface EmployeeIdVerifyResult {
+  cardNumber: string;
+  result: VerificationStatus;
+  verified: boolean;
+  issuedAt?: string | null;
+  expiresAt?: string | null;
+  employee?: {
+    id: string;
+    employeeCode: string;
+    name: string;
+    department?: string | null;
+    position?: string | null;
+  } | null;
+}

@@ -4,6 +4,7 @@ import { createElement, type ReactElement } from "react";
 import type { DocumentProps } from "@react-pdf/renderer";
 import type {
   Client,
+  EmployeeIdCard,
   LandAllocation,
   LandPlot,
   LandProject,
@@ -12,6 +13,7 @@ import type {
   PropertySale,
   Quotation,
 } from "@/lib/admin/types";
+import { label } from "@/lib/admin/types";
 import { LETTERHEAD } from "@/config/documents";
 
 const MIME_BY_EXT: Record<string, string> = {
@@ -108,6 +110,54 @@ export async function renderLandAllocationPdf(input: LandAllocationDocumentInput
     ...input,
     logoSrc,
     letterheadSrc,
+  }) as unknown as ReactElement<DocumentProps>;
+  return renderToBuffer(template);
+}
+
+const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+/** Absolute URL a scanned employee-ID QR points at (the public verify page). */
+export function employeeIdVerifyUrl(cardNumber: string, token?: string | null): string {
+  const url = `${APP_BASE_URL}/verify/employee-id?card=${encodeURIComponent(cardNumber)}`;
+  return token ? `${url}&t=${encodeURIComponent(token)}` : url;
+}
+
+/** Renders a QR code for `text` as a pixel-perfect PNG data URI (pure-local). */
+export async function qrDataUri(text: string): Promise<string | null> {
+  const { toDataURL } = await import("qrcode");
+  try {
+    return await toDataURL(text, {
+      errorCorrectionLevel: "M",
+      margin: 1,
+      width: 220,
+      color: { dark: "#0f172a", light: "#ffffff" },
+    });
+  } catch {
+    return null;
+  }
+}
+
+export interface EmployeeIdCardInput {
+  card: EmployeeIdCard;
+}
+
+/** Renders a staff ID card as a printable, credit-card-sized PDF. */
+export async function renderEmployeeIdCardPdf(input: EmployeeIdCardInput): Promise<Buffer> {
+  const { renderToBuffer } = await import("@react-pdf/renderer");
+  const { EmployeeIdCardTemplate } = await import(
+    "@/components/documents/EmployeeIdCardTemplate"
+  );
+  const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
+  const qrSrc = await qrDataUri(employeeIdVerifyUrl(input.card.cardNumber, input.card.qrToken));
+  const card = input.card;
+  const template = createElement(EmployeeIdCardTemplate, {
+    logoSrc,
+    employee: card.employee ?? null,
+    cardNumber: card.cardNumber,
+    qrSrc,
+    issuedAt: card.issuedAt,
+    expiresAt: card.expiresAt,
+    status: label(card.status),
   }) as unknown as ReactElement<DocumentProps>;
   return renderToBuffer(template);
 }

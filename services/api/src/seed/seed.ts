@@ -37,6 +37,8 @@ const PERMISSIONS = [
   'finance.write',
   'payroll.read',
   'payroll.write',
+  'employee-ids.read',
+  'employee-ids.write',
   'system.settings.read',
   'system.settings.write',
   'system.flags.read',
@@ -729,6 +731,28 @@ async function main(): Promise<void> {
             deductions,
             netPay: 3687.4,
             status: 'PAID',
+            issuedAt: new Date('2026-08-05'),
+          },
+        });
+      }
+    }
+
+    // A scannable QR ID card for the demo staff (EMP-DEMO-0001) so the card
+    // PDF, the admin list and the staff view render content on first boot.
+    const employeeIdDemo = await prisma.employee.findFirst({
+      where: { employeeCode: 'EMP-DEMO-0001', deletedAt: null },
+    });
+    if (employeeIdDemo) {
+      const existingCard = await prisma.employeeID.findFirst({
+        where: { employeeId: employeeIdDemo.id },
+      });
+      if (!existingCard) {
+        await prisma.employeeID.create({
+          data: {
+            employeeId: employeeIdDemo.id,
+            cardNumber: 'EID-DEMO-0001',
+            qrToken: randomBytes(24).toString('hex'),
+            status: 'VERIFIED',
             issuedAt: new Date('2026-08-05'),
           },
         });

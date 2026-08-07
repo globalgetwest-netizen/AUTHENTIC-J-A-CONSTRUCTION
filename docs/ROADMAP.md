@@ -23,7 +23,7 @@ migrations/endpoints/frontend/mobile, and fixing errors** before continuing.
 | 16  | Equipment & finance                | **Complete** |
 | 17  | Finance (payments & ledger)        | **Complete** |
 | 18  | Payroll & payslips                 | **Complete** |
-| 19  | Employee IDs (QR verification)     | Pending      |
+| 19  | Employee IDs (QR verification)     | **Complete** |
 | 20  | Native Expo application            | Pending      |
 | 21  | Notifications, documents           | Pending      |
 | 22  | Testing (expansion)                | Pending      |
@@ -541,6 +541,50 @@ baseline, so **no migration** was required.
 - **Gates green**: API typecheck / lint / build / **173 tests / 24 files** (up from 153);
   web `next typegen` + typecheck / lint / build clean. Payroll and staff self-service routes
   all mapped at boot.
+
+## Phase 19 — done (Employee IDs & QR verification)
+
+Printable, credit-card-sized **staff ID cards** with a QR code a guard can scan on any phone
+to confirm the holder against the staff directory. `EmployeeID`, `EmployeeIDVerification` and
+the `VerificationResult` enum already existed in the Phase 3 baseline, so **no migration**
+was required.
+
+- **Issuance & lifecycle** (`services/api/src/employee-ids/`, permission-gated
+  `employee-ids.read` / `employee-ids.write`):
+  - `POST /employee-ids` — issue a card for an employee: a unique `cardNumber` (`EID-…`),
+    an opaque one-time `qrToken` (24 random bytes) embedded in the QR, status `VERIFIED`,
+    optional `expiresAt`. Re-issuing **revokes** any live card first and links the new one
+    via `replacedById`, so a printed card stays verifiable for its life.
+  - `POST /employee-ids/:id/revoke` — idempotent mark as `REVOKED`.
+  - `GET /employee-ids` / `GET /employee-ids/:id` — paginated list (search on card number /
+    employee name/code, status filter) and a detail that nests the employee (code, dept,
+    position, branch) plus the latest 20 verification scans.
+  - `GET /staff/employee-id` — the logged-in staff member's own latest card for self-service.
+- **Public QR verification** — `POST /employee-ids/verify` is **`@Public()`** (reachable
+  with no token). It constant-time-compares the embedded token, derives
+  `VERIFIED` / `REVOKED` / `EXPIRED` / `INVALID`, and **logs a scan row** (employee, card
+  number, result, method `QR`, IP, timestamp) for every recognised card — an unrecognised
+  number returns `INVALID` without a row, since `cardNumber`/`employeeId` are required
+  foreign keys. Returns only public identity fields.
+- **Card PDF** — self-hosted `@react-pdf/renderer` pipeline (same as the ownership
+  certificate, no external service): `EmployeeIdCardTemplate` renders the branded
+  credit-card layout with logo, name, staff code, dept/position, issue/expiry and the QR
+  (generated locally with the small `qrcode` package). Admin and staff can download the PDF.
+- **Admin UI** (`/admin/employee-ids`): list (card no., employee, staff code, status,
+  issued/expiry), **Issue ID card** (pick an employee + optional expiry), and a detail page
+  with a live QR preview, **Download ID card (PDF)**, **Revoke**, and a verification-history
+  table of every scan.
+- **Public verify page** (`/verify/employee-id`): a standalone card that reads `card` + `t`
+  from the QR and shows the employee's public identity with a colour-coded
+  `VERIFIED` / `REVOKED` / `EXPIRED` / `INVALID` badge.
+- **Staff portal** (`/staff/employee-id`): the caller's own card summary + **Download my ID
+  card (PDF)**.
+- **Seed**: grew to **36 permissions** (`employee-ids.read`/`write`); demo card
+  **`EID-DEMO-0001`** for `EMP-DEMO-0001` (status `VERIFIED`), so the card PDF, the admin
+  list and the staff page render content on first boot.
+- **Gates green**: API typecheck / lint / build / **183 tests / 25 files** (up from 173);
+  web `next typegen` + typecheck / lint / build clean. The demo card verifies through the
+  public route and the card PDF downloads on both admin and staff sides.
 
 ## Phase 12 — done (Projects)
 

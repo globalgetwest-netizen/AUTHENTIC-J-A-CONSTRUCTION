@@ -16,6 +16,7 @@ const DEFAULT_NAV: NavItem[] = [
   { href: "/admin/projects", label: "Projects" },
   { href: "/admin/documents", label: "Documents" },
   { href: "/admin/employees", label: "Employees" },
+  { href: "/admin/employee-ids", label: "Employee IDs" },
   { href: "/admin/org", label: "Org structure" },
   { href: "/admin/properties", label: "Properties" },
   { href: "/admin/property-sales", label: "Property sales" },

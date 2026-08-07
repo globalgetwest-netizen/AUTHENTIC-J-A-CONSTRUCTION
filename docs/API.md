@@ -418,6 +418,36 @@ Seed grows the permission catalog to **34** and adds idempotent demo payroll: pe
 **"August 2026"** (PROCESSED), a computed payrun (gross 4500 → net 3687.40) and
 `PSL-DEMO-0001` (PAID) so both portals render content on first boot.
 
+## Endpoints (Phase 19 — Employee IDs & QR verification)
+
+New permission set `employee-ids.read`/`employee-ids.write` (SUPER_ADMIN inherits). Cards are
+physical staff IDs carrying a QR that encodes a **public verify URL**; each scan of a
+recognised card is logged (an unrecognised number returns `INVALID` without a row, since
+`cardNumber`/`employeeId` are required foreign keys).
+`qrToken` is an opaque one-time secret embedded in the QR at issue time — re-issuing revokes
+the old card and mints a fresh token.
+
+### Employee ID cards
+| Route | Permissions | Notes |
+| ----- | ------ | ----- |
+| GET/POST | `/employee-ids` | employee-ids.read/write | paginated list (`search` on card number / employee name / staff code, `status`, `employeeId`); POST issues a card (`employeeId`, optional `expiresAt`) — revokes any live card first and links via `replacedById` |
+| GET | `/employee-ids/:id` | employee-ids.read | nested `employee` (code, dept, position, branch) + latest 20 `verifications` |
+| POST | `/employee-ids/:id/revoke` | employee-ids.write | idempotent mark as `REVOKED` |
+
+### Public verification (no token — powers the guard's `/verify/employee-id` page)
+| Route | Permissions | Notes |
+| ----- | ------ | ----- |
+| POST | `/employee-ids/verify` | `@Public()` | body `{ card, t }`; constant-time token compare → `VERIFIED` / `REVOKED` / `EXPIRED` / `INVALID`; logs an `EmployeeIDVerification` row (method `QR`, IP) for every recognised card; returns public identity only |
+
+### Staff self-service (no permission — powers `/staff/employee-id`)
+| Route | Permissions | Notes |
+| ----- | ------ | ----- |
+| GET | `/staff/employee-id` | authenticated only | the caller's own latest card (resolved via `User.employeeId`) |
+
+Seed grows the permission catalog to **36** and adds an idempotent demo card
+`EID-DEMO-0001` (status `VERIFIED`) for `EMP-DEMO-0001`, so the card PDF, the admin list and
+the staff page render content on first boot.
+
 ## Module roadmap
 
 | Route prefix        | Ships in |
@@ -438,6 +468,7 @@ Seed grows the permission catalog to **34** and adds idempotent demo payroll: pe
 | `equipment`, `vehicles`, `maintenance`, `assets` | Phase 16 — done |
 | `finance`, `invoices`, `receipts`, `expenses`, `payments` | Phase 16 — done |
 | `payroll`           | Phase 18 — done |
+| `employee-ids`      | Phase 19 — done |
 | `documents`, `notifications` | Phase 20 |
 
 **No fake endpoints.** Real business, DB-backed, permission-checked modules are added
