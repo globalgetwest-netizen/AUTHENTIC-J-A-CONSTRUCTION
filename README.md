@@ -4,11 +4,12 @@ Enterprise digital ecosystem for **AUTHENTIC J.A. CONSTRUCTION LTD.** — a Ghan
 construction, engineering, real estate, property development, land allocation,
 building-materials, and project-management group.
 
-> **Status: active development.** Phases 1–5 (architecture, design system, database,
-> backend API modules, authentication & RBAC) are **complete**; Phase 6 (public
-> website — homepage + request/CRM-lead intake) is **in progress**. The monorepo
-> typechecks, lints, tests, and builds. See `docs/ROADMAP.md` for the phase tracker
-> and what ships next.
+> **Status: active development.** Phases 1–22 (architecture through a company-wide
+> notification centre, document library, native Expo app and the testing expansion
+> with a coverage gate) are **complete**; Phases 23–24 (security audit, production
+> deployment) are **pending**. The monorepo typechecks, lints, tests (with coverage
+> thresholds), and builds. See `docs/ROADMAP.md` for the phase tracker and what ships
+> next.
 
 ## What this is
 
@@ -70,13 +71,14 @@ Check that services are alive:
 ## Quality gates (run from the root)
 
 ```bash
-npm run typecheck   # strict TypeScript across all packages/apps
-npm run lint        # ESLint (flat config)
-npm test            # Vitest unit + API tests
-npm run build       # Next build, Nest build, Expo web export
+npm run typecheck     # strict TypeScript across all packages/apps
+npm run lint          # ESLint (flat config)
+npm test              # Vitest unit + API tests
+npm run test:coverage # API suite re-run with v8 coverage + threshold gate
+npm run build         # Next build, Nest build, Expo web export
 ```
 
-CI runs all four automatically (`.github/workflows/ci.yml`).
+CI runs all of these automatically (`.github/workflows/ci.yml`).
 
 ## Official brand & corporate assets
 

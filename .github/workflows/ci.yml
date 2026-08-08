@@ -66,5 +66,10 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Test coverage
+        # Runs the API suite again with v8 coverage and enforces the global
+        # thresholds configured in services/api/vitest.config.ts.
+        run: npm run test:coverage
+
       - name: Build
         run: npm run build

@@ -26,7 +26,7 @@ migrations/endpoints/frontend/mobile, and fixing errors** before continuing.
 | 19  | Employee IDs (QR verification)     | **Complete** |
 | 20  | Native Expo application            | **Complete** |
 | 21  | Notifications, documents           | **Complete** |
-| 22  | Testing (expansion)                | Pending      |
+| 22  | Testing (expansion)                | **Complete** |
 | 23  | Security audit                     | Pending      |
 | 24  | Production deployment              | Pending      |
 
@@ -676,6 +676,42 @@ models provisioned in the Phase 3 baseline (`Notification`, `Document`,
   Phase 8 was lost.
 - **Gates green**: API suite **206 tests / 27 files**, web `next typegen` + `tsc` +
   `eslint` + `next build` clean. No Prisma migration required.
+
+## Phase 22 — done (Testing expansion)
+
+Closes the last unit-test gaps, adds a DB-free e2e surface, and introduces a
+coverage gate to the pipeline. No Prisma migration required.
+
+- **Unit specs for the previously-uncovered services**, mirroring the established
+  mock-Prisma pattern:
+  - `leads.service.spec` — source/status/assignedToId filters, case-insensitive
+    multi-field search, pagination, auto `LD-` number, NotFound on get, ensure-exists
+    before update, soft delete + NotFound.
+  - `company.service.spec` — get/update resolve the oldest profile, NotFound when
+    unset, create passthrough.
+  - `system.feature-flags.service.spec` + `system.settings.service.spec` — search +
+    pagination, key get/update/delete with NotFound, hard delete + NotFound.
+- **E2E auth-boundary sweep** (`test/auth-boundary.spec.ts`): every protected
+  endpoint — collection GETs, create/action POSTs and PATCH/DELETE across auth,
+  users, roles, company/org, system, CRM, projects, HR, real estate, land,
+  materials/blocks, equipment/finance, payroll, notifications/documents, and the
+  staff/client portals — must reject an unauthenticated request with the standard
+  401 envelope and matching `path`. DB-free: the global `AuthGuard` rejects before
+  any param parsing or database access.
+- **E2E public-route validation** (`test/validation.spec.ts`): malformed payloads on
+  the public routes (`/requests`, `/auth/login`, `/employee-ids/verify`) are rejected
+  with a 400 envelope before any service work — empty bodies, unknown enum values,
+  bad email, over-length token/card. (The global `ValidationPipe` has
+  `enableImplicitConversion`, so numeric inputs coerce; tests use shape that
+  survives coercion but violates `@Length`.)
+- **Coverage reporting**: `@vitest/coverage-v8` dev dep, a `test:coverage` script at
+  the root (turbo) and in `@ajac/api`. `vitest.config.ts` excludes wiring/declarative
+  scaffolding (`seed`, `dto`, `*.module`, `main.ts`, `prisma.service`) and enforces a
+  global floor — lines **58**, statements **55**, functions **44**, branches **48** —
+  measured with headroom below the current 61.0 / 57.7 / 46.7 / 50.5. CI gains a
+  `Test coverage` step after `npm test` so a regression fails the pipeline.
+- **Gates green**: API suite **366 tests / 33 files** (up from 206 / 27); coverage
+  above the floor on all four metrics; typecheck 14/14, lint 10/10, build 10/10 clean.
 
 ## Phase 12 — done (Projects)
 
