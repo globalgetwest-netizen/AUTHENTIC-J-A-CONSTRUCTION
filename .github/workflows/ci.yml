@@ -2,7 +2,7 @@
 #
 # Pipeline per the spec: lint → typecheck → test → build, with a Postgres 16
 # service so the Prisma client can be generated and migrations verified against
-# a real database. The production build/deploy pipeline is added in Phase 23.
+# a real database. The production build/deploy pipeline is added in Phase 24.
 #
 # NOTE: `npm ci` requires a committed package-lock.json. After the first
 # successful `npm install` (repo root), commit the generated lockfile.

@@ -1,10 +1,14 @@
+import { createReadStream } from 'node:fs';
+import type { ReadStream } from 'node:fs';
+import { stat } from 'node:fs/promises';
+import { extname } from 'node:path';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { AccessLevel, DocumentStatus, Prisma } from '@ajac/database';
 import type { AuthUser } from '../common/auth/auth-user.type';
 import { PrismaService } from '../prisma/prisma.service';
 import { buildOrderBy, paginate, prismaSkipTake } from '../common/dto/pagination.dto';
 import type { Paginated } from '../common/dto/pagination.dto';
-import { uploadsUrl } from '../common/storage/uploads';
+import { contentTypeFromFile, resolveStoredFile, uploadsUrl } from '../common/storage/uploads';
 import type {
   AddDocumentVersionDto,
   CreateDocumentDto,
@@ -69,6 +73,36 @@ export class DocumentsService {
     if (!doc) throw new NotFoundException('Document not found');
     const names = await this.resolveUploaderNames([doc.uploadedById]);
     return { ...doc, uploaderName: names.get(doc.uploadedById) ?? null };
+  }
+
+  /**
+   * Opens a stored document for streaming. Only documents backed by an actual
+   * uploaded file (fileUrl under /uploads) can be streamed; linked-URL
+   * documents are rejected here and opened by the browser instead. The path is
+   * re-checked against UPLOADS_DIR before the stream is created.
+   */
+  async openFile(
+    id: string,
+  ): Promise<{ stream: ReadStream; length: number; type: string; filename: string }> {
+    const doc = await this.findLive(id);
+    if (!doc) throw new NotFoundException('Document not found');
+
+    const abs = resolveStoredFile(doc.fileUrl); // throws for non-stored URLs
+    let info;
+    try {
+      info = await stat(abs);
+    } catch {
+      throw new NotFoundException('Stored file is missing');
+    }
+    if (!info.isFile()) throw new NotFoundException('Stored file is missing');
+
+    const base = doc.title.replace(/["\\\r\n]/g, '').trim() || 'document';
+    return {
+      stream: createReadStream(abs),
+      length: info.size,
+      type: contentTypeFromFile(abs),
+      filename: `${base}${extname(abs)}`,
+    };
   }
 
   // --- Writes --------------------------------------------------------------

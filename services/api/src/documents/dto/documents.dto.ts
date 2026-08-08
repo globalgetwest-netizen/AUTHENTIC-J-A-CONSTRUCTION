@@ -1,9 +1,16 @@
-import { IsEnum, IsIn, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import { IsEnum, IsIn, IsOptional, IsString, IsUUID, Matches, MaxLength } from 'class-validator';
 import { AccessLevel, DocumentStatus } from '@ajac/database';
 import { PaginationQueryDto } from '../../common/dto/pagination.dto';
 
 export const ACCESS_PERMISSIONS = ['VIEW', 'EDIT'] as const;
 export type AccessPermission = (typeof ACCESS_PERMISSIONS)[number];
+
+/**
+ * A document link may only be an http(s) URL or a server-relative /path.
+ * Rejects `javascript:`, `data:`, protocol-relative `//host`, and other
+ * schemes — the value is rendered in an <a href>, so it must be inert.
+ */
+const SAFE_URL = /^(https?:\/\/[^\s]+|\/[^\s/][^\s]*)$/;
 
 /** Query params for the documents library. */
 export class QueryDocumentsDto extends PaginationQueryDto {
@@ -47,6 +54,9 @@ export class CreateDocumentDto {
   /** Alternative to uploading a file: link an external URL. */
   @IsOptional()
   @IsString()
+  @Matches(SAFE_URL, {
+    message: 'url must be an http(s):// link or a server-relative /path',
+  })
   @MaxLength(1000)
   url?: string;
 }
@@ -61,6 +71,9 @@ export class AddDocumentVersionDto {
   /** Alternative to uploading a file: link an external URL as this version. */
   @IsOptional()
   @IsString()
+  @Matches(SAFE_URL, {
+    message: 'url must be an http(s):// link or a server-relative /path',
+  })
   @MaxLength(1000)
   url?: string;
 }

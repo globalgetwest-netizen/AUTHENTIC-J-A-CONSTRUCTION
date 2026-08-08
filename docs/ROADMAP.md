@@ -27,7 +27,7 @@ migrations/endpoints/frontend/mobile, and fixing errors** before continuing.
 | 20  | Native Expo application            | **Complete** |
 | 21  | Notifications, documents           | **Complete** |
 | 22  | Testing (expansion)                | **Complete** |
-| 23  | Security audit                     | Pending      |
+| 23  | Security audit                     | **Complete** |
 | 24  | Production deployment              | Pending      |
 
 ## Phase 1 — done
@@ -712,6 +712,62 @@ coverage gate to the pipeline. No Prisma migration required.
   `Test coverage` step after `npm test` so a regression fails the pipeline.
 - **Gates green**: API suite **366 tests / 33 files** (up from 206 / 27); coverage
   above the floor on all four metrics; typecheck 14/14, lint 10/10, build 10/10 clean.
+
+## Phase 23 — done (Security audit)
+
+A full security-surface audit across the API and web, fixing every finding with a
+regression test. Auth/RBAC internals, cookie settings and refresh-rotation were
+audited and found sound; the fixes below are the actual gaps. No Prisma migration
+required.
+
+- **High — documents were publicly readable.** The API served the whole uploads
+  tree at a public static `/uploads` mount (`app.factory.ts`), so any uploaded
+  document — including the confidential Corporate Document Vault — was fetchable
+  without a token. Removed the public mount entirely; uploaded files are now
+  streamed **only** through the new authenticated, permission-gated
+  `GET /documents/:id/file` endpoint (`documents.read`): it re-checks the stored
+  path against `UPLOADS_DIR` on every read (`resolveStoredFile` — traversal-proof),
+  streams via `StreamableFile` with an extension-derived Content-Type (never the
+  client-supplied mimetype) and a sanitized, title-based filename. This supersedes
+  Phase 21's static mount. The web admin `/file` proxy now calls this endpoint
+  through `apiFetch`, so the cookie bearer is attached and the browser still only
+  talks to Next.
+- **Medium — CORS was open.** `app.enableCors({ origin: true, credentials: true })`
+  reflected any request `Origin` and allowed credentials. CORS is now opt-in:
+  `CORS_ORIGINS` (else `WEB_URL`) defines the allowlist; with none configured the
+  API refuses cross-origin browser calls and never sets
+  `Access-Control-Allow-Credentials`. Native clients are unaffected, and the web
+  app proxies the API server-side, so nothing legitimate lost access.
+- **Medium — no security headers.** The API and web emitted none (plus the Express
+  `X-Powered-By` fingerprint). The API now sets `X-Content-Type-Options`,
+  `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, COOP/CORP
+  `same-origin`, `X-Permitted-Cross-Domain-Policies`, `X-XSS-Protection: 0`, and
+  `Content-Security-Policy: default-src 'none'` on every response, with
+  `x-powered-by` disabled; the web adds the core headers plus
+  `Permissions-Policy` via `next.config.ts` `headers()` (HSTS in production).
+- **Medium — document URL links accepted any scheme.** A `url` field could be
+  `javascript:` / `data:` / protocol-relative `//host`, which the admin UI renders
+  into an `<a href>`. DTO validation (`@Matches`) now allows only `http(s)://`
+  links or server-relative `/path`.
+- **Medium — public endpoints were unthrottled.** `POST /requests` and
+  `POST /employee-ids/verify` are `@Public()` and spam-able. A small
+  dependency-free in-memory per-IP limiter (30 req/min) now runs before validation
+  on both, returning a 429 envelope + `Retry-After`. Authenticated routes keep
+  relying on login throttling.
+- **Regression tests** (+22 → **388 tests / 37 files**): `test/security.spec.ts`
+  (uploads no longer public, header presence, CORS closed by default, rate-limit
+  budget + Retry-After), `uploads.spec.ts` (path containment + content types),
+  `documents-file.spec.ts` (streaming, 404s, URL-type and traversal rejection),
+  `documents.dto.spec.ts` (URL scheme allowlist), and the new file route added to
+  the unauthenticated-boundary sweep. Also fixed a latent Phase 22 issue: turbo
+  needed `test:coverage` declared in `turbo.json` or `npm run test:coverage` (the
+  CI step) failed with "missing tasks".
+- **Gates green**: tests 388/37, coverage above the floor on all four metrics
+  (lines 61.8), typecheck 14/14, lint 10/10, build 10/10.
+- **Deferred (noted in SECURITY.md)**: a shared/Redis rate-limit store and
+  `trust proxy` for deployments behind a reverse proxy; a strict CSP on the web
+  app once nonce/hash inventory is in place; streaming (not buffering) the web
+  document proxy for very large files.
 
 ## Phase 12 — done (Projects)
 

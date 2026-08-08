@@ -4,10 +4,10 @@ Enterprise digital ecosystem for **AUTHENTIC J.A. CONSTRUCTION LTD.** — a Ghan
 construction, engineering, real estate, property development, land allocation,
 building-materials, and project-management group.
 
-> **Status: active development.** Phases 1–22 (architecture through a company-wide
-> notification centre, document library, native Expo app and the testing expansion
-> with a coverage gate) are **complete**; Phases 23–24 (security audit, production
-> deployment) are **pending**. The monorepo typechecks, lints, tests (with coverage
+> **Status: active development.** Phases 1–23 (architecture through a company-wide
+> notification centre, document library, native Expo app, a testing expansion with a
+> coverage gate, and a security audit) are **complete**; Phase 24 (production
+> deployment) is **pending**. The monorepo typechecks, lints, tests (with coverage
 > thresholds), and builds. See `docs/ROADMAP.md` for the phase tracker and what ships
 > next.
 
@@ -37,7 +37,7 @@ packages/
 services/
   api/        NestJS REST API (prefix /api/v1)
 infrastructure/
-  docker/     local Postgres + Adminer                 deployment/  production deployment (Phase 23)
+  docker/     local Postgres + Adminer                 deployment/  production deployment (Phase 24)
 docs/         ARCHITECTURE · DATABASE · API · SECURITY · DEPLOYMENT · ROADMAP
 ```
 

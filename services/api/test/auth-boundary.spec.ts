@@ -140,6 +140,7 @@ const PROTECTED: ReadonlyArray<readonly [string, string]> = [
   ['GET', '/api/v1/documents'],
   ['POST', '/api/v1/documents'],
   ['GET', '/api/v1/documents/00000000-0000-0000-0000-000000000001'],
+  ['GET', '/api/v1/documents/00000000-0000-0000-0000-000000000001/file'],
   ['POST', '/api/v1/documents/00000000-0000-0000-0000-000000000001/versions'],
   ['POST', '/api/v1/documents/00000000-0000-0000-0000-000000000001/status'],
   ['POST', '/api/v1/documents/00000000-0000-0000-0000-000000000001/access'],

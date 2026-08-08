@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
+  StreamableFile,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -43,6 +44,17 @@ export class DocumentsController {
   @RequirePermissions('documents.read')
   get(@Param('id', ParseUUIDPipe) id: string) {
     return this.documentsService.get(id);
+  }
+
+  @Get(':id/file')
+  @RequirePermissions('documents.read')
+  async file(@Param('id', ParseUUIDPipe) id: string): Promise<StreamableFile> {
+    const { stream, length, type, filename } = await this.documentsService.openFile(id);
+    return new StreamableFile(stream, {
+      type,
+      length,
+      disposition: `inline; filename="${filename}"`,
+    });
   }
 
   @Post()
