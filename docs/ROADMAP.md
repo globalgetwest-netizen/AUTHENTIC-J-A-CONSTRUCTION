@@ -24,7 +24,7 @@ migrations/endpoints/frontend/mobile, and fixing errors** before continuing.
 | 17  | Finance (payments & ledger)        | **Complete** |
 | 18  | Payroll & payslips                 | **Complete** |
 | 19  | Employee IDs (QR verification)     | **Complete** |
-| 20  | Native Expo application            | Pending      |
+| 20  | Native Expo application            | **Complete** |
 | 21  | Notifications, documents           | Pending      |
 | 22  | Testing (expansion)                | Pending      |
 | 23  | Security audit                     | Pending      |
@@ -585,6 +585,44 @@ was required.
 - **Gates green**: API typecheck / lint / build / **183 tests / 25 files** (up from 173);
   web `next typegen` + typecheck / lint / build clean. The demo card verifies through the
   public route and the card PDF downloads on both admin and staff sides.
+
+## Phase 20 — done (Native Expo application)
+
+A real mobile client for the ecosystem, replacing the Expo scaffold's placeholder role
+groups. It reuses the existing NestJS endpoints via a typed client, keeps the session in
+the Keychain/Keystore on native and `localStorage` on web, auto-refreshes an expired
+access token exactly once per request, and renders the branded design tokens on screens.
+
+- **API client** (`apps/mobile/src/api/`): `types.ts` (typed views of every response the
+  app consumes — auth, sessions, profiles, payslips, quotations, notifications,
+  employees, employee IDs), `client.ts` (`ApiError`, `apiFetch` with `Bearer` + refresh,
+  and endpoint wrappers), `token-store.ts` (`expo-secure-store` on native, `localStorage`
+  on web, all crash-safe).
+- **Session state** (`src/state/auth.tsx`): `AuthProvider` + `useAuth()`. On launch it
+  loads a stored session; `signIn` posts `/auth/login`, `request()` is the authenticated
+  fetch that throws on error and, on a single `401`, rotates via `/auth/refresh` and
+  retries — then signs out. Exposes `roles`, `isAdmin` / `isStaff` / `isClient`, and
+  `firstName` / `lastName` / `email` to screens.
+- **Routing**: root `Stack` under `<AuthProvider>`; `index` gates on session status;
+  `(auth)/login` sign-in screen; `/portal` is guarded (guests `Redirect` to `/login`).
+  Inside the portal, a role-aware `Tabs` bottom bar (Home / Payslips·Quotations / Alerts /
+  Profile) plus pushed detail screens (Payslip, Quotation, Employee, Employee ID) with
+  native headers and back.
+- **Screens**: dashboard (greeting + quick links per role), payslips list + detail (gross,
+  net, SSNIT/PAYE and deduction lines), quotations list + detail (line items, totals,
+  validity), admin team directory + employee record, staff self-service employee ID card
+  (branded, mirroring the web card), notifications list (unread dot), profile with
+  role-aware identity and sign-out (confirm dialog).
+- **Reusable UI** (`src/components/ui.tsx`): Screen, Card, SectionTitle, Badge (status
+  colour chips), PrimaryButton / GhostButton, Field, Row, ListRow, Spinner, EmptyState,
+  ErrorState, Stat — all driven by `@/constants/theme`, which converts the shared CSS
+  tokens (`packages/ui/src/tokens.ts`) to numeric `rem`→px values express-native can use.
+- **Config / env**: `.env.example` documents `EXPO_PUBLIC_API_URL` (defaults to the local
+  API); secrets never ship.
+- **Gates green**: mobile typecheck (`tsc --noEmit`), lint (`expo lint` — React Compiler
+  rules satisfied), and web export (`expo export --platform web`, 20 static routes) all
+  clean. No new API surface required — the app consumes the modules built in Phases
+  4–19, so the suite stays at 183 tests / 25 files.
 
 ## Phase 12 — done (Projects)
 

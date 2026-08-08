@@ -62,23 +62,32 @@ export const Spacing = {
   six: 64,
 } as const;
 
+/** Convert a CSS length token ("0.75rem", "1rem", "9999px") to px so React
+ *  Native accepts it as a numeric dimension. */
+function toPx(value: string): number {
+  const match = /^(-?\d+(?:\.\d+)?)(rem|px)$/.exec(value.trim());
+  if (!match) return 0;
+  const amount = Number(match[1]);
+  return match[2] === 'rem' ? Math.round(amount * 16) : amount;
+}
+
 export const Type = {
-  xs: fontSizes.xs,
-  sm: fontSizes.sm,
-  base: fontSizes.base,
-  lg: fontSizes.lg,
-  xl: fontSizes.xl,
-  '2xl': fontSizes['2xl'],
-  '3xl': fontSizes['3xl'],
-  '4xl': fontSizes['4xl'],
+  xs: toPx(fontSizes.xs),
+  sm: toPx(fontSizes.sm),
+  base: toPx(fontSizes.base),
+  lg: toPx(fontSizes.lg),
+  xl: toPx(fontSizes.xl),
+  '2xl': toPx(fontSizes['2xl']),
+  '3xl': toPx(fontSizes['3xl']),
+  '4xl': toPx(fontSizes['4xl']),
 } as const;
 
 export const Radii = {
-  sm: radii.sm,
-  md: radii.md,
-  lg: radii.lg,
-  xl: radii.xl,
-  full: radii.full,
+  sm: toPx(radii.sm),
+  md: toPx(radii.md),
+  lg: toPx(radii.lg),
+  xl: toPx(radii.xl),
+  full: toPx(radii.full),
 } as const;
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
