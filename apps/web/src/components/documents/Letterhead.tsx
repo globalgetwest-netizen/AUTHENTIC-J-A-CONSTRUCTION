@@ -48,12 +48,13 @@ export function Letterhead({
   ];
 
   return (
-    <View style={{ marginBottom: 20 }}>
+    <View style={{ marginBottom: 12 }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-        {logoSrc ? (
-          /* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */
-          <Image src={logoSrc} style={{ width: 62, height: 62, objectFit: "contain" }} />
-        ) : null}
+        {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}
+        <Image
+          src={logoSrc || "/brand/aja-logo-full.svg"}
+          style={{ width: 52, height: 52, objectFit: "contain" }}
+        />
         <View style={{ flex: 1 }}>
           <Text
             style={{

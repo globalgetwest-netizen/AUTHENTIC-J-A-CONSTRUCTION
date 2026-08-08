@@ -1,0 +1,17 @@
+{
+  "name": "AUTHENTIC J.A. CONSTRUCTION LTD.",
+  "short_name": "AJA Construction",
+  "description": "Construction, engineering, real estate, property development, land allocation, building materials and block manufacturing in Ghana.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDFCF7",
+  "theme_color": "#14324F",
+  "icons": [
+    {
+      "src": "/brand/aja-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { LETTERHEAD } from "@/config/documents";
 import { dateLabel } from "@/lib/documents/format";
 import {
   CERT_COLORS,
@@ -104,9 +105,9 @@ export function AssetOwnershipCertificateTemplate({
           />
 
           <Text style={styles.intro}>
-            This is to certify that <Text style={styles.highlight}>{owner}</Text> is the lawful,
-            undisputed owner of the {kind} described below, held in the company's official
-            register and subject to all applicable legal and regulatory requirements.
+            This is to certify that <Text style={styles.highlight}>{owner}</Text> is the lawful
+            owner of the {kind} described below, as recorded in the Company's official
+            Asset Register and subject to all applicable legal and regulatory requirements.
           </Text>
 
           <Text style={styles.assetName}>{assetName}</Text>
@@ -135,8 +136,9 @@ export function AssetOwnershipCertificateTemplate({
               }}
               right={{
                 label: "For and on behalf of",
-                name: "THE MANAGING DIRECTOR",
-                role: "Managing Director",
+                name: "JOSEPH ACQUAH",
+                role: "Chief Executive Officer",
+                signatureSrc: LETTERHEAD.ceo.signature,
               }}
             />
           </View>

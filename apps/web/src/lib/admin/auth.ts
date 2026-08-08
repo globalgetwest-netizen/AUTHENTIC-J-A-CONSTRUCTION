@@ -6,7 +6,7 @@ export const REFRESH_COOKIE = 'ajac_rt';
 const COOKIE_MAX_AGE = 3600; // s — matches the API access-token TTL
 
 export function getApiBase(): string {
-  return process.env.API_PUBLIC_URL ?? 'http://localhost:4000';
+  return process.env.API_PUBLIC_URL ?? 'http://localhost:3000';
 }
 
 export interface AdminAuthUser {

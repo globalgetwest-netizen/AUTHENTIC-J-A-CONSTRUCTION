@@ -31,7 +31,16 @@ export const LETTERHEAD = {
   /** Replace with the real domain email once registered (next week). */
   email: "authenticjaconstruction.gh@gmail.com",
   website: "",
-  logo: "/brand/aja-logo.png",
+  /** Clean SVG lockup (logo + wordmark) with transparent background — used on documents. */
+  logo: "/brand/aja-logo-full.svg",
+  /** AJA corporate monogram (mark only, no text) — used in the company seal/stamp. */
+  monogram: "/brand/aja-icon.svg",
+  /** Chief Executive Officer — signs official documents. */
+  ceo: {
+    name: "JOSEPH ACQUAH",
+    title: "Chief Executive Officer",
+    signature: "/brand/signature-joseph-acquah.svg",
+  },
   /** Set to a public/ path to render the full letterhead image in the PDF header. */
   letterheadImage: null as string | null,
   banks: [

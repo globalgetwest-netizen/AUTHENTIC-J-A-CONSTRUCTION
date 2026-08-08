@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "@react-pdf/renderer";
+import { Image, StyleSheet, Text, View } from "@react-pdf/renderer";
 import { LETTERHEAD } from "@/config/documents";
 import {
   FONT_BODY,
@@ -44,9 +44,9 @@ export const CERT_FONT_ITALIC = FONT_BODY_ITALIC;
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 42,
-    paddingBottom: 56,
-    paddingHorizontal: 44,
+    paddingTop: 30,
+    paddingBottom: 38,
+    paddingHorizontal: 38,
     backgroundColor: CERT_COLORS.cream,
     fontSize: 11,
     color: CERT_COLORS.ink,
@@ -142,9 +142,9 @@ const styles = StyleSheet.create({
   },
 
   // ---- Heading block ----
-  heading: { alignItems: "center", marginTop: 4, marginBottom: 8 },
+  heading: { alignItems: "center", marginTop: 2, marginBottom: 6 },
   title: {
-    fontSize: 21,
+    fontSize: 19,
     fontFamily: FONT_DISPLAY,
     fontWeight: 700,
     color: CERT_COLORS.navy,
@@ -156,13 +156,13 @@ const styles = StyleSheet.create({
     fontFamily: FONT_BODY,
     fontStyle: "italic",
     color: CERT_COLORS.muted,
-    marginTop: 4,
+    marginTop: 2,
   },
   goldBand: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "stretch",
-    marginVertical: 9,
+    marginVertical: 6,
     paddingHorizontal: 10,
   },
   goldRule: { flex: 1, height: 0.8, backgroundColor: CERT_COLORS.gold },
@@ -250,75 +250,140 @@ export function CertificateHeading({
   );
 }
 
-/** Company seal: concentric gold rings with the registered monogram. */
+/**
+ * Official circular company seal — the CEO stamp used beside the signature row.
+ * Concentric navy rings (double ring effect) with the corporate monogram in the
+ * centre, registered company name at the top, "• GHANA •" at the bottom, and
+ * the executive office text below the logo — matching the formal stamped seal
+ * used on paper documents.
+ */
 export function Seal({
-  monogram = "AJAC",
-  caption = "REGISTERED CONSTRUCTION",
+  monogramSrc = LETTERHEAD.monogram,
+  scale = 1,
 }: {
-  monogram?: string;
-  caption?: string;
+  monogramSrc?: string;
+  /** Uniform scale for compact layouts — use ~0.7 inside signature rows. */
+  scale?: number;
 }) {
+  const s = scale;
   return (
-    <View style={{ width: 92, height: 92, alignItems: "center", justifyContent: "center" }}>
+    <View style={{ width: 114 * s, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      {/* Outer circle — thick navy border */}
       <View
         style={{
-          width: 92,
-          height: 92,
-          borderRadius: 46,
-          borderWidth: 1.8,
-          borderColor: CERT_COLORS.goldDeep,
+          width: 108 * s,
+          height: 108 * s,
+          borderRadius: 54 * s,
+          borderWidth: 2.2 * s,
+          borderColor: CERT_COLORS.navy,
+          backgroundColor: "#FFFFFF",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
+        {/* Inner circle — thin navy border */}
         <View
           style={{
-            width: 80,
-            height: 80,
-            borderRadius: 40,
-            borderWidth: 1,
-            borderColor: CERT_COLORS.gold,
+            width: 92 * s,
+            height: 92 * s,
+            borderRadius: 46 * s,
+            borderWidth: 1.2 * s,
+            borderColor: CERT_COLORS.navy,
+            backgroundColor: "#FFFFFF",
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <View
+          {/* Company name — top of inner circle */}
+          <Text
             style={{
-              width: 62,
-              height: 62,
-              borderRadius: 31,
-              borderWidth: 0.6,
-              borderColor: CERT_COLORS.navy,
-              alignItems: "center",
-              justifyContent: "center",
+              fontSize: 5.8 * s,
+              fontFamily: FONT_SANS,
+              fontWeight: 700,
+              color: CERT_COLORS.navy,
+              textAlign: "center",
+              letterSpacing: 0.4 * s,
+              lineHeight: 1.4,
             }}
           >
-            <Text
-              style={{
-                fontSize: 19,
-                fontFamily: FONT_DISPLAY,
-                fontWeight: 700,
-                color: CERT_COLORS.navy,
-                letterSpacing: 1,
-              }}
-            >
-              {monogram}
-            </Text>
-            <Text
-              style={{
-                fontSize: 4.6,
-                fontFamily: FONT_SANS,
-                fontWeight: 600,
-                color: CERT_COLORS.goldDeep,
-                letterSpacing: 0.5,
-                marginTop: 3,
-              }}
-            >
-              {caption}
-            </Text>
-          </View>
+            AUTHENTIC J.A.
+          </Text>
+          <Text
+            style={{
+              fontSize: 4.9 * s,
+              fontFamily: FONT_SANS,
+              fontWeight: 700,
+              color: CERT_COLORS.navy,
+              textAlign: "center",
+              letterSpacing: 0.4 * s,
+              lineHeight: 1.4,
+              marginTop: -1 * s,
+            }}
+          >
+            CONSTRUCTION LTD.
+          </Text>
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}
+          <Image
+            src={monogramSrc}
+            style={{ width: 30 * s, height: 30 * s, objectFit: "contain", marginTop: 2 * s }}
+          />
+          {/* Executive office text */}
+          <Text
+            style={{
+              fontSize: 4.6 * s,
+              fontFamily: FONT_SANS,
+              fontWeight: 700,
+              color: CERT_COLORS.navy,
+              textAlign: "center",
+              letterSpacing: 0.5 * s,
+              lineHeight: 1.4,
+              marginTop: 1 * s,
+            }}
+          >
+            OFFICE OF THE
+          </Text>
+          <Text
+            style={{
+              fontSize: 4.4 * s,
+              fontFamily: FONT_SANS,
+              fontWeight: 600,
+              color: CERT_COLORS.navy,
+              textAlign: "center",
+              letterSpacing: 0.4 * s,
+              lineHeight: 1.4,
+              marginTop: -0.5 * s,
+            }}
+          >
+            CHIEF EXECUTIVE
+          </Text>
+          <Text
+            style={{
+              fontSize: 3.8 * s,
+              fontFamily: FONT_SANS,
+              fontWeight: 600,
+              color: CERT_COLORS.navy,
+              textAlign: "center",
+              letterSpacing: 0.3 * s,
+              marginTop: 1 * s,
+            }}
+          >
+            VERIFIED &amp; APPROVED
+          </Text>
         </View>
       </View>
+      {/* GHANA — below the circle, matching reference */}
+      <Text
+        style={{
+          fontSize: 5.4 * s,
+          fontFamily: FONT_SANS,
+          fontWeight: 700,
+          color: CERT_COLORS.navy,
+          letterSpacing: 1.5 * s,
+          marginTop: 2 * s,
+        }}
+      >
+        • GHANA •
+      </Text>
     </View>
   );
 }
@@ -329,14 +394,16 @@ export function SignatureBlock({
   name,
   role,
   align = "left",
+  signatureSrc,
 }: {
   label: string;
   name: string;
   role: string;
   align?: "left" | "right";
+  signatureSrc?: string | null;
 }) {
   return (
-    <View style={{ width: "46%", alignItems: align === "right" ? "flex-end" : "flex-start" }}>
+    <View style={{ flex: 1, alignItems: align === "right" ? "flex-end" : "flex-start" }}>
       <Text
         style={{
           fontSize: 7.2,
@@ -349,9 +416,20 @@ export function SignatureBlock({
       >
         {label}
       </Text>
+      {/* Handwritten signature image */}
+      {signatureSrc ? (
+        <View style={{ marginTop: 6, marginBottom: 2 }}>
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}
+          <Image
+            src={signatureSrc}
+            style={{ width: 90, height: 40, objectFit: "contain" }}
+          />
+        </View>
+      ) : (
+        <View style={{ height: 48 }} />
+      )}
       <View
         style={{
-          marginTop: 26,
           width: "100%",
           borderBottomWidth: 0.8,
           borderBottomColor: CERT_COLORS.ink,
@@ -369,27 +447,27 @@ export function SignatureBlock({
   );
 }
 
-/** Signature row: two SignatureBlocks side by side, seal centered/beside. */
+/** Signature row: two SignatureBlocks side by side, seal centred between them. */
 export function SignatureRow({
   left,
   right,
   showSeal = true,
 }: {
-  left: { label: string; name: string; role: string };
-  right: { label: string; name: string; role: string };
+  left: { label: string; name: string; role: string; signatureSrc?: string | null };
+  right: { label: string; name: string; role: string; signatureSrc?: string | null };
   showSeal?: boolean;
 }) {
   return (
     <View
       style={{
         flexDirection: "row",
-        justifyContent: "space-between",
         alignItems: "flex-start",
+        gap: 10,
         marginTop: 8,
       }}
     >
       <SignatureBlock {...left} />
-      {showSeal ? <Seal /> : null}
+      {showSeal ? <Seal scale={0.68} /> : null}
       <SignatureBlock {...right} align="right" />
     </View>
   );

@@ -65,3 +65,6 @@ packages/database/src/generated/
 
 # Self-hosted document uploads (runtime files — never commit user content)
 services/api/uploads/
+
+# PDF test renders
+apps/web/.pdfcheck/

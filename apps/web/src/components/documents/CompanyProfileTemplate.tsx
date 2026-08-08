@@ -1,4 +1,4 @@
-import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { Document, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { Project } from "@/lib/admin/types";
 import { label } from "@/lib/admin/types";
 import { money } from "@/lib/documents/format";
@@ -11,22 +11,23 @@ import {
   FONT_DISPLAY,
   FONT_SANS,
   CertificateFooter,
+  Seal,
 } from "./CertificateFrame";
 import { FONT_BODY } from "@/lib/documents/fonts";
 import { Letterhead } from "./Letterhead";
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 40,
-    paddingBottom: 58,
-    paddingHorizontal: 44,
+    paddingTop: 34,
+    paddingBottom: 48,
+    paddingHorizontal: 42,
     fontSize: 9.5,
     color: CERT_COLORS.ink,
     fontFamily: FONT_BODY,
   },
   title: {
-    marginTop: 6,
-    fontSize: 24,
+    marginTop: 2,
+    fontSize: 21,
     fontFamily: FONT_DISPLAY,
     fontWeight: 700,
     color: CERT_COLORS.navy,
@@ -38,9 +39,9 @@ const styles = StyleSheet.create({
     fontFamily: CERT_FONT_ITALIC,
     color: CERT_COLORS.muted,
     textAlign: "center",
-    marginTop: 4,
+    marginTop: 2,
   },
-  band: { flexDirection: "row", alignItems: "center", marginVertical: 12, paddingHorizontal: 10 },
+  band: { flexDirection: "row", alignItems: "center", marginVertical: 6, paddingHorizontal: 10 },
   rule: { flex: 1, height: 0.8, backgroundColor: CERT_COLORS.gold },
   diamond: {
     width: 8,
@@ -51,69 +52,69 @@ const styles = StyleSheet.create({
   },
   dot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: CERT_COLORS.gold, marginHorizontal: 6 },
   sectionTitle: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontFamily: FONT_SANS,
     fontWeight: 700,
     color: CERT_COLORS.goldDeep,
     textTransform: "uppercase",
-    letterSpacing: 1.7,
-    marginTop: 16,
-    marginBottom: 6,
+    letterSpacing: 1.6,
+    marginTop: 11,
+    marginBottom: 4,
   },
-  paragraph: { fontSize: 9.5, lineHeight: 1.75, textAlign: "justify", marginTop: 4 },
-  facts: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 },
+  paragraph: { fontSize: 9, lineHeight: 1.65, textAlign: "justify", marginTop: 2 },
+  facts: { flexDirection: "row", flexWrap: "wrap", gap: 5, marginTop: 6 },
   factCard: {
     width: "47%",
     borderWidth: 1,
     borderColor: CERT_COLORS.border,
     backgroundColor: CERT_COLORS.paper,
-    paddingVertical: 5,
-    paddingHorizontal: 9,
-    marginBottom: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    marginBottom: 3,
   },
   factLabel: {
-    fontSize: 6.8,
+    fontSize: 6.4,
     fontFamily: FONT_SANS,
     fontWeight: 600,
     color: CERT_COLORS.muted,
     textTransform: "uppercase",
-    letterSpacing: 0.8,
+    letterSpacing: 0.7,
   },
-  factValue: { fontSize: 9, fontFamily: CERT_FONT_BOLD, color: CERT_COLORS.ink, marginTop: 1.5 },
-  services: { marginTop: 6 },
-  serviceRow: { flexDirection: "row", marginBottom: 5, alignItems: "flex-start" },
-  bullet: { width: 8, fontSize: 9, color: CERT_COLORS.goldDeep, fontFamily: CERT_FONT_BOLD },
-  serviceName: { width: "34%", fontSize: 9, fontFamily: CERT_FONT_BOLD, color: CERT_COLORS.ink },
-  serviceDesc: { flex: 1, fontSize: 8.8, color: CERT_COLORS.ink, lineHeight: 1.55 },
-  table: { borderWidth: 1, borderColor: CERT_COLORS.border, marginTop: 6 },
+  factValue: { fontSize: 8.1, fontFamily: CERT_FONT_BOLD, color: CERT_COLORS.ink, marginTop: 0.5 },
+  services: { marginTop: 3 },
+  serviceRow: { flexDirection: "row", marginBottom: 2, alignItems: "flex-start" },
+  bullet: { width: 8, fontSize: 8, color: CERT_COLORS.goldDeep, fontFamily: CERT_FONT_BOLD },
+  serviceName: { width: "30%", fontSize: 8.2, fontFamily: CERT_FONT_BOLD, color: CERT_COLORS.ink },
+  serviceDesc: { flex: 1, fontSize: 8, color: CERT_COLORS.ink, lineHeight: 1.35 },
+  table: { borderWidth: 1, borderColor: CERT_COLORS.border, marginTop: 5 },
   theadRow: { flexDirection: "row", backgroundColor: CERT_COLORS.navy },
   th: {
-    paddingVertical: 4,
-    paddingHorizontal: 6,
-    fontSize: 6.8,
+    paddingVertical: 3,
+    paddingHorizontal: 5,
+    fontSize: 6.6,
     fontFamily: FONT_SANS,
     fontWeight: 600,
     color: "#ffffff",
     textTransform: "uppercase",
-    letterSpacing: 0.7,
+    letterSpacing: 0.6,
   },
   row: { flexDirection: "row", borderTopWidth: 0.5, borderTopColor: CERT_COLORS.border },
-  td: { paddingVertical: 4, paddingHorizontal: 6, fontSize: 8.5, color: CERT_COLORS.ink },
-  tdMuted: { paddingVertical: 4, paddingHorizontal: 6, fontSize: 8.5, color: CERT_COLORS.muted },
-  signature: { marginTop: 26, alignItems: "center" },
-  sigLine: { width: "34%", borderBottomWidth: 0.8, borderBottomColor: CERT_COLORS.ink, marginTop: 30 },
-  sigName: { fontSize: 9.5, fontFamily: FONT_DISPLAY, fontWeight: 600, marginTop: 4 },
+  td: { paddingVertical: 3, paddingHorizontal: 5, fontSize: 8, color: CERT_COLORS.ink },
+  tdMuted: { paddingVertical: 3, paddingHorizontal: 5, fontSize: 8, color: CERT_COLORS.muted },
+  signature: { marginTop: 10, alignItems: "center" },
+  sigLine: { width: "34%", borderBottomWidth: 0.8, borderBottomColor: CERT_COLORS.ink, marginTop: 10 },
+  sigName: { fontSize: 9, fontFamily: FONT_DISPLAY, fontWeight: 600, marginTop: 2 },
   sigRole: { fontSize: 8, fontFamily: CERT_FONT_ITALIC, color: CERT_COLORS.muted, marginTop: 1 },
 });
 
 const SERVICES: Array<{ name: string; desc: string }> = [
-  { name: "Construction", desc: "Residential and commercial building construction delivered to specification, on time and budget." },
-  { name: "Engineering", desc: "Civil and structural engineering, site works, drainage and infrastructure." },
-  { name: "Real Estate", desc: "Property development, sales and rentals of houses, apartments and commercial units." },
-  { name: "Land Allocation", desc: "Trusted land acquisition, plot allocation and documentation." },
-  { name: "Building Materials", desc: "Supply of quarry stones, sand, gravel, cement and construction aggregates." },
-  { name: "Block Factory", desc: "High-strength factory-made blocks produced to consistent quality standards." },
-  { name: "Project Management", desc: "End-to-end project planning, supervision, quality and cost control." },
+  { name: "Construction", desc: "Residential and commercial construction, delivered to specification on time." },
+  { name: "Engineering", desc: "Civil and structural engineering, site works and infrastructure." },
+  { name: "Real Estate", desc: "Property development, sales and rentals of houses and units." },
+  { name: "Land Allocation", desc: "Land acquisition, plot allocation and documentation." },
+  { name: "Building Materials", desc: "Supply of quarry stones, sand, gravel, cement and aggregates." },
+  { name: "Block Factory", desc: "High-strength factory-made blocks of consistent quality." },
+  { name: "Project Management", desc: "End-to-end planning, supervision, quality and cost control." },
   { name: "Equipment & Fleet", desc: "Heavy equipment and fleet services for construction and haulage." },
 ];
 
@@ -145,11 +146,10 @@ export function CompanyProfileTemplate({
         <Text style={styles.sectionTitle}>About the company</Text>
         <Text style={styles.paragraph}>
           {LETTERHEAD.name} is a fully registered Ghanaian construction, engineering and real
-          estate group (Reg No. {LETTERHEAD.registrationNo}, TIN {LETTERHEAD.taxId}). We deliver
+          estate group (Reg No. {LETTERHEAD.registrationNo}, TIN {LETTERHEAD.taxId}), delivering
           quality structures and trusted solutions across construction, engineering, real estate,
-          property development, land allocation, building materials and block manufacturing.
-          Our operations are rooted in safety, accuracy and professional integrity, and every
-          project is executed under experienced management with full documentation.
+          property development, land allocation, building materials and block manufacturing —
+          every project executed under experienced management with full documentation.
         </Text>
 
         <View style={styles.facts}>
@@ -240,10 +240,18 @@ export function CompanyProfileTemplate({
           )}
         </View>
 
-        <View style={styles.signature}>
-          <View style={styles.sigLine} />
-          <Text style={styles.sigName}>THE MANAGING DIRECTOR</Text>
-          <Text style={styles.sigRole}>For and on behalf of {LETTERHEAD.name}</Text>
+        <View style={{ flexDirection: "row", alignItems: "flex-start", marginTop: 16 }}>
+          <View style={{ flex: 1 }}>
+            <Seal scale={0.68} />
+          </View>
+          <View style={styles.signature}>
+            {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}
+            <Image src={LETTERHEAD.ceo.signature} style={{ width: 76, height: 32, objectFit: "contain" }} />
+            <View style={styles.sigLine} />
+            <Text style={styles.sigName}>JOSEPH ACQUAH</Text>
+            <Text style={styles.sigRole}>Chief Executive Officer</Text>
+            <Text style={styles.sigRole}>For and on behalf of {LETTERHEAD.name}</Text>
+          </View>
         </View>
 
         <CertificateFooter />

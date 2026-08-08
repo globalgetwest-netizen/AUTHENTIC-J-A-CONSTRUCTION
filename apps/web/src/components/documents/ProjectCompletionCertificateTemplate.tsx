@@ -2,6 +2,7 @@ import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { Project } from "@/lib/admin/types";
 import { label } from "@/lib/admin/types";
 import { dateLabel, money } from "@/lib/documents/format";
+import { LETTERHEAD } from "@/config/documents";
 import {
   CERT_COLORS,
   CERT_FONT,
@@ -16,11 +17,11 @@ import {
 } from "./CertificateFrame";
 
 const styles = StyleSheet.create({
-  intro: { fontSize: 11, lineHeight: 1.85, textAlign: "justify" },
+  intro: { fontSize: 11, lineHeight: 1.8, textAlign: "justify" },
   highlight: { fontFamily: CERT_FONT_BOLD, color: CERT_COLORS.blue },
   projectName: {
-    marginTop: 18,
-    fontSize: 16,
+    marginTop: 12,
+    fontSize: 15,
     fontFamily: FONT_DISPLAY,
     fontWeight: 700,
     color: CERT_COLORS.navy,
@@ -31,39 +32,39 @@ const styles = StyleSheet.create({
     fontFamily: CERT_FONT_ITALIC,
     color: CERT_COLORS.muted,
     textAlign: "center",
-    marginTop: 3,
+    marginTop: 2,
   },
-  table: { marginTop: 16, borderWidth: 1, borderColor: CERT_COLORS.border },
+  table: { marginTop: 10, borderWidth: 1, borderColor: CERT_COLORS.border },
   row: { flexDirection: "row", borderBottomWidth: 0.5, borderBottomColor: CERT_COLORS.border },
   cellLabel: {
     width: "38%",
     backgroundColor: CERT_COLORS.paper,
-    paddingVertical: 5,
-    paddingHorizontal: 9,
-    fontSize: 7.5,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    fontSize: 7.2,
     fontFamily: FONT_SANS,
     fontWeight: 600,
     color: CERT_COLORS.muted,
     textTransform: "uppercase",
-    letterSpacing: 0.8,
+    letterSpacing: 0.7,
   },
   cellValue: {
     flex: 1,
-    paddingVertical: 5,
-    paddingHorizontal: 9,
-    fontSize: 10,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    fontSize: 9.5,
     fontFamily: CERT_FONT,
     fontWeight: 500,
     color: CERT_COLORS.ink,
   },
   note: {
-    marginTop: 14,
-    fontSize: 8.8,
+    marginTop: 10,
+    fontSize: 8.4,
     fontFamily: CERT_FONT_ITALIC,
     color: CERT_COLORS.muted,
     lineHeight: 1.6,
   },
-  signatures: { marginTop: 22 },
+  signatures: { marginTop: 14 },
 });
 
 export function ProjectCompletionCertificateTemplate({
@@ -170,8 +171,9 @@ export function ProjectCompletionCertificateTemplate({
             <SignatureRow
               left={{
                 label: "For and on behalf of the Contractor",
-                name: "AUTHENTIC J.A. CONSTRUCTION LTD.",
-                role: "Authorised Signatory & Company Seal",
+                name: "JOSEPH ACQUAH",
+                role: "Chief Executive Officer",
+                signatureSrc: LETTERHEAD.ceo.signature,
               }}
               right={{
                 label: clientName ? "Received by (Client)" : "Project Manager",

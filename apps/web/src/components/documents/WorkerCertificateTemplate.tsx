@@ -2,6 +2,7 @@ import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { Employee } from "@/lib/admin/types";
 import { label } from "@/lib/admin/types";
 import { dateLabel } from "@/lib/documents/format";
+import { LETTERHEAD } from "@/config/documents";
 import {
   CERT_COLORS,
   CERT_FONT,
@@ -144,8 +145,9 @@ export function WorkerCertificateTemplate({
               }}
               right={{
                 label: "For and on behalf of",
-                name: "THE MANAGING DIRECTOR",
-                role: "Managing Director",
+                name: "JOSEPH ACQUAH",
+                role: "Chief Executive Officer",
+                signatureSrc: LETTERHEAD.ceo.signature,
               }}
             />
           </View>

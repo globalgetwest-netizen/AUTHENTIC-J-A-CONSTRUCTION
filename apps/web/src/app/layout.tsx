@@ -21,6 +21,15 @@ export const metadata: Metadata = {
   },
   description:
     "AUTHENTIC J.A. CONSTRUCTION LTD. — construction, engineering, real estate, property development, land allocation, building materials and block manufacturing in Ghana.",
+  manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/brand/aja-icon.svg", type: "image/svg+xml", sizes: "any" },
+      "/favicon.ico",
+    ],
+    apple: "/brand/aja-icon.svg",
+  },
+  themeColor: "#14324F",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

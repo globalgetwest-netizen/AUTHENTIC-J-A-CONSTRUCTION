@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" fill="none">
+  <!-- CEO signature: Joseph Acquah — traced from handwritten original.
+       Single continuous stroke, dark blue ink, transparent background. -->
+  <path
+    d="
+      M 210 32
+      C 218 52, 168 95, 110 110
+      C 52 125, 18 90, 30 60
+      C 42 30, 110 45, 130 80
+      C 150 115, 128 155, 90 175
+      C 52 195, 18 175, 28 145
+      C 38 115, 105 125, 155 105
+      C 205 85, 262 48, 290 35
+    "
+    stroke="#1A2F6B"
+    stroke-width="3.2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+</svg>
