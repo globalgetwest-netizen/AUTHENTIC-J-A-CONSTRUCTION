@@ -1,111 +1,222 @@
 import { StyleSheet, Text, View } from "@react-pdf/renderer";
 import { LETTERHEAD } from "@/config/documents";
+import {
+  FONT_BODY,
+  FONT_BODY_BOLD,
+  FONT_BODY_ITALIC,
+  FONT_DISPLAY,
+  FONT_SANS,
+} from "@/lib/documents/fonts";
 import { DOC_COLORS, Letterhead } from "./Letterhead";
+
+export { FONT_BODY, FONT_DISPLAY, FONT_SANS };
 
 /**
  * Shared premium frame for the corporate certificate suite.
  *
- * Renders the letterhead on cream paper inside a gold + brand-blue double
- * border (the classic certificate look), with a centered gold band for the
- * certificate title, a company seal beside the signature block, and the
- * certificate serial + issue date in the footer. Every certificate in the
- * suite composes this frame so the whole set looks consistent and "bankable".
+ * A classic "bankable" certificate on warm cream paper: three nested rules
+ * (gold / navy / gold hairline) with corner ornaments, a faint engraved-style
+ * watermark (company monogram inside a gold ring), a gold-band title block
+ * with serial number, a wax-seal beside the signature row, and the company
+ * registry details in the footer. The type stack is premium throughout:
+ * Playfair Display for titles, EB Garamond for copy, Inter for the small
+ * labels — every certificate in the suite composes this frame, so the whole
+ * set reads as one ground-up designed system.
  */
 
 export const CERT_COLORS = {
-  gold: "#C9A227",
-  goldDark: "#9A7B1F",
+  gold: "#C2A15B",
+  goldLight: "#E8D6AA",
+  goldDeep: "#8E6D22",
+  navy: "#14324F",
   blue: DOC_COLORS.blue,
-  green: DOC_COLORS.green,
-  charcoal: DOC_COLORS.charcoal,
-  muted: DOC_COLORS.muted,
-  border: "#dcd4c0",
-  cream: "#FFFEFA",
+  ink: "#26303B",
+  charcoal: "#26303B",
+  muted: "#5B6674",
+  border: "#DAD0B8",
+  paper: "#FAF5EA",
+  cream: "#FDFCF7",
 };
 
-export const CERT_FONT = "Times-Roman";
-export const CERT_FONT_BOLD = "Times-Bold";
-export const CERT_FONT_ITALIC = "Times-Italic";
+export const CERT_FONT = FONT_BODY;
+export const CERT_FONT_BOLD = FONT_BODY_BOLD;
+export const CERT_FONT_ITALIC = FONT_BODY_ITALIC;
 
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 44,
-    paddingBottom: 58,
-    paddingHorizontal: 46,
+    paddingTop: 42,
+    paddingBottom: 56,
+    paddingHorizontal: 44,
     backgroundColor: CERT_COLORS.cream,
-    fontSize: 10,
-    color: CERT_COLORS.charcoal,
-    fontFamily: CERT_FONT,
+    fontSize: 11,
+    color: CERT_COLORS.ink,
+    fontFamily: FONT_BODY,
   },
+  // ---- Frame: three nested rules + corner ornaments ----
   frameOuter: {
     position: "absolute",
-    top: 16,
-    bottom: 16,
-    left: 16,
-    right: 16,
-    borderWidth: 1,
+    top: 17,
+    bottom: 17,
+    left: 17,
+    right: 17,
+    borderWidth: 1.2,
     borderColor: CERT_COLORS.gold,
   },
-  frameInner: {
+  frameNavy: {
     position: "absolute",
-    top: 21,
-    bottom: 21,
-    left: 21,
-    right: 21,
+    top: 24,
+    bottom: 24,
+    left: 24,
+    right: 24,
     borderWidth: 2,
-    borderColor: CERT_COLORS.blue,
+    borderColor: CERT_COLORS.navy,
   },
-  cornerTL: { position: "absolute", top: 24, left: 24, width: 14, height: 14, borderTopWidth: 3, borderLeftWidth: 3, borderColor: CERT_COLORS.gold },
-  cornerTR: { position: "absolute", top: 24, right: 24, width: 14, height: 14, borderTopWidth: 3, borderRightWidth: 3, borderColor: CERT_COLORS.gold },
-  cornerBL: { position: "absolute", bottom: 24, left: 24, width: 14, height: 14, borderBottomWidth: 3, borderLeftWidth: 3, borderColor: CERT_COLORS.gold },
-  cornerBR: { position: "absolute", bottom: 24, right: 24, width: 14, height: 14, borderBottomWidth: 3, borderRightWidth: 3, borderColor: CERT_COLORS.gold },
-  heading: { alignItems: "center", marginTop: 6, marginBottom: 14 },
+  frameHair: {
+    position: "absolute",
+    top: 29,
+    bottom: 29,
+    left: 29,
+    right: 29,
+    borderWidth: 0.6,
+    borderColor: CERT_COLORS.gold,
+  },
+  corner: {
+    position: "absolute",
+    width: 13,
+    height: 13,
+    borderColor: CERT_COLORS.gold,
+    opacity: 0.9,
+  },
+  cornerTL: { top: 26, left: 26, borderTopWidth: 3, borderLeftWidth: 3 },
+  cornerTR: { top: 26, right: 26, borderTopWidth: 3, borderRightWidth: 3 },
+  cornerBL: { bottom: 26, left: 26, borderBottomWidth: 3, borderLeftWidth: 3 },
+  cornerBR: { bottom: 26, right: 26, borderBottomWidth: 3, borderRightWidth: 3 },
+
+  // ---- Watermark ----
+  watermark: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  wmRing: {
+    width: 330,
+    height: 330,
+    borderRadius: 165,
+    borderWidth: 1.4,
+    borderColor: CERT_COLORS.gold,
+    opacity: 0.35,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  wmRingInner: {
+    width: 272,
+    height: 272,
+    borderRadius: 136,
+    borderWidth: 0.7,
+    borderColor: CERT_COLORS.gold,
+    opacity: 0.6,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  wmText: {
+    fontFamily: FONT_DISPLAY,
+    fontWeight: 700,
+    fontSize: 205,
+    color: CERT_COLORS.navy,
+    opacity: 0.055,
+    transform: "rotate(-7deg)",
+  },
+  wmCaption: {
+    marginTop: 14,
+    fontFamily: FONT_SANS,
+    fontWeight: 500,
+    fontSize: 7,
+    letterSpacing: 4,
+    color: CERT_COLORS.navy,
+    opacity: 0.16,
+  },
+
+  // ---- Heading block ----
+  heading: { alignItems: "center", marginTop: 4, marginBottom: 8 },
+  title: {
+    fontSize: 21,
+    fontFamily: FONT_DISPLAY,
+    fontWeight: 700,
+    color: CERT_COLORS.navy,
+    textTransform: "uppercase",
+    letterSpacing: 3.6,
+  },
+  subtitle: {
+    fontSize: 9.5,
+    fontFamily: FONT_BODY,
+    fontStyle: "italic",
+    color: CERT_COLORS.muted,
+    marginTop: 4,
+  },
   goldBand: {
     flexDirection: "row",
     alignItems: "center",
     alignSelf: "stretch",
-    marginVertical: 8,
+    marginVertical: 9,
+    paddingHorizontal: 10,
   },
-  goldRule: { flex: 1, height: 1, backgroundColor: CERT_COLORS.gold },
-  diamond: { width: 7, height: 7, backgroundColor: CERT_COLORS.gold, transform: "rotate(45deg)", marginHorizontal: 8 },
-  title: {
-    fontSize: 19,
-    fontFamily: CERT_FONT_BOLD,
-    color: CERT_COLORS.blue,
-    letterSpacing: 2.5,
+  goldRule: { flex: 1, height: 0.8, backgroundColor: CERT_COLORS.gold },
+  goldDiamond: {
+    width: 9,
+    height: 9,
+    backgroundColor: CERT_COLORS.gold,
+    transform: "rotate(45deg)",
+    marginHorizontal: 11,
   },
-  subtitle: {
-    fontSize: 9.5,
-    fontFamily: CERT_FONT_ITALIC,
-    color: CERT_COLORS.muted,
-    marginTop: 4,
+  goldDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: CERT_COLORS.gold,
+    marginHorizontal: 7,
   },
   serial: {
-    fontSize: 8,
-    fontFamily: CERT_FONT_BOLD,
-    color: CERT_COLORS.goldDark,
-    letterSpacing: 1.2,
-    marginTop: 5,
+    fontFamily: FONT_SANS,
+    fontWeight: 600,
+    fontSize: 7.5,
+    color: CERT_COLORS.goldDeep,
+    letterSpacing: 1.8,
+    marginTop: 2,
   },
-  body: { fontSize: 10, lineHeight: 1.65 },
-  bodySerif: { fontFamily: CERT_FONT },
+
+  // ---- Body ----
+  body: { fontSize: 11, lineHeight: 1.8 },
+  bodySerif: { fontFamily: FONT_BODY },
+
+  // ---- Footer ----
   footer: {
     position: "absolute",
-    bottom: 28,
-    left: 44,
-    right: 44,
+    bottom: 30,
+    left: 70,
+    right: 70,
     flexDirection: "row",
     justifyContent: "space-between",
-    borderTopWidth: 0.5,
-    borderTopColor: CERT_COLORS.border,
-    paddingTop: 5,
+    borderTopWidth: 0.6,
+    borderTopColor: CERT_COLORS.gold,
+    paddingTop: 6,
   },
-  footerText: { fontSize: 7.5, color: CERT_COLORS.muted, fontFamily: CERT_FONT },
+  footerText: {
+    fontFamily: FONT_SANS,
+    fontWeight: 400,
+    fontSize: 6.4,
+    color: CERT_COLORS.muted,
+    letterSpacing: 0.4,
+  },
 });
 
 /**
- * Renders the letterhead then the certificate heading band. `title` is the
- * document name ("CERTIFICATE OF EMPLOYMENT"), `serial` the unique number.
+ * Renders the letterhead then the certificate heading block: title, subtitle,
+ * a gold rule flanked by diamonds, and the serial number.
  */
 export function CertificateHeading({
   logoSrc,
@@ -128,7 +239,9 @@ export function CertificateHeading({
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
         <View style={styles.goldBand}>
           <View style={styles.goldRule} />
-          <View style={styles.diamond} />
+          <View style={styles.goldDot} />
+          <View style={styles.goldDiamond} />
+          <View style={styles.goldDot} />
           <View style={styles.goldRule} />
         </View>
         {serial ? <Text style={styles.serial}>CERTIFICATE NO. {serial}</Text> : null}
@@ -137,7 +250,7 @@ export function CertificateHeading({
   );
 }
 
-/** Company seal: concentric rings with the registered-name monogram. */
+/** Company seal: concentric gold rings with the registered monogram. */
 export function Seal({
   monogram = "AJAC",
   caption = "REGISTERED CONSTRUCTION",
@@ -146,35 +259,64 @@ export function Seal({
   caption?: string;
 }) {
   return (
-    <View style={{ width: 86, height: 86, alignItems: "center", justifyContent: "center" }}>
+    <View style={{ width: 92, height: 92, alignItems: "center", justifyContent: "center" }}>
       <View
         style={{
-          width: 86,
-          height: 86,
-          borderRadius: 43,
-          borderWidth: 1.6,
-          borderColor: CERT_COLORS.goldDark,
+          width: 92,
+          height: 92,
+          borderRadius: 46,
+          borderWidth: 1.8,
+          borderColor: CERT_COLORS.goldDeep,
           alignItems: "center",
           justifyContent: "center",
         }}
       >
         <View
           style={{
-            width: 74,
-            height: 74,
-            borderRadius: 37,
+            width: 80,
+            height: 80,
+            borderRadius: 40,
             borderWidth: 1,
             borderColor: CERT_COLORS.gold,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <Text style={{ fontSize: 17, fontFamily: CERT_FONT_BOLD, color: CERT_COLORS.blue, letterSpacing: 1 }}>
-            {monogram}
-          </Text>
-          <Text style={{ fontSize: 4.6, fontFamily: CERT_FONT_BOLD, color: CERT_COLORS.goldDark, letterSpacing: 0.6, marginTop: 2 }}>
-            {caption}
-          </Text>
+          <View
+            style={{
+              width: 62,
+              height: 62,
+              borderRadius: 31,
+              borderWidth: 0.6,
+              borderColor: CERT_COLORS.navy,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 19,
+                fontFamily: FONT_DISPLAY,
+                fontWeight: 700,
+                color: CERT_COLORS.navy,
+                letterSpacing: 1,
+              }}
+            >
+              {monogram}
+            </Text>
+            <Text
+              style={{
+                fontSize: 4.6,
+                fontFamily: FONT_SANS,
+                fontWeight: 600,
+                color: CERT_COLORS.goldDeep,
+                letterSpacing: 0.5,
+                marginTop: 3,
+              }}
+            >
+              {caption}
+            </Text>
+          </View>
         </View>
       </View>
     </View>
@@ -197,27 +339,30 @@ export function SignatureBlock({
     <View style={{ width: "46%", alignItems: align === "right" ? "flex-end" : "flex-start" }}>
       <Text
         style={{
-          fontSize: 7.5,
-          fontFamily: CERT_FONT_BOLD,
+          fontSize: 7.2,
+          fontFamily: FONT_SANS,
+          fontWeight: 600,
           color: CERT_COLORS.muted,
           textTransform: "uppercase",
-          letterSpacing: 0.8,
+          letterSpacing: 1.3,
         }}
       >
         {label}
       </Text>
       <View
         style={{
-          marginTop: 30,
+          marginTop: 26,
           width: "100%",
           borderBottomWidth: 0.8,
-          borderBottomColor: CERT_COLORS.charcoal,
+          borderBottomColor: CERT_COLORS.ink,
         }}
       />
-      <Text style={{ fontSize: 9, fontFamily: CERT_FONT_BOLD, color: CERT_COLORS.charcoal, marginTop: 4 }}>
+      <Text
+        style={{ fontSize: 9.5, fontFamily: FONT_DISPLAY, fontWeight: 600, color: CERT_COLORS.ink, marginTop: 4 }}
+      >
         {name}
       </Text>
-      <Text style={{ fontSize: 8, fontFamily: CERT_FONT_ITALIC, color: CERT_COLORS.muted, marginTop: 1 }}>
+      <Text style={{ fontSize: 8, fontFamily: FONT_BODY_ITALIC, color: CERT_COLORS.muted, marginTop: 1 }}>
         {role}
       </Text>
     </View>
@@ -261,7 +406,7 @@ export function CertificateFooter() {
   );
 }
 
-/** Outer frame + corners + footer for a certificate page body. */
+/** The full certificate stage: watermark, frame, corners, footer, content. */
 export function CertificatePage({
   children,
   showFooter = true,
@@ -271,12 +416,21 @@ export function CertificatePage({
 }) {
   return (
     <View style={styles.page}>
+      <View style={styles.watermark}>
+        <View style={styles.wmRing}>
+          <View style={styles.wmRingInner}>
+            <Text style={styles.wmText}>AJ</Text>
+          </View>
+        </View>
+        <Text style={styles.wmCaption}>AUTHENTIC J.A. CONSTRUCTION LTD.</Text>
+      </View>
       <View style={styles.frameOuter} />
-      <View style={styles.frameInner} />
-      <View style={styles.cornerTL} />
-      <View style={styles.cornerTR} />
-      <View style={styles.cornerBL} />
-      <View style={styles.cornerBR} />
+      <View style={styles.frameNavy} />
+      <View style={styles.frameHair} />
+      <View style={[styles.corner, styles.cornerTL]} />
+      <View style={[styles.corner, styles.cornerTR]} />
+      <View style={[styles.corner, styles.cornerBL]} />
+      <View style={[styles.corner, styles.cornerBR]} />
       {children}
       {showFooter ? <CertificateFooter /> : null}
     </View>
