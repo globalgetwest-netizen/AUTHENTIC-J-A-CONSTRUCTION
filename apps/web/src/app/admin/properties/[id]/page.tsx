@@ -133,9 +133,17 @@ export default function PropertyDetail() {
           <h1 className="text-xl font-bold text-neutral-900">{property.name}</h1>
           <StatusBadge value={property.status} />
         </div>
-        <Button variant="outline" onClick={() => setEditing(true)}>
-          Edit
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href={`/api/admin/properties/${property.id}/certificate`}
+            className="rounded-md bg-brand-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+          >
+            Download ownership certificate
+          </a>
+          <Button variant="outline" onClick={() => setEditing(true)}>
+            Edit
+          </Button>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">

@@ -116,7 +116,17 @@ export default function ProjectDetail() {
           <h1 className="text-xl font-bold text-neutral-900">{project.name}</h1>
           <StatusBadge value={project.status} />
         </div>
-        <p className="text-sm text-neutral-500">{project.code}</p>
+        <div className="flex flex-wrap items-center gap-3">
+          {project.status === "COMPLETED" ? (
+            <a
+              href={`/api/admin/projects/${project.id}/completion-certificate`}
+              className="rounded-md bg-brand-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              Download completion certificate
+            </a>
+          ) : null}
+          <p className="text-sm text-neutral-500">{project.code}</p>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">

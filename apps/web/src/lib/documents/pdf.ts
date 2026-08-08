@@ -4,6 +4,7 @@ import { createElement, type ReactElement } from "react";
 import type { DocumentProps } from "@react-pdf/renderer";
 import type {
   Client,
+  Employee,
   EmployeeIdCard,
   LandAllocation,
   LandPlot,
@@ -158,6 +159,124 @@ export async function renderEmployeeIdCardPdf(input: EmployeeIdCardInput): Promi
     issuedAt: card.issuedAt,
     expiresAt: card.expiresAt,
     status: label(card.status),
+  }) as unknown as ReactElement<DocumentProps>;
+  return renderToBuffer(template);
+}
+
+export interface WorkerCertificateInput {
+  employee: Employee;
+  issuedOn?: string;
+}
+
+/** Renders an employee's formal Certificate of Employment (Worker Certificate). */
+export async function renderWorkerCertificatePdf(
+  input: WorkerCertificateInput,
+): Promise<Buffer> {
+  const { renderToBuffer } = await import("@react-pdf/renderer");
+  const { WorkerCertificateTemplate } = await import(
+    "@/components/documents/WorkerCertificateTemplate"
+  );
+  const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
+  const letterheadSrc = LETTERHEAD.letterheadImage
+    ? await readAssetAsDataUri(LETTERHEAD.letterheadImage)
+    : null;
+  const template = createElement(WorkerCertificateTemplate, {
+    employee: input.employee,
+    logoSrc,
+    letterheadSrc,
+    issuedOn: input.issuedOn ?? new Date().toISOString(),
+  }) as unknown as ReactElement<DocumentProps>;
+  return renderToBuffer(template);
+}
+
+export interface AssetOwnershipCertificateInput {
+  title: string;
+  subtitle: string;
+  serial: string;
+  owner: string;
+  kind: string;
+  assetName: string;
+  assetSub?: string | null;
+  rows: Array<{ label: string; value: string }>;
+  note?: string | null;
+  issuedOn?: string;
+}
+
+/** Renders a Certificate of Ownership for an asset, equipment, vehicle or property. */
+export async function renderAssetOwnershipCertificatePdf(
+  input: AssetOwnershipCertificateInput,
+): Promise<Buffer> {
+  const { renderToBuffer } = await import("@react-pdf/renderer");
+  const { AssetOwnershipCertificateTemplate } = await import(
+    "@/components/documents/AssetOwnershipCertificateTemplate"
+  );
+  const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
+  const letterheadSrc = LETTERHEAD.letterheadImage
+    ? await readAssetAsDataUri(LETTERHEAD.letterheadImage)
+    : null;
+  const template = createElement(AssetOwnershipCertificateTemplate, {
+    ...input,
+    logoSrc,
+    letterheadSrc,
+    issuedOn: input.issuedOn ?? new Date().toISOString(),
+  }) as unknown as ReactElement<DocumentProps>;
+  return renderToBuffer(template);
+}
+
+export interface ProjectCompletionCertificateInput {
+  project: Project;
+  clientName?: string | null;
+  managerName?: string | null;
+  issuedOn?: string;
+}
+
+/** Renders a completed project's Certificate of Practical Completion. */
+export async function renderProjectCompletionCertificatePdf(
+  input: ProjectCompletionCertificateInput,
+): Promise<Buffer> {
+  const { renderToBuffer } = await import("@react-pdf/renderer");
+  const { ProjectCompletionCertificateTemplate } = await import(
+    "@/components/documents/ProjectCompletionCertificateTemplate"
+  );
+  const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
+  const letterheadSrc = LETTERHEAD.letterheadImage
+    ? await readAssetAsDataUri(LETTERHEAD.letterheadImage)
+    : null;
+  const template = createElement(ProjectCompletionCertificateTemplate, {
+    project: input.project,
+    clientName: input.clientName ?? null,
+    managerName: input.managerName ?? null,
+    logoSrc,
+    letterheadSrc,
+    issuedOn: input.issuedOn ?? new Date().toISOString(),
+  }) as unknown as ReactElement<DocumentProps>;
+  return renderToBuffer(template);
+}
+
+export interface CompanyProfileInput {
+  projects?: Array<
+    Pick<Project, "code" | "name" | "projectType" | "status" | "client">
+  >;
+  equipment?: Array<{ assetCode: string; name: string; category: string; status: string }>;
+  issuedOn?: string;
+}
+
+/** Renders the corporate capability statement / company profile brochure. */
+export async function renderCompanyProfilePdf(input: CompanyProfileInput): Promise<Buffer> {
+  const { renderToBuffer } = await import("@react-pdf/renderer");
+  const { CompanyProfileTemplate } = await import(
+    "@/components/documents/CompanyProfileTemplate"
+  );
+  const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
+  const letterheadSrc = LETTERHEAD.letterheadImage
+    ? await readAssetAsDataUri(LETTERHEAD.letterheadImage)
+    : null;
+  const template = createElement(CompanyProfileTemplate, {
+    logoSrc,
+    letterheadSrc,
+    issuedOn: input.issuedOn ?? new Date().toISOString(),
+    projects: input.projects ?? [],
+    equipment: input.equipment ?? [],
   }) as unknown as ReactElement<DocumentProps>;
   return renderToBuffer(template);
 }

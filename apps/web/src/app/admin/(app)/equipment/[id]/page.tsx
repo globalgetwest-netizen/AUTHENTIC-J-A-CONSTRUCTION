@@ -95,7 +95,15 @@ export default function EquipmentDetailPage() {
           <h1 className="text-xl font-bold text-neutral-900">{equipment.name}</h1>
           <p className="text-sm text-neutral-500">{equipment.assetCode}</p>
         </div>
-        <Button variant="danger" onClick={remove}>Delete</Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href={`/api/admin/equipment/${equipment.id}/certificate`}
+            className="rounded-md bg-brand-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+          >
+            Download ownership certificate
+          </a>
+          <Button variant="danger" onClick={remove}>Delete</Button>
+        </div>
       </div>
 
       {message && (

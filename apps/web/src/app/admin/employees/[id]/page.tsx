@@ -136,9 +136,17 @@ export default function EmployeeDetail() {
           </h1>
           <StatusBadge value={employee.status} />
         </div>
-        <Button variant="outline" onClick={() => setEditing(true)}>
-          Edit
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href={`/api/admin/employees/${employee.id}/certificate`}
+            className="rounded-md bg-brand-blue px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+          >
+            Download worker certificate
+          </a>
+          <Button variant="outline" onClick={() => setEditing(true)}>
+            Edit
+          </Button>
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">

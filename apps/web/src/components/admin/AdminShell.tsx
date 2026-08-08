@@ -17,6 +17,7 @@ const DEFAULT_NAV: NavItem[] = [
   { href: "/admin/quotations", label: "Quotations" },
   { href: "/admin/projects", label: "Projects" },
   { href: "/admin/documents", label: "Documents" },
+  { href: "/admin/corporate-documents", label: "Corporate documents" },
   { href: "/admin/employees", label: "Employees" },
   { href: "/admin/employee-ids", label: "Employee IDs" },
   { href: "/admin/org", label: "Org structure" },
