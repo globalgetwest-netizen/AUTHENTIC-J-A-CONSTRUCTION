@@ -8,67 +8,58 @@ import { Pagination } from "@/components/admin/Pagination";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { useList } from "@/lib/admin/useList";
 import {
-  DOCUMENT_STATUSES,
-  formatBytes,
   formatDate,
+  formatMoney,
   label,
-  type DocumentMeta,
+  QUOTATION_STATUSES,
+  type Quotation,
 } from "@/lib/admin/types";
 
-const CATEGORIES = ["contracts", "plans", "reports", "safety", "permits", "financial", "other"];
-
-export default function DocumentsPage() {
+export default function QuotationsPage() {
   const router = useRouter();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
-  const [category, setCategory] = useState("");
   const [search, setSearch] = useState("");
 
-  const { data, meta, loading, error } = useList<DocumentMeta>("/api/admin/documents", {
+  const { data, meta, loading, error } = useList<Quotation>("/api/admin/quotations", {
     page: String(page),
     pageSize: "15",
     status,
-    category,
     search,
   });
 
-  const columns: Column<DocumentMeta>[] = [
+  const columns: Column<Quotation>[] = [
+    { key: "quotationNo", header: "Quote No." },
     {
       key: "title",
-      header: "Document",
-      render: (d) => (
+      header: "Title",
+      render: (q) => (
         <div className="min-w-0">
-          <div className="truncate font-medium text-neutral-900">{d.title}</div>
+          <div className="truncate font-medium text-neutral-900">{q.title}</div>
           <div className="truncate text-xs text-neutral-500">
-            {d.category ? label(d.category) : "Uncategorised"} · updated {formatDate(d.updatedAt)}
+            {q.client?.companyName || q.client?.contactName || "—"}
           </div>
         </div>
       ),
     },
     {
-      key: "status",
-      header: "Status",
-      render: (d) => <StatusBadge value={d.status} />,
+      key: "total",
+      header: "Total",
+      render: (q) => <span className="font-medium text-neutral-900">{formatMoney(q.total)}</span>,
     },
+    { key: "status", header: "Status", render: (q) => <StatusBadge value={q.status} /> },
+    { key: "createdAt", header: "Issued", render: (q) => formatDate(q.issuedAt ?? q.createdAt) },
     {
-      key: "accessLevel",
-      header: "Access",
-      render: (d) => <StatusBadge value={d.accessLevel} />,
-    },
-    {
-      key: "versions",
-      header: "Versions",
-      render: (d) => (
-        <span className="text-sm text-neutral-700">v{d.versions?.length ?? d._count?.versions ?? 0}</span>
-      ),
-    },
-    {
-      key: "file",
-      header: "File",
-      render: (d) => (
-        <span className="text-sm text-neutral-600">
-          {d.sizeBytes ? formatBytes(d.sizeBytes) : "—"}
-        </span>
+      key: "pdf",
+      header: "",
+      render: (q) => (
+        <a
+          href={`/api/admin/quotations/${q.id}/pdf`}
+          onClick={(e) => e.stopPropagation()}
+          className="text-sm font-semibold text-brand-blue hover:underline"
+        >
+          PDF
+        </a>
       ),
     },
   ];
@@ -77,12 +68,12 @@ export default function DocumentsPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-neutral-900">Documents</h1>
+          <h1 className="text-xl font-bold text-neutral-900">Quotations</h1>
           <p className="text-sm text-neutral-500">
-            Centralised files — contracts, plans, reports and permits with version history.
+            Price estimates issued to clients, saved and downloadable as PDFs.
           </p>
         </div>
-        <Button onClick={() => router.push("/admin/documents/new")}>Upload document</Button>
+        <Button onClick={() => router.push("/admin/quotations/new")}>New quotation</Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -92,7 +83,7 @@ export default function DocumentsPage() {
             setSearch(e.target.value);
             setPage(1);
           }}
-          placeholder="Search by title…"
+          placeholder="Search by number or title…"
           className="w-64 rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-brand-blue focus:outline-none"
         />
         <select
@@ -104,24 +95,9 @@ export default function DocumentsPage() {
           className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-brand-blue focus:outline-none"
         >
           <option value="">All statuses</option>
-          {DOCUMENT_STATUSES.map((s) => (
+          {QUOTATION_STATUSES.map((s) => (
             <option key={s} value={s}>
               {label(s)}
-            </option>
-          ))}
-        </select>
-        <select
-          value={category}
-          onChange={(e) => {
-            setCategory(e.target.value);
-            setPage(1);
-          }}
-          className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-brand-blue focus:outline-none"
-        >
-          <option value="">All categories</option>
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {label(c)}
             </option>
           ))}
         </select>
@@ -140,8 +116,8 @@ export default function DocumentsPage() {
           <AdminTable
             columns={columns}
             rows={data}
-            onRowClick={(d) => router.push(`/admin/documents/${d.id}`)}
-            empty="No documents yet. Upload your first one."
+            onRowClick={(q) => router.push(`/admin/quotations/${q.id}`)}
+            empty="No quotations yet. Create your first one."
           />
           <Pagination meta={meta} onPage={setPage} />
         </>

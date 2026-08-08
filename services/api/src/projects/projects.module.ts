@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { NotificationsModule } from '../notifications/notifications.module';
 import {
   ProjectMembersController,
   ProjectMilestonesController,
@@ -16,6 +17,7 @@ import { ProjectsService } from './projects.service';
     ProjectMembersController,
     StaffProjectsController,
   ],
+  imports: [NotificationsModule],
   providers: [ProjectsService],
 })
 export class ProjectsModule {}

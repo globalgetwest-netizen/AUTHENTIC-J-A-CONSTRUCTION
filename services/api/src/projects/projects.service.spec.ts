@@ -3,6 +3,7 @@ import { ConflictException, ForbiddenException, NotFoundException } from '@nestj
 import type { PrismaService } from '../prisma/prisma.service';
 import type { AuthUser } from '../common/auth/auth-user.type';
 import { ProjectsService } from './projects.service';
+import type { NotificationsService } from '../notifications/notifications.service';
 
 type MockCrud = Record<
   | 'findFirst'
@@ -54,7 +55,7 @@ function makeService(): {
   projectMilestone: MockCrud;
   projectUpdate: MockCrud;
   user: MockCrud;
-  notification: { create: ReturnType<typeof vi.fn> };
+  notifications: { notify: ReturnType<typeof vi.fn> };
 } {
   const make = (): MockCrud => ({
     findFirst: vi.fn(),
@@ -70,16 +71,23 @@ function makeService(): {
   const projectMilestone = make();
   const projectUpdate = make();
   const user = make();
-  const notification = { create: vi.fn() };
+  const notifications = { notify: vi.fn() };
   const prisma = {
     project,
     projectMember,
     projectMilestone,
     projectUpdate,
     user,
-    notification,
   } as unknown as PrismaService;
-  return { service: new ProjectsService(prisma), project, projectMember, projectMilestone, projectUpdate, user, notification };
+  return {
+    service: new ProjectsService(prisma, notifications as unknown as NotificationsService),
+    project,
+    projectMember,
+    projectMilestone,
+    projectUpdate,
+    user,
+    notifications,
+  };
 }
 
 /** Routes project.findFirst by its select shape so detail/access/notify lookups coexist. */
@@ -142,7 +150,7 @@ describe('ProjectsService', () => {
   });
 
   it('createUpdate succeeds for an assigned member with authorId = caller', async () => {
-    const { service, project, user, projectMember, projectUpdate, notification } = makeService();
+    const { service, project, user, projectMember, projectUpdate, notifications } = makeService();
     routeProjectLookup(project, {
       access: { id: 'p1', managerId: 'emp-9' },
       manager: { name: 'Demo site', manager: { userId: 'u-mgr' } },
@@ -162,14 +170,12 @@ describe('ProjectsService', () => {
         }),
       }),
     );
-    expect(notification.create).toHaveBeenCalledWith(
+    expect(notifications.notify).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          userId: 'u-mgr',
-          type: 'PROJECT',
-          data: { projectId: 'p1' },
-          link: '/staff/projects/p1',
-        }),
+        userId: 'u-mgr',
+        type: 'PROJECT',
+        data: { projectId: 'p1' },
+        link: '/staff/projects/p1',
       }),
     );
   });
@@ -211,7 +217,7 @@ describe('ProjectsService', () => {
   });
 
   it('completeMilestone sets COMPLETED + completedAt and notifies the manager', async () => {
-    const { service, project, user, projectMilestone, notification } = makeService();
+    const { service, project, user, projectMilestone, notifications } = makeService();
     routeProjectLookup(project, {
       access: { id: 'p1', managerId: 'emp-1' },
       manager: { name: 'Demo site', manager: { userId: 'u-mgr' } },
@@ -235,14 +241,12 @@ describe('ProjectsService', () => {
         data: expect.objectContaining({ status: 'COMPLETED', completedAt: expect.any(Date) }),
       }),
     );
-    expect(notification.create).toHaveBeenCalledWith(
+    expect(notifications.notify).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          userId: 'u-mgr',
-          type: 'PROJECT',
-          title: 'Milestone completed',
-          data: { projectId: 'p1' },
-        }),
+        userId: 'u-mgr',
+        type: 'PROJECT',
+        title: 'Milestone completed',
+        data: { projectId: 'p1' },
       }),
     );
   });

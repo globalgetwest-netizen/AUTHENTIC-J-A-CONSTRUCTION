@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@ajac/ui";
 import { LETTERHEAD } from "@/config/documents";
@@ -129,7 +130,7 @@ export function QuotationForm({
       if (!res.ok) throw new Error(body?.message ?? "Could not save quotation.");
       const id = body?.id ?? quotationId;
       if (id) {
-        router.push(`/admin/documents/${id}`);
+        router.push(`/admin/quotations/${id}`);
         router.refresh();
       }
     } catch (err) {
@@ -273,12 +274,12 @@ export function QuotationForm({
         <Button type="submit" loading={busy}>
           {quotationId ? "Save changes" : "Create quotation"}
         </Button>
-        <a
-          href={quotationId ? `/admin/documents/${quotationId}` : "/admin/documents"}
+        <Link
+          href={quotationId ? `/admin/quotations/${quotationId}` : "/admin/quotations"}
           className="text-sm font-semibold text-neutral-500 hover:text-neutral-700"
         >
           Cancel
-        </a>
+        </Link>
       </div>
     </form>
   );

@@ -26,6 +26,8 @@ import { SystemModule } from './system/system.module';
 import { RequestsModule } from './requests/requests.module';
 import { StaffModule } from './staff/staff.module';
 import { ClientModule } from './client/client.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { DocumentsModule } from './documents/documents.module';
 
 @Module({
   imports: [
@@ -53,6 +55,8 @@ import { ClientModule } from './client/client.module';
     RequestsModule,
     StaffModule,
     ClientModule,
+    NotificationsModule,
+    DocumentsModule,
   ],
   providers: [
     // Registered in order: AuthGuard first (attaches the user), then PermissionsGuard.

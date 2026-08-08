@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { COMPANY } from "../../config/company";
 import { Logo } from "../Logo";
+import { NotificationBell } from "./NotificationBell";
 
 export interface NavItem {
   href: string;
@@ -13,6 +14,7 @@ const DEFAULT_NAV: NavItem[] = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/leads", label: "Leads" },
   { href: "/admin/clients", label: "Clients" },
+  { href: "/admin/quotations", label: "Quotations" },
   { href: "/admin/projects", label: "Projects" },
   { href: "/admin/documents", label: "Documents" },
   { href: "/admin/employees", label: "Employees" },
@@ -134,6 +136,7 @@ export function AdminShell({
               </span>
               {section || "portal"}
             </span>
+            <NotificationBell />
           </div>
         </header>
 

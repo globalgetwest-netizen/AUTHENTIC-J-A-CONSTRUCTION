@@ -25,7 +25,7 @@ migrations/endpoints/frontend/mobile, and fixing errors** before continuing.
 | 18  | Payroll & payslips                 | **Complete** |
 | 19  | Employee IDs (QR verification)     | **Complete** |
 | 20  | Native Expo application            | **Complete** |
-| 21  | Notifications, documents           | Pending      |
+| 21  | Notifications, documents           | **Complete** |
 | 22  | Testing (expansion)                | Pending      |
 | 23  | Security audit                     | Pending      |
 | 24  | Production deployment              | Pending      |
@@ -623,6 +623,59 @@ access token exactly once per request, and renders the branded design tokens on 
   rules satisfied), and web export (`expo export --platform web`, 20 static routes) all
   clean. No new API surface required — the app consumes the modules built in Phases
   4–19, so the suite stays at 183 tests / 25 files.
+
+## Phase 21 — done (Notifications & documents)
+
+A company-wide notification centre and a self-hosted document library, both built on
+models provisioned in the Phase 3 baseline (`Notification`, `Document`,
+`DocumentVersion`, `DocumentAccess` — no migration required).
+
+- **Notifications module** (`services/api/src/notifications/`): self-scoped `GET
+  /notifications` (searchable, `unreadOnly`, paginated with a global `totalUnread`),
+  `GET /notifications/unread-count`, `POST /notifications/read-all`, and
+  `POST /notifications/:id/read` (idempotent, ownership-checked). No permission
+  decorators — every row belongs to the caller's `userId`, so the same endpoints serve
+  admin, staff and client. The shared `NotificationsService.notify()` drives all future
+  notifications: it silently drops messages for disabled or deleted recipients.
+- **Refactor**: `projects.service`'s ad-hoc notification insert now goes through the
+  shared `notifications.notify(...)` (PROJECT type, `link` to the staff project page),
+  so every portal gets the milestone-complete / work-log alerts in the bell.
+- **Document library** (`services/api/src/documents/`):
+  - `GET /documents` (`documents.read`) — search (title), status + category filters,
+    paginated, `_count.versions`, `uploaderName` resolved from `User` (`Document.uploadedById`
+    has no FK relation, so names are joined in the service — same pattern as projects).
+  - `GET /documents/:id` — current file metadata, full version history (asc) and access
+    grants (newest first).
+  - `POST /documents` (`documents.write`) — multipart upload via `FileInterceptor` to a
+    self-hosted `uploads/` directory (allow-listed extensions, uuid filenames) **or** a
+    bare `url` link; always creates `v1`.
+  - `POST /documents/:id/versions` — next numeric version, repoints the document's live
+    file, optional change `note`.
+  - `POST /documents/:id/status`, `POST /documents/:id/access` (grant VIEW/EDIT per
+    CLIENT/STAFF/ROLE/USER principal, upsert on the composite key), `DELETE
+    /documents/:id/access/:principalType/:principalId`, `DELETE /documents/:id` (soft
+    delete).
+  - Static `/uploads/documents` mounted in `app.factory.ts` (`ensureUploadsDir()` at
+    boot) so stored `fileUrl`s resolve straight off the API.
+- **Seed**: two new permissions (`documents.read`, `documents.write`) → catalog **38**;
+  a demo **Material safety handbook** document (with a real placeholder file written
+  under `uploads/`) published by the admin and notified to the demo client + admin; the
+  existing demo staff notifications (welcome, project milestone/work-log) render the bell
+  on first boot.
+- **Web**: `NotificationBell` in the shared `AdminShell` header (admin / staff / client
+  portals all get it) — polls `/api/notifications/unread-count`, dropdown with the latest
+  12, mark-one/mark-all read, navigates on click. Proxies:
+  `/api/notifications*` and `/api/admin/documents*` (list/detail/upload/version/status/grant/
+  revoke + a `/file` streamer that pulls the upload from the API so the browser only talks
+  to Next). The multipart proxies pass `FormData` through to the API without forcing a
+  JSON content-type (a small `apiFetch` guard).
+- **Admin /documents** rebuilt from the old quotation pages: real library (list/detail),
+  an upload form (file or URL), version history + new-version upload, status workflow, and
+  access-control grant/revoke — each closed with plain-history controls. Quotation
+  management moved to `/admin/quotations` (list/detail/new, PDF, edit) so nothing from
+  Phase 8 was lost.
+- **Gates green**: API suite **206 tests / 27 files**, web `next typegen` + `tsc` +
+  `eslint` + `next build` clean. No Prisma migration required.
 
 ## Phase 12 — done (Projects)
 

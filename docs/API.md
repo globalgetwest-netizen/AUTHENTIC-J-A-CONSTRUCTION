@@ -448,6 +448,41 @@ Seed grows the permission catalog to **36** and adds an idempotent demo card
 `EID-DEMO-0001` (status `VERIFIED`) for `EMP-DEMO-0001`, so the card PDF, the admin list and
 the staff page render content on first boot.
 
+## Endpoints (Phase 21 — Notifications & documents)
+
+Two new permissions (`documents.read`, `documents.write`) grow the seed catalog to **38**
+(SUPER_ADMIN inherits both automatically). Notifications carry no permission decorators —
+every call is scoped to the bearer token's `userId`, so admin, staff and client reuse the
+same endpoints.
+
+### Notifications (self-scoped — powers the bell in all three portals)
+| Route | Permissions | Notes |
+| ----- | ------ | ----- |
+| GET | `/notifications` | authenticated | caller's own feed (`search` on title, `unreadOnly`, paginated) with `meta.totalUnread` |
+| GET | `/notifications/unread-count` | authenticated | `{ totalUnread }` — the bell badge |
+| POST | `/notifications/read-all` | authenticated | marks every unread row read for the caller, returns `{ updated }` |
+| POST | `/notifications/:id/read` | authenticated | mark one notification read (ownership-checked, idempotent) |
+
+The shared `NotificationsService.notify({ userId, type, title, body, data, link })` is
+how every other module raises alerts (projects already use it): recipients that are
+disabled, deleted or missing are skipped silently.
+
+### Documents (no migration — models exist since Phase 3)
+| Route | Permissions | Notes |
+| ----- | ------ | ----- |
+| GET | `/documents` | documents.read | paginated library: `search` (title), `status`, `category`; rows carry `_count.versions` and resolved `uploaderName` |
+| GET | `/documents/:id` | documents.read | current file + `versions` (asc) + `access` grants (newest first) |
+| POST | `/documents` | documents.write | multipart (`file` → self-hosted upload, uuid filename, allow-listed extension, ≤ 20 MB) **or** `url`; creates `v1` |
+| POST | `/documents/:id/versions` | documents.write | next numeric version; optional `note`; multipart `file` or `url` |
+| POST | `/documents/:id/status` | documents.write | body `{ status: DRAFT\|FINAL\|SUPERSEDED\|ARCHIVED }` |
+| POST | `/documents/:id/access` | documents.write | body `{ principalType: CLIENT\|STAFF\|ROLE\|USER, principalId, permission: VIEW\|EDIT }` — upserts on `[documentId, principalType, principalId]` |
+| DELETE | `/documents/:id/access/:principalType/:principalId` | documents.write | revoke a grant, returns `{ revoked }` |
+| DELETE | `/documents/:id` | documents.write | soft delete (sets `deletedAt`) |
+
+Uploaded files are stored under `services/api/uploads/documents/` (override
+`UPLOADS_DIR`) and served statically at `/uploads/documents/...` from `app.factory.ts`;
+the stored URL is always `/uploads/documents/<uuid><ext>`, never the client's basename.
+
 ## Module roadmap
 
 | Route prefix        | Ships in |
@@ -469,7 +504,7 @@ the staff page render content on first boot.
 | `finance`, `invoices`, `receipts`, `expenses`, `payments` | Phase 16 — done |
 | `payroll`           | Phase 18 — done |
 | `employee-ids`      | Phase 19 — done |
-| `documents`, `notifications` | Phase 20 |
+| `documents`, `notifications` | Phase 21 — done |
 
 **No fake endpoints.** Real business, DB-backed, permission-checked modules are added
 phase by phase; placeholder-only routes are not exposed as if complete.

@@ -79,7 +79,10 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
 
   const headers = new Headers(init.headers);
   if (bearer) headers.set('Authorization', bearer.Authorization);
-  if (init.body) headers.set('Content-Type', 'application/json');
+  // Multipart bodies must keep the browser-generated boundary — never force JSON.
+  if (init.body && !(init.body instanceof FormData)) {
+    headers.set('Content-Type', 'application/json');
+  }
 
   const raw = await fetch(url, { ...init, headers, cache: 'no-store' });
 

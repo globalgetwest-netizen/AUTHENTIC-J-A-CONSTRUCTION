@@ -6,6 +6,8 @@
 // printed once; change it immediately).
 
 import { randomBytes } from 'node:crypto';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { PrismaClient } from '@ajac/database';
 import { hashPassword } from '@ajac/auth';
 import { ROLE_NAMES } from '@ajac/types';
@@ -47,6 +49,8 @@ const PERMISSIONS = [
   'users.write',
   'roles.read',
   'roles.write',
+  'documents.read',
+  'documents.write',
 ] as const;
 
 const ADMIN_FIRST_NAME = 'System';
@@ -735,6 +739,72 @@ async function main(): Promise<void> {
           },
         });
       }
+    }
+
+    // 4g. Demo DOCUMENTS — one published document with a self-hosted placeholder
+    // file, shared to the demo client, plus notifications so the bell, the library
+    // and the client portal render content on first boot. Idempotent.
+    const docsDir = resolve(process.env.UPLOADS_DIR ?? join(process.cwd(), 'uploads'), 'documents');
+    mkdirSync(docsDir, { recursive: true });
+    const demoDocFile = join(docsDir, 'DEMO-DOC-0001.md');
+    const demoDocContent = [
+      '# Authentic J.A. Construction — Site Safety Handbook',
+      '',
+      '## 1. Scope',
+      'This handbook applies to all personnel on company project sites.',
+      '',
+      '## 2. Required PPE',
+      '- Safety helmet, hi-vis vest and steel-toe boots at all times.',
+      '- Gloves when handling cement, lime or reinforcement.',
+      '',
+      '## 3. Emergencies',
+      'Site first-aid checkpoint is at the site office. Dial 112 in an emergency.',
+      '',
+      '_Seeded demo document — replace with real operations content._',
+    ].join('\n');
+    if (!existsSync(demoDocFile)) {
+      writeFileSync(demoDocFile, demoDocContent, 'utf8');
+    }
+
+    const demoClientUser = await prisma.user.findUnique({ where: { email: clientEmail } });
+    const demoDoc = await prisma.document.findFirst({ where: { fileUrl: '/uploads/documents/DEMO-DOC-0001.md' } });
+    if (!demoDoc && admin) {
+      const createdDoc = await prisma.document.create({
+        data: {
+          title: 'Material safety handbook',
+          category: 'safety',
+          accessLevel: 'INTERNAL',
+          status: 'FINAL',
+          uploadedById: admin.id,
+          fileUrl: '/uploads/documents/DEMO-DOC-0001.md',
+          fileType: 'text/markdown',
+          sizeBytes: Buffer.byteLength(demoDocContent),
+          versions: {
+            create: {
+              version: 1,
+              uploadedById: admin.id,
+              fileUrl: '/uploads/documents/DEMO-DOC-0001.md',
+              fileType: 'text/markdown',
+              sizeBytes: Buffer.byteLength(demoDocContent),
+            },
+          },
+        },
+        include: { versions: true },
+      });
+      for (const recipient of [demoClientUser, admin]) {
+        if (!recipient) continue;
+        await prisma.notification.create({
+          data: {
+            userId: recipient.id,
+            type: 'DOCUMENT',
+            title: 'New document published',
+            body: `"${createdDoc.title}" is now in the document library.`,
+            data: { documentId: createdDoc.id },
+            link: '/admin/documents',
+          },
+        });
+      }
+      console.log(`[seed] created demo document ${createdDoc.title}`);
     }
 
     // A scannable QR ID card for the demo staff (EMP-DEMO-0001) so the card

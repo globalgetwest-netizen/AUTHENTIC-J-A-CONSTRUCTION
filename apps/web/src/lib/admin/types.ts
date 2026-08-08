@@ -956,6 +956,116 @@ export interface EmployeeIdCard {
   verifications?: VerificationRecord[] | null;
 }
 
+// ── Notifications & documents (Phase 21) ────────────────────────────────────
+
+export type NotificationType =
+  | "SYSTEM"
+  | "PROJECT"
+  | "PROPERTY"
+  | "PAYROLL"
+  | "FINANCE"
+  | "DOCUMENT"
+  | "MESSAGE";
+export const NOTIFICATION_TYPES: readonly NotificationType[] = [
+  "SYSTEM",
+  "PROJECT",
+  "PROPERTY",
+  "PAYROLL",
+  "FINANCE",
+  "DOCUMENT",
+  "MESSAGE",
+];
+
+export interface NotificationRow {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body?: string | null;
+  data?: Record<string, unknown> | null;
+  link?: string | null;
+  readAt?: string | null;
+  createdAt: string;
+}
+
+/** Pagination meta extended by the API with a global unread counter. */
+export interface NotificationListMeta extends PaginationMeta {
+  totalUnread: number;
+}
+
+export type AccessLevel = "PUBLIC" | "INTERNAL" | "CONFIDENTIAL" | "RESTRICTED";
+export const ACCESS_LEVELS: readonly AccessLevel[] = [
+  "PUBLIC",
+  "INTERNAL",
+  "CONFIDENTIAL",
+  "RESTRICTED",
+];
+
+export type DocumentStatus = "DRAFT" | "FINAL" | "SUPERSEDED" | "ARCHIVED";
+export const DOCUMENT_STATUSES: readonly DocumentStatus[] = [
+  "DRAFT",
+  "FINAL",
+  "SUPERSEDED",
+  "ARCHIVED",
+];
+
+export interface DocumentVersion {
+  id: string;
+  documentId: string;
+  version: number;
+  note?: string | null;
+  fileUrl: string;
+  fileType?: string | null;
+  sizeBytes?: number | string | null;
+  uploadedById?: string | null;
+  createdAt: string;
+  uploaderName?: string | null;
+}
+
+export interface DocumentAccessRow {
+  id: string;
+  documentId: string;
+  principalType: "CLIENT" | "STAFF" | "ROLE" | "USER";
+  principalId: string;
+  permission: "VIEW" | "EDIT";
+  grantedAt: string;
+  grantedById?: string | null;
+  grantedByName?: string | null;
+}
+
+export interface DocumentMeta {
+  id: string;
+  title: string;
+  category?: string | null;
+  entity?: string | null;
+  entityId?: string | null;
+  accessLevel: AccessLevel;
+  status: DocumentStatus;
+  fileUrl: string;
+  fileType?: string | null;
+  sizeBytes?: number | string | null;
+  uploadedById?: string | null;
+  uploaderName?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  versions?: DocumentVersion[] | null;
+  access?: DocumentAccessRow[] | null;
+  /** Count shape used on list rows. */
+  _count?: { versions?: number } | null;
+}
+
+/** Format a byte count as "12.4 MB" / "86 KḀ" style. */
+export function formatBytes(bytes: number | string | null | undefined): string {
+  if (bytes === null || bytes === undefined) return "—";
+  const n = typeof bytes === "string" ? Number(bytes) : bytes;
+  if (Number.isNaN(n) || n < 0) return "—";
+  if (n === 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.min(Math.floor(Math.log(n) / Math.log(1024)), units.length - 1);
+  const value = n / 1024 ** i;
+  return `${value.toFixed(value >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
 /** Shape returned by the public verify endpoint. */
 export interface EmployeeIdVerifyResult {
   cardNumber: string;

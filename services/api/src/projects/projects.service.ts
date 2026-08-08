@@ -20,6 +20,7 @@ import {
 import type { Paginated } from '../common/dto/pagination.dto';
 import { generateBusinessCode } from '../common/utils/codegen';
 import type { AuthUser } from '../common/auth/auth-user.type';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { CreateProjectMilestoneDto } from './dto/create-project-milestone.dto';
 import { UpdateProjectMilestoneDto } from './dto/update-project-milestone.dto';
@@ -65,7 +66,10 @@ function isAdminUser(user: AuthUser): boolean {
 
 @Injectable()
 export class ProjectsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async list(query: QueryProjectsDto): Promise<Paginated<Project>> {
     const where: Prisma.ProjectWhereInput = { deletedAt: null };
@@ -403,15 +407,13 @@ export class ProjectsService {
     if (!managerUserId) {
       return;
     }
-    await this.prisma.notification.create({
-      data: {
-        userId: managerUserId,
-        type: NotificationType.PROJECT,
-        title,
-        body,
-        data: { projectId },
-        link: `/staff/projects/${projectId}`,
-      },
+    await this.notifications.notify({
+      userId: managerUserId,
+      type: NotificationType.PROJECT,
+      title,
+      body,
+      data: { projectId },
+      link: `/staff/projects/${projectId}`,
     });
   }
 

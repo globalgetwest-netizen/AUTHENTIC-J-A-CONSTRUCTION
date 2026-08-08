@@ -62,3 +62,6 @@ Thumbs.db
 # Prisma (engines are fetched, not committed; client regenerated via prisma generate)
 packages/database/node_modules/
 packages/database/src/generated/
+
+# Self-hosted document uploads (runtime files — never commit user content)
+services/api/uploads/
