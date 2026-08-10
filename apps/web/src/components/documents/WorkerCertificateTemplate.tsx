@@ -2,7 +2,6 @@ import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { Employee } from "@/lib/admin/types";
 import { label } from "@/lib/admin/types";
 import { dateLabel } from "@/lib/documents/format";
-import { LETTERHEAD } from "@/config/documents";
 import {
   CERT_COLORS,
   CERT_FONT,
@@ -74,11 +73,15 @@ export function WorkerCertificateTemplate({
   employee,
   logoSrc,
   letterheadSrc,
+  signatureSrc,
+  stampSrc,
   issuedOn,
 }: {
   employee: Employee;
   logoSrc?: string | null;
   letterheadSrc?: string | null;
+  signatureSrc?: string | null;
+  stampSrc?: string | null;
   issuedOn: string;
 }) {
   const fullName = [employee.firstName, employee.lastName, employee.otherNames]
@@ -93,7 +96,7 @@ export function WorkerCertificateTemplate({
   return (
     <Document>
       <Page size="A4">
-        <CertificatePage>
+        <CertificatePage watermarkSrc={logoSrc}>
           <CertificateHeading
             logoSrc={logoSrc}
             letterheadSrc={letterheadSrc}
@@ -138,6 +141,7 @@ export function WorkerCertificateTemplate({
 
           <View style={styles.signatures}>
             <SignatureRow
+              stampSrc={stampSrc}
               left={{
                 label: "Approved by",
                 name: "AUTHENTIC J.A. CONSTRUCTION LTD.",
@@ -147,7 +151,7 @@ export function WorkerCertificateTemplate({
                 label: "For and on behalf of",
                 name: "JOSEPH ACQUAH",
                 role: "Chief Executive Officer",
-                signatureSrc: LETTERHEAD.ceo.signature,
+                signatureSrc,
               }}
             />
           </View>

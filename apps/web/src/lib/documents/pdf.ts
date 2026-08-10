@@ -177,12 +177,16 @@ export async function renderWorkerCertificatePdf(
     "@/components/documents/WorkerCertificateTemplate"
   );
   const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
+  const signatureSrc = await readAssetAsDataUri(LETTERHEAD.ceo.signature);
+  const stampSrc = await readAssetAsDataUri(LETTERHEAD.ceo.stamp);
   const letterheadSrc = LETTERHEAD.letterheadImage
     ? await readAssetAsDataUri(LETTERHEAD.letterheadImage)
     : null;
   const template = createElement(WorkerCertificateTemplate, {
     employee: input.employee,
     logoSrc,
+    signatureSrc,
+    stampSrc,
     letterheadSrc,
     issuedOn: input.issuedOn ?? new Date().toISOString(),
   }) as unknown as ReactElement<DocumentProps>;
@@ -211,12 +215,16 @@ export async function renderAssetOwnershipCertificatePdf(
     "@/components/documents/AssetOwnershipCertificateTemplate"
   );
   const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
+  const signatureSrc = await readAssetAsDataUri(LETTERHEAD.ceo.signature);
+  const stampSrc = await readAssetAsDataUri(LETTERHEAD.ceo.stamp);
   const letterheadSrc = LETTERHEAD.letterheadImage
     ? await readAssetAsDataUri(LETTERHEAD.letterheadImage)
     : null;
   const template = createElement(AssetOwnershipCertificateTemplate, {
     ...input,
     logoSrc,
+    signatureSrc,
+    stampSrc,
     letterheadSrc,
     issuedOn: input.issuedOn ?? new Date().toISOString(),
   }) as unknown as ReactElement<DocumentProps>;
@@ -239,6 +247,8 @@ export async function renderProjectCompletionCertificatePdf(
     "@/components/documents/ProjectCompletionCertificateTemplate"
   );
   const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
+  const signatureSrc = await readAssetAsDataUri(LETTERHEAD.ceo.signature);
+  const stampSrc = await readAssetAsDataUri(LETTERHEAD.ceo.stamp);
   const letterheadSrc = LETTERHEAD.letterheadImage
     ? await readAssetAsDataUri(LETTERHEAD.letterheadImage)
     : null;
@@ -247,6 +257,8 @@ export async function renderProjectCompletionCertificatePdf(
     clientName: input.clientName ?? null,
     managerName: input.managerName ?? null,
     logoSrc,
+    signatureSrc,
+    stampSrc,
     letterheadSrc,
     issuedOn: input.issuedOn ?? new Date().toISOString(),
   }) as unknown as ReactElement<DocumentProps>;
@@ -268,11 +280,15 @@ export async function renderCompanyProfilePdf(input: CompanyProfileInput): Promi
     "@/components/documents/CompanyProfileTemplate"
   );
   const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
+  const signatureSrc = await readAssetAsDataUri(LETTERHEAD.ceo.signature);
+  const stampSrc = await readAssetAsDataUri(LETTERHEAD.ceo.stamp);
   const letterheadSrc = LETTERHEAD.letterheadImage
     ? await readAssetAsDataUri(LETTERHEAD.letterheadImage)
     : null;
   const template = createElement(CompanyProfileTemplate, {
     logoSrc,
+    signatureSrc,
+    stampSrc,
     letterheadSrc,
     issuedOn: input.issuedOn ?? new Date().toISOString(),
     projects: input.projects ?? [],

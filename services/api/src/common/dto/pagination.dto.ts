@@ -69,16 +69,19 @@ export function prismaSkipTake(query: PaginationQueryDto): { skip: number; take:
 
 /**
  * Builds a Prisma orderBy object, restricting the sort field to an allow-list
- * so user input can never target an arbitrary column. `allowed` must include
- * `'createdAt'` (the fallback sort field).
+ * so user input can never target an arbitrary column. The fallback field is
+ * `'createdAt'` when the allow-list includes it (the common case); otherwise the
+ * first allow-listed column is used — e.g. `StockMovement` sorts by `movedAt`
+ * and has no `createdAt`, so callers must list their sortable keys here.
  */
 export function buildOrderBy<T extends string>(
   sortBy: string | undefined,
   sortOrder: SortOrder | undefined,
   allowed: readonly T[],
 ): Partial<Record<T, SortOrder>> {
-  const field: T =
-    sortBy && (allowed as readonly string[]).includes(sortBy) ? (sortBy as T) : ('createdAt' as T);
+  const keys = allowed as readonly string[];
+  const fallback: T = keys.includes('createdAt') ? ('createdAt' as T) : (allowed[0] as T);
+  const field: T = sortBy && keys.includes(sortBy) ? (sortBy as T) : fallback;
   const order: Partial<Record<T, SortOrder>> = {};
   order[field] = sortOrder ?? 'asc';
   return order;

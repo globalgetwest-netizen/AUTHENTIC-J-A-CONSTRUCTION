@@ -3,6 +3,7 @@ import { getAccessToken } from "@/lib/admin/auth";
 import { decodeAccessTokenRoles } from "@/lib/auth/token";
 import { isAdmin, isStaff } from "@/lib/auth/roles";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { ADMIN_NAV } from "@/config/adminNav";
 
 export default async function AdminAppLayout({ children }: { children: React.ReactNode }) {
   const token = await getAccessToken();
@@ -15,5 +16,5 @@ export default async function AdminAppLayout({ children }: { children: React.Rea
     redirect(isStaff(roles) ? "/staff" : "/admin/login");
   }
 
-  return <AdminShell>{children}</AdminShell>;
+  return <AdminShell sections={ADMIN_NAV}>{children}</AdminShell>;
 }

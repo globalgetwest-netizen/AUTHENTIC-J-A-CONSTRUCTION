@@ -103,42 +103,40 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   wmRing: {
-    width: 330,
-    height: 330,
-    borderRadius: 165,
-    borderWidth: 1.4,
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    borderWidth: 1.2,
     borderColor: CERT_COLORS.gold,
-    opacity: 0.35,
+    opacity: 0.28,
     alignItems: "center",
     justifyContent: "center",
     position: "relative",
   },
   wmRingInner: {
-    width: 272,
-    height: 272,
-    borderRadius: 136,
-    borderWidth: 0.7,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    borderWidth: 0.6,
     borderColor: CERT_COLORS.gold,
-    opacity: 0.6,
+    opacity: 0.45,
     alignItems: "center",
     justifyContent: "center",
   },
-  wmText: {
-    fontFamily: FONT_DISPLAY,
-    fontWeight: 700,
-    fontSize: 205,
-    color: CERT_COLORS.navy,
-    opacity: 0.055,
-    transform: "rotate(-7deg)",
+  wmLogo: {
+    width: 120,
+    height: 120,
+    objectFit: "contain",
+    opacity: 0.07,
   },
   wmCaption: {
-    marginTop: 14,
+    marginTop: 10,
     fontFamily: FONT_SANS,
     fontWeight: 500,
     fontSize: 7,
     letterSpacing: 4,
     color: CERT_COLORS.navy,
-    opacity: 0.16,
+    opacity: 0.12,
   },
 
   // ---- Heading block ----
@@ -251,139 +249,31 @@ export function CertificateHeading({
 }
 
 /**
- * Official circular company seal — the CEO stamp used beside the signature row.
- * Concentric navy rings (double ring effect) with the corporate monogram in the
- * centre, registered company name at the top, "• GHANA •" at the bottom, and
- * the executive office text below the logo — matching the formal stamped seal
- * used on paper documents.
+ * Official company seal — renders the real photographed CEO stamp/seal image.
+ * The stamp was photographed and extracted from the physical company seal.
  */
 export function Seal({
-  monogramSrc = LETTERHEAD.monogram,
+  stampSrc = (LETTERHEAD.ceo as { stamp?: string }).stamp ?? LETTERHEAD.monogram,
   scale = 1,
 }: {
-  monogramSrc?: string;
+  /** Real photographed CEO stamp image (pass the data URI prepared by the render function). */
+  stampSrc?: string | null;
   /** Uniform scale for compact layouts — use ~0.7 inside signature rows. */
   scale?: number;
 }) {
   const s = scale;
+  if (!stampSrc) return null;
   return (
     <View style={{ width: 114 * s, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-      {/* Outer circle — thick navy border */}
-      <View
+      {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}
+      <Image
+        src={stampSrc}
         style={{
           width: 108 * s,
           height: 108 * s,
-          borderRadius: 54 * s,
-          borderWidth: 2.2 * s,
-          borderColor: CERT_COLORS.navy,
-          backgroundColor: "#FFFFFF",
-          alignItems: "center",
-          justifyContent: "center",
+          objectFit: "contain",
         }}
-      >
-        {/* Inner circle — thin navy border */}
-        <View
-          style={{
-            width: 92 * s,
-            height: 92 * s,
-            borderRadius: 46 * s,
-            borderWidth: 1.2 * s,
-            borderColor: CERT_COLORS.navy,
-            backgroundColor: "#FFFFFF",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {/* Company name — top of inner circle */}
-          <Text
-            style={{
-              fontSize: 5.8 * s,
-              fontFamily: FONT_SANS,
-              fontWeight: 700,
-              color: CERT_COLORS.navy,
-              textAlign: "center",
-              letterSpacing: 0.4 * s,
-              lineHeight: 1.4,
-            }}
-          >
-            AUTHENTIC J.A.
-          </Text>
-          <Text
-            style={{
-              fontSize: 4.9 * s,
-              fontFamily: FONT_SANS,
-              fontWeight: 700,
-              color: CERT_COLORS.navy,
-              textAlign: "center",
-              letterSpacing: 0.4 * s,
-              lineHeight: 1.4,
-              marginTop: -1 * s,
-            }}
-          >
-            CONSTRUCTION LTD.
-          </Text>
-          {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}
-          <Image
-            src={monogramSrc}
-            style={{ width: 30 * s, height: 30 * s, objectFit: "contain", marginTop: 2 * s }}
-          />
-          {/* Executive office text */}
-          <Text
-            style={{
-              fontSize: 4.6 * s,
-              fontFamily: FONT_SANS,
-              fontWeight: 700,
-              color: CERT_COLORS.navy,
-              textAlign: "center",
-              letterSpacing: 0.5 * s,
-              lineHeight: 1.4,
-              marginTop: 1 * s,
-            }}
-          >
-            OFFICE OF THE
-          </Text>
-          <Text
-            style={{
-              fontSize: 4.4 * s,
-              fontFamily: FONT_SANS,
-              fontWeight: 600,
-              color: CERT_COLORS.navy,
-              textAlign: "center",
-              letterSpacing: 0.4 * s,
-              lineHeight: 1.4,
-              marginTop: -0.5 * s,
-            }}
-          >
-            CHIEF EXECUTIVE
-          </Text>
-          <Text
-            style={{
-              fontSize: 3.8 * s,
-              fontFamily: FONT_SANS,
-              fontWeight: 600,
-              color: CERT_COLORS.navy,
-              textAlign: "center",
-              letterSpacing: 0.3 * s,
-              marginTop: 1 * s,
-            }}
-          >
-            VERIFIED &amp; APPROVED
-          </Text>
-        </View>
-      </View>
-      {/* GHANA — below the circle, matching reference */}
-      <Text
-        style={{
-          fontSize: 5.4 * s,
-          fontFamily: FONT_SANS,
-          fontWeight: 700,
-          color: CERT_COLORS.navy,
-          letterSpacing: 1.5 * s,
-          marginTop: 2 * s,
-        }}
-      >
-        • GHANA •
-      </Text>
+      />
     </View>
   );
 }
@@ -452,10 +342,13 @@ export function SignatureRow({
   left,
   right,
   showSeal = true,
+  stampSrc,
 }: {
   left: { label: string; name: string; role: string; signatureSrc?: string | null };
   right: { label: string; name: string; role: string; signatureSrc?: string | null };
   showSeal?: boolean;
+  /** Real photographed CEO stamp image (data URI prepared by the render function). */
+  stampSrc?: string | null;
 }) {
   return (
     <View
@@ -467,7 +360,7 @@ export function SignatureRow({
       }}
     >
       <SignatureBlock {...left} />
-      {showSeal ? <Seal scale={0.68} /> : null}
+      {showSeal ? <Seal stampSrc={stampSrc} scale={0.68} /> : null}
       <SignatureBlock {...right} align="right" />
     </View>
   );
@@ -484,24 +377,42 @@ export function CertificateFooter() {
   );
 }
 
+/** Watermark stage: the real company logo centred inside engraved gold rings. */
+export function CertificateWatermark({
+  watermarkSrc,
+}: {
+  watermarkSrc?: string | null;
+}) {
+  return (
+    <View style={styles.watermark}>
+      <View style={styles.wmRing}>
+        <View style={styles.wmRingInner}>
+          {watermarkSrc ? (
+            /* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */
+            <Image src={watermarkSrc} style={styles.wmLogo} />
+          ) : (
+            <Text style={{ fontFamily: FONT_DISPLAY, fontWeight: 700, fontSize: 160, color: CERT_COLORS.navy, opacity: 0.06 }}>AJ</Text>
+          )}
+        </View>
+      </View>
+      <Text style={styles.wmCaption}>AUTHENTIC J.A. CONSTRUCTION LTD.</Text>
+    </View>
+  );
+}
+
 /** The full certificate stage: watermark, frame, corners, footer, content. */
 export function CertificatePage({
   children,
   showFooter = true,
+  watermarkSrc,
 }: {
   children: React.ReactNode;
   showFooter?: boolean;
+  watermarkSrc?: string | null;
 }) {
   return (
     <View style={styles.page}>
-      <View style={styles.watermark}>
-        <View style={styles.wmRing}>
-          <View style={styles.wmRingInner}>
-            <Text style={styles.wmText}>AJ</Text>
-          </View>
-        </View>
-        <Text style={styles.wmCaption}>AUTHENTIC J.A. CONSTRUCTION LTD.</Text>
-      </View>
+      <CertificateWatermark watermarkSrc={watermarkSrc} />
       <View style={styles.frameOuter} />
       <View style={styles.frameNavy} />
       <View style={styles.frameHair} />

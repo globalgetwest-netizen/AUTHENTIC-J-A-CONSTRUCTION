@@ -2,7 +2,6 @@ import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { Project } from "@/lib/admin/types";
 import { label } from "@/lib/admin/types";
 import { dateLabel, money } from "@/lib/documents/format";
-import { LETTERHEAD } from "@/config/documents";
 import {
   CERT_COLORS,
   CERT_FONT,
@@ -73,6 +72,8 @@ export function ProjectCompletionCertificateTemplate({
   managerName,
   logoSrc,
   letterheadSrc,
+  signatureSrc,
+  stampSrc,
   issuedOn,
 }: {
   project: Project;
@@ -80,6 +81,8 @@ export function ProjectCompletionCertificateTemplate({
   managerName?: string | null;
   logoSrc?: string | null;
   letterheadSrc?: string | null;
+  signatureSrc?: string | null;
+  stampSrc?: string | null;
   issuedOn: string;
 }) {
   const serial = `AJAC/PCC/${issuedOn.slice(0, 4)}/${project.code}`;
@@ -88,7 +91,7 @@ export function ProjectCompletionCertificateTemplate({
   return (
     <Document>
       <Page size="A4">
-        <CertificatePage>
+        <CertificatePage watermarkSrc={logoSrc}>
           <CertificateHeading
             logoSrc={logoSrc}
             letterheadSrc={letterheadSrc}
@@ -169,11 +172,12 @@ export function ProjectCompletionCertificateTemplate({
 
           <View style={styles.signatures}>
             <SignatureRow
+              stampSrc={stampSrc}
               left={{
                 label: "For and on behalf of the Contractor",
                 name: "JOSEPH ACQUAH",
                 role: "Chief Executive Officer",
-                signatureSrc: LETTERHEAD.ceo.signature,
+                signatureSrc,
               }}
               right={{
                 label: clientName ? "Received by (Client)" : "Project Manager",

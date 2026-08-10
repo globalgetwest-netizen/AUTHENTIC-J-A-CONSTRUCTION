@@ -1,5 +1,4 @@
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
-import { LETTERHEAD } from "@/config/documents";
 import { dateLabel } from "@/lib/documents/format";
 import {
   CERT_COLORS,
@@ -77,6 +76,8 @@ export function AssetOwnershipCertificateTemplate({
   note,
   logoSrc,
   letterheadSrc,
+  signatureSrc,
+  stampSrc,
   issuedOn,
 }: {
   title: string;
@@ -90,12 +91,14 @@ export function AssetOwnershipCertificateTemplate({
   note?: string | null;
   logoSrc?: string | null;
   letterheadSrc?: string | null;
+  signatureSrc?: string | null;
+  stampSrc?: string | null;
   issuedOn: string;
 }) {
   return (
     <Document>
       <Page size="A4">
-        <CertificatePage>
+        <CertificatePage watermarkSrc={logoSrc}>
           <CertificateHeading
             logoSrc={logoSrc}
             letterheadSrc={letterheadSrc}
@@ -129,6 +132,7 @@ export function AssetOwnershipCertificateTemplate({
 
           <View style={styles.signatures}>
             <SignatureRow
+              stampSrc={stampSrc}
               left={{
                 label: "Approved by",
                 name: "AUTHENTIC J.A. CONSTRUCTION LTD.",
@@ -138,7 +142,7 @@ export function AssetOwnershipCertificateTemplate({
                 label: "For and on behalf of",
                 name: "JOSEPH ACQUAH",
                 role: "Chief Executive Officer",
-                signatureSrc: LETTERHEAD.ceo.signature,
+                signatureSrc,
               }}
             />
           </View>

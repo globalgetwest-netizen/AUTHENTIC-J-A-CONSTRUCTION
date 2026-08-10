@@ -1,0 +1,319 @@
+<title>Verification Report — AUTHENTIC J.A. CONSTRUCTION</title>
+<style>
+  :root{
+    --ground:#F3F5F8;
+    --surface:#FFFFFF;
+    --surface-2:#EBEEF3;
+    --ink:#16202B;
+    --muted:#5A6B7C;
+    --faint:#B9C4CF;
+    --rule:#DCE3EB;
+    --track:#C7D1DB;
+    --accent:#B46A17;
+    --accent-soft:#F2E3CF;
+    --pass:#1C7C43;
+    --pass-bg:#E6F4EB;
+    --pass-edge:#C9E6D4;
+    --info:#3557A4;
+    --info-bg:#E9EEF9;
+    --mono:ui-monospace,"Cascadia Mono","Segoe UI Mono",Consolas,"Roboto Mono",monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0E141B;
+      --surface:#151D26;
+      --surface-2:#1B252F;
+      --ink:#E7EEF5;
+      --muted:#93A3B3;
+      --faint:#6D7C8B;
+      --rule:#26333F;
+      --track:#3A4856;
+      --accent:#D98F3A;
+      --accent-soft:#3A2C18;
+      --pass:#3FB05E;
+      --pass-bg:#10291A;
+      --pass-edge:#1F4631;
+      --info:#5E82D8;
+      --info-bg:#191F30;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0E141B;
+    --surface:#151D26;
+    --surface-2:#1B252F;
+    --ink:#E7EEF5;
+    --muted:#93A3B3;
+    --faint:#6D7C8B;
+    --rule:#26333F;
+    --track:#3A4856;
+    --accent:#D98F3A;
+    --accent-soft:#3A2C18;
+    --pass:#3FB05E;
+    --pass-bg:#10291A;
+    --pass-edge:#1F4631;
+    --info:#5E82D8;
+    --info-bg:#191F30;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.55;
+    padding:clamp(24px,5vw,64px) clamp(16px,4vw,48px) 96px;
+  }
+  .wrap{max-width:1000px;margin:0 auto}
+
+  header.masthead{margin-bottom:34px}
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--accent);
+    font-weight:700;
+    border:1px solid var(--track);
+    display:inline-block;
+    padding:5px 10px;
+    border-radius:4px;
+    background:var(--surface);
+  }
+  h1{
+    font-size:clamp(28px,4.4vw,40px);
+    line-height:1.05;
+    letter-spacing:-.01em;
+    text-wrap:balance;
+    margin:16px 0 10px;
+    font-weight:800;
+  }
+  .kicker{
+    font-family:var(--mono);
+    font-size:12.5px;
+    color:var(--muted);
+  }
+
+  /* status band */
+  .band{
+    background:var(--surface);
+    border:1px solid var(--rule);
+    border-radius:10px;
+    padding:22px 24px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px 40px;
+    align-items:center;
+    margin:26px 0 34px;
+  }
+  .big{font-family:var(--mono);font-size:40px;line-height:1;font-weight:700;letter-spacing:-.02em}
+  .big small{font-size:18px;color:var(--muted);letter-spacing:0}
+  .band .label{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:var(--mono);font-size:12px;font-weight:700;
+    border-radius:999px;padding:7px 13px;
+    border:1px solid var(--pass-edge);background:var(--pass-bg);color:var(--pass);
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+  .stat b{display:block;font-size:18px;font-family:var(--mono)}
+  .stat span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+  .kv{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:1px;background:var(--rule);border:1px solid var(--rule);
+    border-radius:8px;overflow:hidden;margin-bottom:34px;
+  }
+  .kv>div{background:var(--surface);padding:12px 14px}
+  .kv .k{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  .kv .v{font-family:var(--mono);font-size:13px;color:var(--ink)}
+
+  .section{margin:44px 0;max-width:72ch}
+  h2{
+    font-size:20px;font-weight:800;letter-spacing:-.01em;
+    display:flex;align-items:baseline;gap:12px;text-wrap:balance;
+  }
+  h2 .no{font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:700}
+  .rule{height:1px;background:var(--rule);border:0;margin:14px 0 20px}
+  p.lede{color:var(--muted);font-size:14.5px;margin-bottom:18px}
+  .hline{display:flex;align-items:baseline;gap:12px;text-wrap:56px}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:8px;background:var(--surface)}
+  thead th{
+    font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    text-align:left;color:var(--muted);font-weight:600;padding:10px 14px;
+    background:var(--surface-2);border-bottom:1px solid var(--rule);white-space:nowrap;
+  }
+  tbody td{font-family:var(--mono);font-size:13px;padding:9px 14px;border-bottom:1px solid var(--rule);white-space:nowrap;font-variant-numeric:tabular-nums}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover td{background:var(--surface-2)}
+  td.right{text-align:right}
+  .pass-tag{
+    display:inline-block;min-width:44px;text-align:center;
+    color:var(--pass);background:var(--pass-bg);border:1px solid var(--pass-edge);
+    border-radius:6px;padding:2px 8px;font-weight:700;
+  }
+  .count{text-align:right;display:block;color:var(--muted);font-size:12px}
+  .empty{color:var(--faint);font-style:italic}
+
+  .audit td{font-family:var(--mono);font-size:13px;padding:9px 14px;border-bottom:1px solid var(--rule);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .audit tr:last-child td{border-bottom:0}
+  .result-tag{font-weight:700;padding:2px 8px;border-radius:6px}
+  .result-tag.ok{color:var(--pass);background:var(--pass-bg);border:1px solid var(--pass-edge)}
+  .result-tag.protect{color:var(--info);background:var(--info-bg);border:1px solid #B9C7E8}
+  .muted-cell{color:var(--muted)}
+
+  .fix{display:flex;gap:18px;background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:18px 20px;margin-bottom:12px;max-width:920px}
+  .fix .idx{font-family:var(--mono);font-weight:700;color:var(--accent);border:1px solid var(--track);border-radius:6px;width:34px;height:34px;flex:none;display:grid;place-items:center;background:var(--accent-soft)}
+  .fix h3{font-size:15px;font-weight:750;margin-bottom:5px}
+  .fix .rt{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--surface-2);border:1px solid var(--rule);border-radius:6px;padding:2px 7px;margin-right:6px}
+  .fix p{font-size:13.5px;color:var(--muted);line-height:1.55}
+
+  .checks{list-style:none;display:grid;gap:8px;margin-top:14px}
+  .checks li{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--muted);max-width:920px}
+  .checks li b{color:var(--ink);font-weight:650}
+  .checks .mk{color:var(--pass);font-weight:800;flex:none}
+  .checks .mk.info{color:var(--info)}
+
+  .notes{display:grid;gap:10px;margin-top:6px}
+  .notes li{font-size:13.5px;color:var(--muted);display:flex;gap:9px;align-items:flex-start}
+  .notes li b{color:var(--ink)}
+
+  footer{
+    margin-top:52px;font-family:var(--mono);font-size:11.5px;color:var(--muted);
+    line-height:1.7;border-top:1px solid var(--rule);padding-top:18px;
+  }
+  a{color:var(--accent);text-decoration:none}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+
+  @media (prefers-reduced-motion:no-preference){
+    .band,.kv{animation:rise .5s ease both}
+    .section{animation:rise .5s ease both}
+    .section:nth-of-type(2){animation-delay:.05s}
+    .section:nth-of-type(3){animation-delay:.1s}
+    .section:nth-of-type(4){animation-delay:.15s}
+    .section:nth-of-type(5){animation-delay:.2s}
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <span class="eyebrow">Final Verification · Phase 23 Security Audit</span>
+    <h1>Enterprise platform — verified end-to-end</h1>
+    <div class="sub">AUTHENTIC&nbsp;J.A.&nbsp;CONSTRUCTION&nbsp;LTD. &nbsp;·&nbsp; admin module &amp; security audit · 2026-08-09</div>
+  </header>
+
+  <section class="band">
+    <div>
+      <div class="big">38<span style="color:var(--muted)">/</span><small>38</small></div>
+      <div class="label" style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:6px">Modules responding</div>
+    </div>
+    <div class="stat"><h3 style="display:contents" class="verdict"><span class="pill"><span class="dot"></span>PASS&nbsp;·&nbsp;0 broken</span></h3></div>
+    <div class="stat"><div style="font-family:var(--mono);font-size:22px;font-weight:700">documents</div><span>now 200</span></div>
+    <div class="stat"><div style="font-family:var(--mono);font-size:22px;font-weight:700">stock-movements</div><span>now 200</span></div>
+  </section>
+
+  <div class="kv">
+    <div><div class="k">Project</div><div class="v">AUTHENTIC J.A. CONSTRUCTION LTD.</div></div>
+    <div><div class="k">Audit leg</div><div class="v">Phase 23 security + Phase 1 integrity</div></div>
+    <div><div class="k">Date</div><div class="v">2026-08-09 · re-confirmed live</div></div>
+    <div><div class="k">Targets</div><div class="v">API :4000 · web :3000</div></div>
+  </div>
+
+  <section class="section">
+    <h2><span class="no">01</span>Module status — admin routes <em style="font-style:normal;font-weight:400;font-size:12px;color:var(--muted);margin-left:auto" class="muted-cell">38 modules · GET {module}?pageSize=2</em></h2>
+    <hr class="rule">
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Module</th><th>Route</th><th>HTTP</th><th>Rows</th></tr></thead>
+        <tbody>
+          <template class="none"></template>
+          <!-- rows injected below -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2><span class="no">02</span>Security — auth &amp; RBAC not bypassed</h2>
+    <hr class="rule">
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Check</th><th style="text-align:center">Result</th></tr></thead>
+        <tbody class="audit">
+          <tr><td>Unauthenticated admin API — company-profile, projects, employees, leads, invoices, receipts, documents</td><td style="text-align:center"><span class="result-tag ok">401 · all</span></td></tr>
+          <tr><td>Unauthenticated admin pages (8 routes incl. /admin)</td><td style="text-align:center"><span class="result-tag ok">307 → /admin/login</span></td></tr>
+          <tr><td>Signed-in admin renders (incl. coming-soon pages)</td><td style="text-align:center"><span class="result-tag ok">200 · all</span></td></tr>
+          <tr><td>Admin route files using the auth layer (@/lib/admin/auth)</td><td style="text-align:center"><span class="result-tag ok">111 / 111</span></td></tr>
+          <tr><td>Admin routes importing @ajac/database or node:fs directly (bypass)</td><td style="text-align:center"><span class="result-tag ok">0</span></td></tr>
+          <tr><td>Documents permission codes after seed</td><td style="text-align:center"><span class="result-tag ok">documents.read / .write</span></td></tr>
+          <tr><td>Certificates — completion · active · worker · ownership · profile</td><td style="text-align:center"><span class="result-tag ok">200 PDF · 409 · 200 · 200 · 200</span></td></tr>
+          <tr><td>Public preview-certs route</td><td style="text-align:center"><span class="result-tag protect">removed from router → 404</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2><span class="no">03</span>Three issues found — all fixed &amp; verified live</h2>
+    <hr class="rule">
+    <div style="margin-top:18px;display:grid;gap:12px">
+      <div class="fix"><span class="no">1</span><div>
+        <div><b>stock-movements → 500</b> <span class="rt">pagination.dto.ts</span></div>
+        <p>Sort defaulted to <b style="color:var(--ink)">createdAt</b>, which the StockMovement model doesn't have (its timestamp is movedAt). <b style="color:var(--ink)">Fix:</b> fall back to createdAt when allow-listed, else the first allow-listed column. Pagination unit tests 5/5.</p>
+      </div></div>
+      <div class="fix"><span class="no">2</span><div>
+        <div><b>documents → 403 for everyone</b> <span class="rt">seed.ts</span></div>
+        <p>The DB permission catalog predated <code style="color:var(--ink)">documents.read/.write</code>, so no role held them. <b style="color:var(--ink)">Fix:</b> re-ran the idempotent seed → 38 permissions, SUPER_ADMIN relinked. Admin password unchanged.</p>
+      </div></div>
+      <div class="fix"><span class="no">3</span><div>
+        <div><b>Public preview-certs shipped in builds</b> <span class="rt">_preview-certs</span></div>
+        <p>Claimed a private _prefix it didn't have. <b style="color:var(--ink)">Fix:</b> renamed folder → both URLs now 404. Data exposure nil (hardcoded samples).</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2><span class="no">04</span>Build &amp; static checks</h2>
+    <hr class="rule">
+    <ul class="checks">
+      <li><span class="vo">✓</span><div><b>apps/web</b> — typecheck clean (<code style="color:var(--ink)">npx tsc --noEmit</code>)</div></li>
+      <li><span class="vo">✓</span><div><b>services/api</b> — pagination.spec.ts 5/5; <code style="color:var(--ink)">nest build</code> succeeded</div></li>
+      <li><span class="vo">✓</span><div><b>web dev server</b> — root 200, all signed-in admin pages 200</div></li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2><span class="no">05</span>Remaining notes</h2>
+    <hr class="rule">
+    <div class="notes">
+      <li><span class="vo">✓</span><div><b>documents &amp; stock-movements</b> re-verified live after the API restart — full 38-module re-scan, 0 broken.</div></li>
+      <li><span class="vo">✓</span><div><b>CRUD round-trip</b> — live <code style="color:var(--ink)">departments</code> create 201 · read 200 · update 200 · delete 204 · gone 404 · baseline 3→3 · anonymous write → 401.</div></li>
+      <li><span class="vo info">!</span><div>Delete <code style="color:var(--ink)">_preview-certs</code> before Phase 24 deploy (QA preview; already excluded from routing.</div></li>
+      <li><span class="vo">!</span><div>4 modules return 200 with 0 rows — <b>land-plots, land-allocations, financial-transactions, payments</b> — empty tables, not errors.</div></li>
+    </div>
+  </section>
+
+  <footer>
+    Environment notes — API runs as <code style="color:var(--accent)">node dist/main.js</code> (production bundle), not growth --watch: rebuilt dist requires a process restart to serve. · Verifier: Claude Code · Report: docs/VERIFICATION-REPORT.md
+  </footer>
+</div>
+
+<script>
+  const rows = [
+    ["leads",2],["clients",3],["quotations",2],["projects",3],["documents",1],
+    ["employees",2],["employee-ids",1],["company-branches",2],["departments",3],
+    ["positions",1],["properties",1],["property-sales",1],["property-types",1],
+    ["land-projects",1],["land-plots",0],["land-allocations",0],["materials",3],
+    ["material-categories",4],["warehouses",2],["inventory",1],["inventory-transactions",1],
+    ["stock-movements",0],["block-products",2],["block-productions",1],["block-sales",1],
+    ["equipment",1],["vehicles",1],["maintenance",1],["assets",1],["asset-assignments",1],
+    ["invoices",1],["receipts",1],["expenses",1],["financial-transactions",0],
+    ["payments",0],["payrolls",812],["payslips",812],["payroll-periods",1]
+  ];
+  const tbody = document.querySelector('.tbl table tbody');
+  tbody.innerHTML = rows.map(([m,c]) =>
+    `<tr><td>${m}</td><td>/api/admin/${m}</td><td><span class="pass-tag pass">200</span></td><td class="right"><span class="count">${c}</span></td></tr>`
+  ).join("");
+</script>

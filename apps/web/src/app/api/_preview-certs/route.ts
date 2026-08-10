@@ -10,8 +10,8 @@ export const runtime = "nodejs";
 
 /**
  * Unauthenticated preview — renders all 4 premium certificate types with
- * sample data.  Prefixed with _preview so it's excluded from production
- * builds.  Delete after QA.
+ * sample data. The `_` prefix marks this a Next.js private folder, so the
+ * route is excluded from routing in every build (dev and prod). Delete after QA.
  */
 
 const employee = {

@@ -25,6 +25,8 @@ export default function Icon() {
         <path d="M515 280 L615 280 L565 170 Z" fill="white" />
       </svg>
     ),
-    { ...size, icon: true },
+    // ImageResponse options — pass width/height only; `icon` is not a valid
+    // option (the file-convention <app>/icon.tsx route makes it the favicon).
+    { ...size },
   );
 }

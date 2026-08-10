@@ -41,15 +41,25 @@ function StatCard({
   );
 }
 
+/** Quick-action tiles open the module list where the "New {record}" button lives. */
+const QUICK_ACTIONS: Array<{ label: string; href: string }> = [
+  { label: "Add a lead", href: "/admin/leads" },
+  { label: "Add a client", href: "/admin/clients" },
+  { label: "Start a project", href: "/admin/projects" },
+  { label: "Create a quotation", href: "/admin/quotations" },
+];
+
 export default async function AdminDashboard() {
-  const [leadCount, clientCount, projectCount, equipmentCount, invoiceCount, recentRes] = await Promise.all([
-    countTotal("/leads"),
-    countTotal("/clients"),
-    countTotal("/projects"),
-    countTotal("/equipment"),
-    countTotal("/invoices"),
-    apiFetch("/leads?pageSize=6&sortBy=createdAt&sortOrder=desc"),
-  ]);
+  const [leadCount, clientCount, projectCount, equipmentCount, invoiceCount, employeeCount, recentRes] =
+    await Promise.all([
+      countTotal("/leads"),
+      countTotal("/clients"),
+      countTotal("/projects"),
+      countTotal("/equipment"),
+      countTotal("/invoices"),
+      countTotal("/employees"),
+      apiFetch("/leads?pageSize=6&sortBy=createdAt&sortOrder=desc"),
+    ]);
 
   let recent: Lead[] = [];
   if (recentRes.ok) {
@@ -60,7 +70,7 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-neutral-900">Dashboard</h1>
+        <h1 className="text-xl font-bold text-neutral-900">Command Center</h1>
         <p className="text-sm text-neutral-500">A live view of AUTHENTIC J.A.&apos;s back office.</p>
       </div>
 
@@ -71,8 +81,24 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="Equipment" value={String(equipmentCount)} href="/admin/equipment" />
+        <StatCard label="Equipment & assets" value={String(equipmentCount)} href="/admin/equipment" />
         <StatCard label="Invoices" value={String(invoiceCount)} href="/admin/invoices" />
+        <StatCard label="Employees" value={String(employeeCount)} href="/admin/employees" />
+      </div>
+
+      <div className="rounded-xl border border-neutral-200 bg-white p-5">
+        <h2 className="mb-3 text-sm font-semibold text-neutral-800">Quick actions</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {QUICK_ACTIONS.map((a) => (
+            <Link
+              key={a.label}
+              href={a.href}
+              className="rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm font-semibold text-neutral-800 transition hover:border-brand-blue hover:text-brand-blue"
+            >
+              {a.label}
+            </Link>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4">

@@ -4,6 +4,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { COMPANY } from "../../config/company";
 import { Logo } from "../Logo";
 import { NotificationBell } from "./NotificationBell";
+import { NavIcon } from "./nav-icons";
+import type { AdminNavSection } from "@/config/adminNav";
 
 export interface NavItem {
   href: string;
@@ -50,22 +52,39 @@ const DEFAULT_NAV: NavItem[] = [
   { href: "/admin/payslips", label: "Payslips" },
 ];
 
+/**
+ * The shell for every logged-in area (admin console, employee portal, client
+ * portal). Renders the fixed left sidebar (brand, nav, footer), the sticky
+ * header with the current page title + notification bell, and the content.
+ *
+ * Navigation comes in two shapes:
+ * - `sections` (preferred): grouped sidebar with department labels + icons,
+ *   as declared in `src/config/adminNav.ts`. Each item's `permission` field is
+ *   reserved for Phase 2 sidebar filtering and is intentionally ignored here.
+ * - `navItems` (legacy): a single flat section with no icons/group labels.
+ *   Kept so StaffShell/ClientShell render byte-for-byte the same as before.
+ */
 export function AdminShell({
   children,
   navItems = DEFAULT_NAV,
+  sections,
   areaLabel = "Admin console",
   signOutPath = "/admin/login",
 }: {
   children: React.ReactNode;
   navItems?: NavItem[];
+  sections?: AdminNavSection[];
   areaLabel?: string;
   signOutPath?: string;
 }) {
   const pathname = usePathname();
   const router = useRouter();
 
+  /** First href acts as the "home" of this shell: exact match only. */
+  const homeHref = sections?.[0]?.items?.[0]?.href ?? navItems[0]?.href;
+
   const isActive = (href: string) =>
-    href === navItems[0]?.href ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+    href === homeHref ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 
   async function signOut() {
     await fetch("/api/admin/auth/logout", { method: "POST" });
@@ -73,8 +92,25 @@ export function AdminShell({
     router.refresh();
   }
 
-  const title = navItems.find((n) => isActive(n.href))?.label ?? areaLabel;
-  const section = pathname.split("/")[2] ?? "";
+  // Active item = first item (across sections) whose href is active. Section
+  // label comes from the section that contains the active item.
+  let activeItem: NavItem | undefined;
+  let activeSection: AdminNavSection | undefined;
+  if (sections) {
+    for (const s of sections) {
+      const item = s.items.find((n) => isActive(n.href));
+      if (item) {
+        activeItem = item;
+        activeSection = s;
+        break;
+      }
+    }
+  } else {
+    activeItem = navItems.find((n) => isActive(n.href));
+  }
+
+  const title = activeItem?.label ?? areaLabel;
+  const sectionLabel = activeSection?.label ?? pathname.split("/")[2] ?? "";
 
   return (
     <div className="min-h-screen bg-neutral-100">
@@ -87,23 +123,52 @@ export function AdminShell({
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-          {navItems.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <a
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition ${
-                  active
-                    ? "bg-brand-blue text-white"
-                    : "text-blue-100 hover:bg-white/10 hover:text-white"
-                }`}
-              >
-                {item.label}
-              </a>
-            );
-          })}
+        <nav
+          className={`flex-1 overflow-y-auto px-3 py-4 ${sections ? "space-y-6" : "space-y-1"}`}
+        >
+          {sections
+            ? sections.map((section) => (
+                <div key={section.id}>
+                  <div className="mb-1 flex items-center gap-2 px-3 text-[11px] font-bold uppercase tracking-wider text-blue-300">
+                    <NavIcon name={section.icon} className="h-3.5 w-3.5" />
+                    {section.label}
+                  </div>
+                  <div className="space-y-1">
+                    {section.items.map((item) => {
+                      const active = isActive(item.href);
+                      return (
+                        <a
+                          key={item.href}
+                          href={item.href}
+                          className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition ${
+                            active
+                              ? "bg-brand-blue text-white"
+                              : "text-blue-100 hover:bg-white/10 hover:text-white"
+                          }`}
+                        >
+                          {item.label}
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))
+            : navItems.map((item) => {
+                const active = isActive(item.href);
+                return (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition ${
+                      active
+                        ? "bg-brand-blue text-white"
+                        : "text-blue-100 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    {item.label}
+                  </a>
+                );
+              })}
         </nav>
 
         <div className="border-t border-white/10 p-3">
@@ -135,7 +200,7 @@ export function AdminShell({
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
                 <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
               </span>
-              {section || "portal"}
+              {sectionLabel || "portal"}
             </span>
             <NotificationBell />
           </div>

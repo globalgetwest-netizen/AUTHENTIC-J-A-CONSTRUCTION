@@ -25,21 +25,25 @@ export const LETTERHEAD = {
   registrationNo: "CS212101021",
   taxId: "C0061318752",
   headOffice: "Plot 13, Block K, Kenyase – Brofoyedru, Ghana",
+  city: "Kumasi",
+  region: "Ashanti",
+  gps: "AD-326-1730",
   registeredAddress: "Accra, Ghana",
   phones: ["+233 245 295 866", "+233 553 864 636"] as const,
   phoneLabels: ["Tel", "Mob"] as const,
   /** Replace with the real domain email once registered (next week). */
   email: "authenticjaconstruction.gh@gmail.com",
   website: "",
-  /** Clean SVG lockup (logo + wordmark) with transparent background — used on documents. */
-  logo: "/brand/aja-logo-full.svg",
-  /** AJA corporate monogram (mark only, no text) — used in the company seal/stamp. */
-  monogram: "/brand/aja-icon.svg",
+  /** Real company logo (photo of physical sign, background-removed) — used on documents. */
+  logo: "/brand/aja-logo-clean.png",
+  /** Real company logo — used in the company seal/stamp. */
+  monogram: "/brand/aja-logo-clean.png",
   /** Chief Executive Officer — signs official documents. */
   ceo: {
     name: "JOSEPH ACQUAH",
     title: "Chief Executive Officer",
-    signature: "/brand/signature-joseph-acquah.svg",
+    signature: "/brand/ceo-signature.png",
+    stamp: "/brand/ceo-stamp.png",
   },
   /** Set to a public/ path to render the full letterhead image in the PDF header. */
   letterheadImage: null as string | null,

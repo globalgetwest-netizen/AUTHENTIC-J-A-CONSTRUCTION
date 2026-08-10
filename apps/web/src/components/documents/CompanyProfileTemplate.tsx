@@ -11,6 +11,7 @@ import {
   FONT_DISPLAY,
   FONT_SANS,
   CertificateFooter,
+  CertificateWatermark,
   Seal,
 } from "./CertificateFrame";
 import { FONT_BODY } from "@/lib/documents/fonts";
@@ -81,6 +82,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.7,
   },
   factValue: { fontSize: 8.1, fontFamily: CERT_FONT_BOLD, color: CERT_COLORS.ink, marginTop: 0.5 },
+  factSub: { fontSize: 6.8, fontFamily: FONT_SANS, color: CERT_COLORS.muted, marginTop: 0.5 },
   services: { marginTop: 3 },
   serviceRow: { flexDirection: "row", marginBottom: 2, alignItems: "flex-start" },
   bullet: { width: 8, fontSize: 8, color: CERT_COLORS.goldDeep, fontFamily: CERT_FONT_BOLD },
@@ -121,12 +123,16 @@ const SERVICES: Array<{ name: string; desc: string }> = [
 export function CompanyProfileTemplate({
   logoSrc,
   letterheadSrc,
+  signatureSrc,
+  stampSrc,
   issuedOn,
   projects = [],
   equipment = [],
 }: {
   logoSrc?: string | null;
   letterheadSrc?: string | null;
+  signatureSrc?: string | null;
+  stampSrc?: string | null;
   issuedOn: string;
   projects: Array<Pick<Project, "code" | "name" | "projectType" | "status" | "client">>;
   equipment: Array<{ assetCode: string; name: string; category: string; status: string }>;
@@ -134,6 +140,7 @@ export function CompanyProfileTemplate({
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        <CertificateWatermark watermarkSrc={logoSrc} />
         <Letterhead logoSrc={logoSrc} letterheadSrc={letterheadSrc} />
         <Text style={styles.title}>COMPANY PROFILE</Text>
         <Text style={styles.subtitle}>Corporate Capability Statement</Text>
@@ -164,6 +171,9 @@ export function CompanyProfileTemplate({
           <View style={styles.factCard}>
             <Text style={styles.factLabel}>Head Office</Text>
             <Text style={styles.factValue}>{LETTERHEAD.headOffice}</Text>
+            <Text style={styles.factSub}>
+              GPS {LETTERHEAD.gps} · {LETTERHEAD.city}, {LETTERHEAD.region}
+            </Text>
           </View>
           <View style={styles.factCard}>
             <Text style={styles.factLabel}>Contact</Text>
@@ -242,11 +252,15 @@ export function CompanyProfileTemplate({
 
         <View style={{ flexDirection: "row", alignItems: "flex-start", marginTop: 16 }}>
           <View style={{ flex: 1 }}>
-            <Seal scale={0.68} />
+            <Seal stampSrc={stampSrc} scale={0.68} />
           </View>
           <View style={styles.signature}>
-            {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}
-            <Image src={LETTERHEAD.ceo.signature} style={{ width: 76, height: 32, objectFit: "contain" }} />
+            {signatureSrc ? (
+              /* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */
+              <Image src={signatureSrc} style={{ width: 76, height: 32, objectFit: "contain" }} />
+            ) : (
+              <View style={{ height: 40 }} />
+            )}
             <View style={styles.sigLine} />
             <Text style={styles.sigName}>JOSEPH ACQUAH</Text>
             <Text style={styles.sigRole}>Chief Executive Officer</Text>

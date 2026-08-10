@@ -68,3 +68,12 @@ services/api/uploads/
 
 # PDF test renders
 apps/web/.pdfcheck/
+apps/web/.cert-preview/
+
+# Browser test artifacts — auth cookies, never commit
+apps/web/*.txt
+
+# Local-only helper scripts (hardcode local paths / machine state)
+.ver-audit.sh
+apps/web/public/brand/extract_assets.py
+apps/web/public/brand/extract_sig.py
