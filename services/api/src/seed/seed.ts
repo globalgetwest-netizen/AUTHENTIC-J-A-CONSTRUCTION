@@ -12,6 +12,28 @@ import { PrismaClient } from '@ajac/database';
 import { hashPassword } from '@ajac/auth';
 import { ROLE_NAMES } from '@ajac/types';
 
+/**
+ * Loads the API's local env file when running from a checkout (dev), and
+ * silently relies on ambient env on managed hosts (Render/Vercel) where
+ * variables are injected by the platform and no `.env` file exists.
+ * Mirrors `main.ts`'s loader so `npm run seed` works in both worlds.
+ */
+function loadEnv(): void {
+  const candidates = [
+    resolve(process.cwd(), '.env'),
+    resolve(__dirname, '../.env'),
+    resolve(__dirname, '../../.env'),
+  ];
+  for (const path of candidates) {
+    if (existsSync(path)) {
+      process.loadEnvFile(path);
+      return;
+    }
+  }
+}
+
+void loadEnv();
+
 const PERMISSIONS = [
   'company.read',
   'company.write',

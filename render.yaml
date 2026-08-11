@@ -1,0 +1,62 @@
+# Render Blueprint — AUTHENTIC J.A. CONSTRUCTION LTD.
+# One-click deploy: connect this repo on render.com → "Blueprint".
+# Creates the API web service + a managed PostgreSQL database.
+#
+# After first deploy, open the API service → Environment and fill the
+# `sync: false` keys (seed passwords / cert secret / domain if changed).
+# The web app deploys separately on Vercel (see apps/web).
+
+services:
+  # ---------------------------------------------------------------- API ----
+  - type: web
+    name: authentic-j-a-construction-api
+    runtime: docker
+    repo: https://github.com/globalgetwest-netizen/AUTHENTIC-J-A-CONSTRUCTION.git
+    branch: main
+    dockerfilePath: services/api/Dockerfile
+    dockerContext: .
+    plan: starter
+    region: frankfurt
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    # Runs migrations then seeds admin/staff/clients on every successful deploy.
+    preDeployCommand: >-
+      npx prisma migrate deploy --schema packages/database/prisma/schema.prisma
+      && node services/api/dist/seed/seed.js
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: authentic-j-a-construction-db
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://authenticjaconstruction.com
+      - key: WEB_URL
+        value: https://authenticjaconstruction.com
+      - key: API_PUBLIC_URL
+        value: https://api.authenticjaconstruction.com
+      - key: APP_PUBLIC_URL
+        value: https://authenticjaconstruction.com
+      # Storage stays local (ephemeral on Render). For durable uploads switch to
+      # S3 / R2 and set STORAGE_PROVIDER + STORAGE_* later.
+      - key: STORAGE_PROVIDER
+        value: local
+      # ── Fill these in the Render dashboard after the first deploy ─────────
+      # Seed admin login (used once): admin@authenticja.com / <this password>
+      - key: SEED_ADMIN_PASSWORD
+        sync: false
+      - key: SEED_STAFF_PASSWORD
+        sync: false
+      - key: SEED_CLIENT_PASSWORD
+        sync: false
+
+  # ------------------------------------------------------- PostgreSQL -------
+  - type: postgres
+    name: authentic-j-a-construction-db
+    databaseName: ajac
+    user: ajac
+    plan: starter
+    region: frankfurt
