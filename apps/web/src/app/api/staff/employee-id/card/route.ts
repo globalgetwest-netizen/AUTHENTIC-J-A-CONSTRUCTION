@@ -22,7 +22,7 @@ export async function GET() {
     });
   }
 
-  const pdf = await renderEmployeeIdCardPdf({ card });
+  const pdf = await renderEmployeeIdCardPdf({ card, scope: "staff" });
 
   return new Response(new Uint8Array(pdf), {
     headers: {

@@ -9,7 +9,6 @@ import {
   CERT_FONT_ITALIC,
   FONT_DISPLAY,
   FONT_SANS,
-  CertificateFooter,
   CertificateHeading,
   CertificatePage,
   SignatureRow,
@@ -70,28 +69,31 @@ export function ProjectCompletionCertificateTemplate({
   project,
   clientName,
   managerName,
+  serial,
   logoSrc,
   letterheadSrc,
   signatureSrc,
   stampSrc,
+  qrSrc,
   issuedOn,
 }: {
   project: Project;
   clientName?: string | null;
   managerName?: string | null;
+  serial: string;
   logoSrc?: string | null;
   letterheadSrc?: string | null;
   signatureSrc?: string | null;
   stampSrc?: string | null;
+  qrSrc?: string | null;
   issuedOn: string;
 }) {
-  const serial = `AJAC/PCC/${issuedOn.slice(0, 4)}/${project.code}`;
   const completionDate = project.endDate ?? issuedOn;
 
   return (
     <Document>
       <Page size="A4">
-        <CertificatePage watermarkSrc={logoSrc}>
+        <CertificatePage watermarkSrc={logoSrc} qrSrc={qrSrc}>
           <CertificateHeading
             logoSrc={logoSrc}
             letterheadSrc={letterheadSrc}
@@ -193,8 +195,6 @@ export function ProjectCompletionCertificateTemplate({
             contractor of liability for latent defects or unfinished works.
           </Text>
           <Text style={styles.note}>Issued on {dateLabel(issuedOn)}.</Text>
-
-          <CertificateFooter />
         </CertificatePage>
       </Page>
     </Document>

@@ -49,7 +49,16 @@ export function safeExtension(filename: string): string {
  * original basename.
  */
 export function documentsDiskStorage(): MulterOptions['storage'] {
-  const dir = uploadsSubDir('documents');
+  return imagesDiskStorage('documents');
+}
+
+/** Same storage rules, but for worker headshots under `uploads/employees`. */
+export function employeePhotosDiskStorage(): MulterOptions['storage'] {
+  return imagesDiskStorage('employees');
+}
+
+function imagesDiskStorage(subdir: string): MulterOptions['storage'] {
+  const dir = uploadsSubDir(subdir);
   return diskStorage({
     destination: (_req, _file, cb) => cb(null, dir),
     filename: (_req, file, cb) => {
@@ -65,6 +74,7 @@ export function documentsDiskStorage(): MulterOptions['storage'] {
 /** Guarantees the uploads tree exists before anything is written to it. */
 export function ensureUploadsDir(): void {
   uploadsSubDir('documents');
+  uploadsSubDir('employees');
 }
 
 /**

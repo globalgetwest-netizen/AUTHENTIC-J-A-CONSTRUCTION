@@ -5,10 +5,13 @@ import type { Employee } from "@/lib/admin/types";
 export const runtime = "nodejs";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   ctx: RouteContext<"/api/admin/employees/[id]/certificate">,
 ) {
   const { id } = await ctx.params;
+  const url = new URL(req.url);
+  const includeStamp = url.searchParams.get("stamp") !== "false";
+  const includeSignature = url.searchParams.get("signature") !== "false";
   const res = await apiFetch(`/employees/${id}`);
   if (!res.ok) {
     const text = await res.text();
@@ -19,7 +22,7 @@ export async function GET(
   }
 
   const employee = (await res.json()) as Employee;
-  const pdf = await renderWorkerCertificatePdf({ employee });
+  const pdf = await renderWorkerCertificatePdf({ employee, includeStamp, includeSignature });
 
   return new Response(new Uint8Array(pdf), {
     headers: {

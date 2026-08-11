@@ -122,6 +122,16 @@ function VerifyCard() {
           <div className="text-center">
             {result ? (
               <>
+                {result.employee?.photoUrl && card.trim() && t.trim() ? (
+                  <div className="mx-auto mb-4 h-28 w-28 overflow-hidden rounded-full border-4 border-brand-blue">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- local proxy stream, not remote */}
+                    <img
+                      src={`/api/verify/employee-id/photo?card=${encodeURIComponent(card.trim())}&t=${encodeURIComponent(t.trim())}`}
+                      alt="Card holder headshot"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                ) : null}
                 <Badge tone={toneFor(result.result)} soft>
                   {label(result.result)}
                 </Badge>

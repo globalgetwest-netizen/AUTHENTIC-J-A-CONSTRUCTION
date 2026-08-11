@@ -51,7 +51,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 6,
+    overflow: "hidden",
   },
+  photoImg: { width: "100%", height: "100%", objectFit: "cover" },
   name: { fontSize: 11, fontWeight: "bold", color: C.charcoal },
   code: { fontSize: 6.5, color: C.muted, marginTop: 1 },
   meta: { marginTop: 6 },
@@ -79,6 +81,7 @@ const styles = StyleSheet.create({
 export interface EmployeeIdCardTemplateProps {
   logoSrc: string | null;
   employee: EmployeeIdRef | null;
+  photoSrc?: string | null;
   cardNumber: string;
   qrSrc: string | null;
   issuedAt: string;
@@ -87,7 +90,7 @@ export interface EmployeeIdCardTemplateProps {
 }
 
 export function EmployeeIdCardTemplate(props: EmployeeIdCardTemplateProps) {
-  const { logoSrc, employee, cardNumber, qrSrc, issuedAt, expiresAt, status } = props;
+  const { logoSrc, employee, photoSrc, cardNumber, qrSrc, issuedAt, expiresAt, status } = props;
   const initials = employee
     ? [employee.firstName, employee.lastName].map((n) => (n || "").charAt(0)).join("").toUpperCase()
     : "?";
@@ -111,7 +114,12 @@ export function EmployeeIdCardTemplate(props: EmployeeIdCardTemplateProps) {
           <View style={styles.body}>
             <View style={styles.left}>
               <View style={styles.photo}>
-                <Text style={{ fontSize: 14, fontWeight: "bold", color: C.blue }}>{initials}</Text>
+                {photoSrc ? (
+                  // eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support
+                  <Image src={photoSrc} style={styles.photoImg} />
+                ) : (
+                  <Text style={{ fontSize: 14, fontWeight: "bold", color: C.blue }}>{initials}</Text>
+                )}
               </View>
               <Text style={styles.name}>{name}</Text>
               <Text style={styles.code}>

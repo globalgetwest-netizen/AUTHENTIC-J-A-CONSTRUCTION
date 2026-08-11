@@ -15,19 +15,57 @@ export const DOC_COLORS = {
 };
 
 /**
- * Company letterhead for generated PDFs. Renders the full letterhead image
- * when `letterheadImage` is configured; otherwise composes a premium brand
- * lockup (logo, Playfair-registered name on a gold rule, EB Garamond tagline,
- * registry details and a gold contact band) from the config.
+ * Company letterhead for generated PDFs.
+ *
+ * The real letterheads (`letterheadImage`, `ceoLetterheadImage`) are complete
+ * A4 page designs — header band on top, watermark in the body, footer band at
+ * the bottom. They are rendered one of two ways depending on the document:
+ *
+ * - `fullPage`  → the image becomes a fixed full-page background (repeats on
+ *   later pages like printed letterhead paper). The template must give the
+ *   content enough top/bottom padding to clear the header/footer bands, and
+ *   must suppress its own footer (the letterhead already carries one).
+ * - `bandHeight` → the top of the image is cropped to a header band for
+ *   documents that keep their own footer decoration (e.g. company profile).
+ *
+ * When `letterheadSrc` is null a premium text lockup is composed from config
+ * (logo, Playfair-registered name on a gold rule, tagline, contacts band) —
+ * this is the band certificates use.
  */
 export function Letterhead({
   logoSrc,
   letterheadSrc,
+  fullPage = false,
+  bandHeight,
 }: {
   logoSrc?: string | null;
   letterheadSrc?: string | null;
+  /** Render the letterhead as a fixed full-page background behind the content. */
+  fullPage?: boolean;
+  /** Instead of the whole page, crop the letterhead to a header band of this height. */
+  bandHeight?: number;
 }) {
   if (letterheadSrc) {
+    if (fullPage) {
+      return (
+        <View
+          fixed
+          debug={false}
+          style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+        >
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}
+          <Image src={letterheadSrc} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        </View>
+      );
+    }
+    if (bandHeight) {
+      return (
+        <View style={{ height: bandHeight, overflow: "hidden", marginBottom: 16 }}>
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}
+          <Image src={letterheadSrc} style={{ width: "100%", objectFit: "contain" }} />
+        </View>
+      );
+    }
     return (
       <View style={{ marginBottom: 24 }}>
         {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}

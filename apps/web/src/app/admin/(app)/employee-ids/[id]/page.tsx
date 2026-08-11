@@ -176,6 +176,17 @@ export default function EmployeeIdDetailPage() {
         </div>
 
         <div className="rounded-xl border border-neutral-200 bg-white p-5">
+          {card.employee?.photoUrl && (
+            <div className="mb-4 text-center">
+              <p className={labelClass}>Worker photo</p>
+              {/* eslint-disable-next-line @next/next/no-img-element -- local proxy stream, not remote */}
+              <img
+                src={`/api/admin/employees/${card.employee.id}/photo`}
+                alt={`${idFullName(card.employee)} headshot`}
+                className="mt-2 h-28 w-28 rounded-full border border-neutral-200 object-cover"
+              />
+            </div>
+          )}
           <p className={labelClass}>Scan to verify</p>
           {qr ? (
             // eslint-disable-next-line @next/next/no-img-element -- data-URI from `qrcode`, not a remote/bundled image

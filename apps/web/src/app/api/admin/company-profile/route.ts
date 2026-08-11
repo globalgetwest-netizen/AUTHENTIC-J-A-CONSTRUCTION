@@ -1,10 +1,13 @@
 import { apiFetch } from "@/lib/admin/auth";
 import { renderCompanyProfilePdf } from "@/lib/documents/pdf";
-import type { Equipment, Project } from "@/lib/admin/types";
+import type { Project } from "@/lib/admin/types";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const includeStamp = url.searchParams.get("stamp") !== "false";
+  const includeSignature = url.searchParams.get("signature") !== "false";
   const [projectsRes, equipmentRes] = await Promise.all([
     apiFetch("/projects?pageSize=100"),
     apiFetch("/equipment?pageSize=100"),
@@ -27,6 +30,8 @@ export async function GET() {
   const pdf = await renderCompanyProfilePdf({
     projects: projects.data ?? [],
     equipment: equipment.data ?? [],
+    includeStamp,
+    includeSignature,
   });
 
   return new Response(new Uint8Array(pdf), {

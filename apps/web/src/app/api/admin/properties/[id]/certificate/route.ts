@@ -6,10 +6,13 @@ import type { Property } from "@/lib/admin/types";
 export const runtime = "nodejs";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   ctx: RouteContext<"/api/admin/properties/[id]/certificate">,
 ) {
   const { id } = await ctx.params;
+  const url = new URL(req.url);
+  const includeStamp = url.searchParams.get("stamp") !== "false";
+  const includeSignature = url.searchParams.get("signature") !== "false";
   const res = await apiFetch(`/properties/${id}`);
   if (!res.ok) {
     const text = await res.text();
@@ -53,6 +56,8 @@ export async function GET(
     rows,
     note: "This certificate confirms the company's legal and equitable ownership of the property described above. The property is a corporate asset and any disposal is subject to board approval.",
     issuedOn,
+    includeStamp,
+    includeSignature,
   });
 
   return new Response(new Uint8Array(pdf), {

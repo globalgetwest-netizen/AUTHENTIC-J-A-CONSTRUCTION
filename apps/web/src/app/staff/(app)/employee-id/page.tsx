@@ -66,6 +66,20 @@ export default function StaffEmployeeIdPage() {
       ) : (
         <>
           <div className="rounded-xl border border-neutral-200 bg-white px-5 py-5">
+            {card.employee?.photoUrl && (
+              <div className="mb-4 flex items-center gap-4">
+                {/* eslint-disable-next-line @next/next/no-img-element -- local proxy stream, not remote */}
+                <img
+                  src="/api/staff/employee-id/photo"
+                  alt={`${idFullName(card.employee)} headshot`}
+                  className="h-20 w-20 rounded-full border border-neutral-200 object-cover"
+                />
+                <p className="text-xs text-neutral-500">
+                  This photo appears on your printed ID card. Ask Human Resources if it needs
+                  updating.
+                </p>
+              </div>
+            )}
             <dl className="divide-y divide-neutral-100">
               <div className="flex flex-col justify-between gap-1 py-3 sm:flex-row sm:items-center">
                 <dt className="shrink-0 text-sm font-medium text-neutral-500 sm:w-44">Status</dt>

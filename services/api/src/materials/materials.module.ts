@@ -8,6 +8,14 @@ import {
   StockMovementsController,
   WarehousesController,
 } from './materials.controller';
+import {
+  StaffInventoryController,
+  StaffInventoryTransactionsController,
+  StaffMaterialCategoriesController,
+  StaffMaterialsController,
+  StaffStockMovementsController,
+  StaffWarehousesController,
+} from './staff-inventory.controller';
 
 @Module({
   controllers: [
@@ -17,6 +25,12 @@ import {
     InventoryController,
     InventoryTransactionsController,
     StockMovementsController,
+    StaffInventoryController,
+    StaffInventoryTransactionsController,
+    StaffStockMovementsController,
+    StaffMaterialsController,
+    StaffWarehousesController,
+    StaffMaterialCategoriesController,
   ],
   providers: [MaterialsService],
 })

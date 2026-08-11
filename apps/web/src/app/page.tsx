@@ -10,14 +10,16 @@ import {
   Text,
 } from "@ajac/ui";
 import Link from "next/link";
-import { Icon, SocialIcon, type IconName } from "../components/icons";
+import { Icon, type IconName } from "../components/icons";
+import { BrandLogo } from "../components/BrandLogo";
 import { Logo } from "../components/Logo";
 import { MobileNav } from "../components/MobileNav";
 import { PhotoBlock } from "../components/PhotoBlock";
 import {
   COMPANY,
   COMPANY_IMAGES,
-  COMPANY_LOGO,
+  DEPARTMENT_EMAILS,
+  LEADERSHIP,
   REQUEST_TYPES,
   SOCIAL_MEDIA,
   telHref,
@@ -226,7 +228,7 @@ export default function Home() {
         <Container>
           <div className="flex items-center justify-between gap-6 py-3">
             <Link href="/" className="flex items-center gap-3">
-              <Logo width={80} />
+              <Logo width={80} src="/app-icon.png" />
               <span className="leading-tight">
                 <span className="block text-sm font-bold tracking-wide text-neutral-900">{COMPANY.shortName}</span>
                 <span className="block text-[11px] font-semibold tracking-[0.22em] text-neutral-600">
@@ -243,10 +245,13 @@ export default function Home() {
               ))}
             </nav>
 
-            <div className="hidden items-center gap-3 lg:flex">
+            <div className="hidden flex-col items-end gap-1 lg:flex">
               <ButtonLink href="/request?type=quote" size="sm">
                 Request a Quote
               </ButtonLink>
+              <span className="text-[10px] font-medium tracking-[0.04em] text-neutral-500">
+                Reg. No. {COMPANY.registrationNo} · TIN {COMPANY.taxId}
+              </span>
             </div>
 
             <div className="lg:hidden">
@@ -272,22 +277,26 @@ export default function Home() {
               style={{ backgroundImage: `url(${COMPANY_IMAGES.hero.src})` }}
             />
           )}
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-blue-950/75"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_60%_at_80%_10%,rgba(255,215,0,0.14),transparent),radial-gradient(50%_50%_at_5%_95%,rgba(0,166,81,0.20),transparent)]"
-          />
           <Container>
-            <div className="grid items-center gap-12 py-16 md:grid-cols-2 md:py-24">
-              <Stack gap={6} wrap={false} align="flex-start">
-                <Kicker color="rgba(255,215,0,0.95)">Construction · Engineering · Real Estate · Materials</Kicker>
-                <Heading level={1} color="surface" size="5xl">
+            <div className="py-16 md:py-24">
+              <Stack gap={6} wrap={false} align="flex-start" className="max-w-3xl">
+                <Kicker color="rgba(255,215,0,0.95)" className="[text-shadow:0_1px_10px_rgba(9,20,38,0.55)]">
+                  Construction · Engineering · Real Estate · Materials
+                </Kicker>
+                <Heading
+                  level={1}
+                  color="surface"
+                  size="5xl"
+                  className="[text-shadow:0_2px_18px_rgba(9,20,38,0.7)]"
+                >
                   Building Ghana&apos;s Future Through Construction, Engineering &amp; Property Development
                 </Heading>
-                <Text size="lg" color="surface" weight="semibold" className="font-display italic text-blue-100">
+                <Text
+                  size="lg"
+                  color="surface"
+                  weight="semibold"
+                  className="font-display italic text-blue-100 [text-shadow:0_1px_12px_rgba(9,20,38,0.6)]"
+                >
                   Authentic: Quality Structures. Trusted Solutions.
                 </Text>
                 <Stack direction="row" gap={3} wrap>
@@ -312,21 +321,6 @@ export default function Home() {
                   </ButtonLink>
                 </Stack>
               </Stack>
-
-              <div className="flex justify-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={COMPANY_LOGO.src}
-                  alt={COMPANY_LOGO.alt}
-                  className="h-auto w-full max-w-[280px] object-contain drop-shadow-2xl sm:max-w-[320px]"
-                  style={{
-                    maskImage:
-                      "radial-gradient(ellipse 100% 100% at center, black 55%, transparent 88%)",
-                    WebkitMaskImage:
-                      "radial-gradient(ellipse 100% 100% at center, black 55%, transparent 88%)",
-                  }}
-                />
-              </div>
             </div>
           </Container>
         </section>
@@ -628,21 +622,28 @@ export default function Home() {
           <Container>
             <div className="grid items-center gap-12 lg:grid-cols-2">
               <Stack wrap={false} align="flex-start" gap={4}>
-                <Kicker color="rgba(255,215,0,0.9)">Plant &amp; heavy equipment</Kicker>
-                <Heading level={2} color="surface">Machinery for hire, run by our operators</Heading>
-                <Text color="surface" size="lg">
+                <Kicker color="rgba(255,215,0,0.95)">Plant &amp; heavy equipment</Kicker>
+                <Heading level={2} color="white">Machinery for hire, run by our operators</Heading>
+                <Text color="white" size="lg">
                   Fully maintained plant and equipment available for hire to contractors and developers —
                   supplied with experienced operators, ready for any site.
                 </Text>
-                <ButtonLink href="/request?type=project" size="sm" variant="outline">Enquire about plant hire</ButtonLink>
+                <ButtonLink
+                  href="/request?type=project"
+                  size="sm"
+                  variant="outline"
+                  style={{ color: "#fff", borderColor: "rgba(255,255,255,0.6)" }}
+                >
+                  Enquire about plant hire
+                </ButtonLink>
               </Stack>
               <div className="flex flex-col gap-5">
                 <PhotoBlock image={COMPANY_IMAGES.equipment} icon="civil" label="Plant & Heavy Equipment" className="min-h-56" />
                 <div className="grid gap-4 sm:grid-cols-2">
                   {PLANT.map((p) => (
                     <div key={p.name} className="rounded-lg bg-white/5 p-5 ring-1 ring-white/10 backdrop-blur">
-                      <Text weight="semibold" className="text-brand-gold">{p.name}</Text>
-                      <Text size="sm" className="mt-1 text-blue-100">{p.detail}</Text>
+                      <p className="text-sm font-semibold text-brand-gold">{p.name}</p>
+                      <p className="mt-1 text-sm text-neutral-300">{p.detail}</p>
                     </div>
                   ))}
                 </div>
@@ -776,53 +777,50 @@ export default function Home() {
       {/* Corporate footer */}
       <footer className="bg-neutral-900 text-neutral-300">
         <Container>
-          <div className="grid gap-10 py-14 lg:grid-cols-5">
+          <div className="grid gap-x-10 gap-y-12 py-16 lg:grid-cols-6">
             {/* Brand + follow us */}
             <div>
               <div className="flex items-center gap-3">
-                <Logo width={56} inverted />
+                <Logo width={48} inverted src="/app-icon.png" />
                 <span className="leading-tight">
-                  <span className="block text-sm font-bold text-white">{COMPANY.shortName}</span>
-                  <span className="block text-[11px] font-semibold tracking-[0.22em] text-neutral-400">
+                  <span className="block text-sm font-semibold tracking-wide text-white">{COMPANY.shortName}</span>
+                  <span className="block text-[10px] font-medium tracking-[0.2em] text-neutral-500">
                     CONSTRUCTION LIMITED
                   </span>
                 </span>
               </div>
-              <p className="mt-4 max-w-xs text-sm text-neutral-400">{COMPANY.motto}</p>
+              <p className="mt-4 max-w-xs text-[13px] leading-relaxed text-neutral-500">{COMPANY.motto}</p>
 
-              <div className="mt-5">
-                <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-neutral-400">Office hours</div>
-                <ul className="mt-3 flex flex-col gap-1.5 text-sm text-neutral-300">
+              <div className="mt-6">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Office hours</div>
+                <ul className="mt-3 flex flex-col gap-2 text-xs text-neutral-400">
                   {COMPANY.officeHours.map((h) => (
                     <li key={h.days} className="flex gap-3">
-                      <span className="min-w-0 flex-1 text-neutral-400">{h.days}</span>
-                      <span className="text-right font-medium text-neutral-200">{h.hours}</span>
+                      <span className="min-w-0 flex-1 text-neutral-500">{h.days}</span>
+                      <span className="text-right font-medium text-neutral-300">{h.hours}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div className="mt-5">
-                <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-neutral-400">Follow Us</div>
+              <div className="mt-6">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Follow Us</div>
                 <ul className="mt-3 flex flex-wrap gap-2">
-                  {SOCIAL_MEDIA.map((s) => {
-                    if (!s.url) {
-                      return (
-                        <li key={s.platform} title={`${s.label} (not yet configured)`}
-                            className="flex h-9 w-9 items-center justify-center rounded-md bg-neutral-800 text-neutral-600">
-                          <SocialIcon platform={s.platform} className="h-5 w-5" />
-                        </li>
-                      );
-                    }
-                    return (
+                  {SOCIAL_MEDIA.map((s) =>
+                    !s.url ? (
+                      <li key={s.platform} title={`${s.label} (not yet linked)`}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 opacity-50">
+                        <BrandLogo platform={s.platform} className="h-4 w-4" />
+                      </li>
+                    ) : (
                       <li key={s.platform}>
                         <a href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.label}
-                           className="flex h-9 w-9 items-center justify-center rounded-md bg-neutral-800 text-neutral-300 transition hover:bg-brand-blue hover:text-white">
-                          <SocialIcon platform={s.platform} className="h-5 w-5" />
+                           className="flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                          <BrandLogo platform={s.platform} className="h-4 w-4" />
                         </a>
                       </li>
-                    );
-                  })}
+                    )
+                  )}
                 </ul>
               </div>
             </div>
@@ -830,11 +828,11 @@ export default function Home() {
             {/* Link columns */}
             {FOOTER_COLS.map((col) => (
               <div key={col.title}>
-                <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-neutral-400">{col.title}</div>
-                <ul className="mt-4 flex flex-col gap-2 text-sm">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">{col.title}</div>
+                <ul className="mt-4 flex flex-col gap-2.5 text-[13px]">
                   {col.rows.map((r) => (
                     <li key={r.label}>
-                      <a href={r.href} className="text-neutral-300 transition hover:text-brand-gold">{r.label}</a>
+                      <a href={r.href} className="text-neutral-400 transition hover:text-white">{r.label}</a>
                     </li>
                   ))}
                 </ul>
@@ -843,46 +841,78 @@ export default function Home() {
 
             {/* Quick links + contact */}
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-neutral-400">Quick Links</div>
-              <ul className="mt-4 flex flex-col gap-2 text-sm">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Quick Links</div>
+              <ul className="mt-4 flex flex-col gap-2.5 text-[13px]">
                 {QUICK_ACTIONS.map((a) => (
                   <li key={a.type}>
-                    <a href={`/request?type=${a.type}`} className="text-neutral-300 transition hover:text-brand-gold">
+                    <a href={`/request?type=${a.type}`} className="text-neutral-400 transition hover:text-white">
                       {REQUEST_TYPES[a.type].label}
                     </a>
                   </li>
                 ))}
-                <li className="pt-2">
-                  <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-neutral-400">Contact</span>
+                <li className="pt-3">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Contact</span>
                 </li>
                 <li>
-                  <a href={telHref(COMPANY.phones[0])} className="text-neutral-300 hover:text-brand-gold">{COMPANY.phones[0]}</a>
+                  <a href={telHref(COMPANY.phones[0])} className="text-neutral-400 hover:text-white">{COMPANY.phones[0]}</a>
                 </li>
                 <li>
                   <a href={whatsappHref(COMPANY.whatsappNumber)} target="_blank" rel="noopener noreferrer"
-                     className="text-neutral-300 hover:text-brand-gold">
+                     className="text-neutral-400 hover:text-white">
                     WhatsApp — {COMPANY.phones[0]}
                   </a>
                 </li>
                 <li>
-                  <a href={`mailto:${COMPANY.email}`} className="text-neutral-300 hover:text-brand-gold">{COMPANY.email}</a>
+                  <a href={`mailto:${COMPANY.email}`} className="text-neutral-400 hover:text-white">{COMPANY.email}</a>
                 </li>
+              </ul>
+            </div>
+
+            {/* Leadership + department emails */}
+            <div>
+              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Leadership</div>
+              <ul className="mt-4 flex flex-col gap-4 text-[13px]">
+                {LEADERSHIP.map((l) => (
+                  <li key={l.email}>
+                    <span className="block font-medium text-neutral-100">{l.name}</span>
+                    <span className="mt-0.5 block text-xs text-neutral-500">{l.title}</span>
+                    <a href={`mailto:${l.email}`} className="mt-1 block text-xs text-neutral-400 transition hover:text-white">
+                      {l.email}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-7 text-[10px] font-semibold uppercase tracking-[0.18em] text-neutral-500">Department Emails</div>
+              <ul className="mt-4 flex flex-col gap-3">
+                {DEPARTMENT_EMAILS.map((d) => (
+                  <li key={d.email}>
+                    <a href={`mailto:${d.email}`} className="group block">
+                      <span className="block text-[13px] font-medium text-neutral-300 transition group-hover:text-white">
+                        {d.department}
+                      </span>
+                      <span className="mt-0.5 block text-xs text-neutral-500 transition group-hover:text-neutral-300">
+                        {d.email}
+                      </span>
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 border-t border-neutral-700 py-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-xs text-neutral-400">
+          <div className="flex flex-col gap-3 border-t border-neutral-800 py-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-xs leading-relaxed text-neutral-500">
               &copy; {new Date().getFullYear()} {COMPANY.name} All rights reserved.
               <br />
-              <span className="text-neutral-400">
+              <span className="text-neutral-500">
                 Registered in the Republic of Ghana · Reg. No. {COMPANY.registrationNo} · TIN {COMPANY.taxId}
               </span>
             </div>
-            <div className="flex gap-4 text-xs text-neutral-400">
-              <span className="cursor-default hover:text-neutral-200">Privacy Policy</span>
-              <span className="cursor-default hover:text-neutral-200">Terms of Service</span>
-              <span className="cursor-default hover:text-neutral-200">Cookie Policy</span>
+            <div className="flex gap-5 text-xs text-neutral-500">
+              <span className="cursor-default transition hover:text-neutral-200">Privacy Policy</span>
+              <span className="cursor-default transition hover:text-neutral-200">Terms of Service</span>
+              <span className="cursor-default transition hover:text-neutral-200">Cookie Policy</span>
             </div>
           </div>
         </Container>

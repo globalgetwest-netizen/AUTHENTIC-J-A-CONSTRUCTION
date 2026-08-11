@@ -44,9 +44,11 @@ export const LETTERHEAD = {
     signature: "/brand/ceo-signature.png",
     stamp: "/brand/ceo-stamp.png",
   },
-  /** Real company letterhead header — used on official correspondence (quotations,
-   *  land allocations, company profile). Certificates use the text-band instead. */
-  letterheadImage: "/brand/aja-letterhead-header.jpg" as string | null,
+  /** Real main company letterhead (full A4 page) — used on commercial documents
+   *  (quotations, land allocations, company profile). Certificates use the text-band instead. */
+  letterheadImage: "/brand/aja-main-company-letterhead.png" as string | null,
+  /** Real CEO & Founder letterhead (full A4 page) — used on executive / CEO correspondence. */
+  ceoLetterheadImage: "/brand/aja-ceo-founder-letterhead.png" as string | null,
   banks: [
     { name: "Universal Merchant Bank (UMB)", accountName: "", accountNumber: "", branch: "" },
     { name: "Fidelity Bank", accountName: "", accountNumber: "", branch: "" },

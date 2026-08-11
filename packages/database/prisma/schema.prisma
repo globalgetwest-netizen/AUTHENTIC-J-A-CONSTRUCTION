@@ -379,13 +379,16 @@ model User {
   updatedAt    DateTime  @updatedAt
   deletedAt    DateTime?
 
-  roles         UserRole[]
-  sessions      Session[]
-  refresh       RefreshToken[]
-  auditLogs     AuditLog[]
-  employee      Employee?
-  client        Client?
-  notifications Notification[]
+  roles            UserRole[]
+  sessions         Session[]
+  refresh          RefreshToken[]
+  auditLogs        AuditLog[]
+  employee         Employee?
+  client           Client?
+  notifications    Notification[]
+  createdExpenses  Expense[]     @relation("UserCreatedExpenses")
+  approvedExpenses Expense[]     @relation("UserApprovedExpenses")
+  maintenanceLogged MaintenanceRecord[] @relation("MaintenanceLoggedBy")
 
   @@index([email])
   @@index([isActive])
@@ -533,16 +536,21 @@ model Department {
   companyId String
   name      String
   code      String    @unique
-  headId    String?
+  headId    String?   @unique
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  // The department head is a real employee — the person who leads this
+  // department's command chain (sees and approves the department's work).
+  head      Employee?  @relation("DepartmentHead", fields: [headId], references: [id], onDelete: SetNull)
   employees Employee[]
+  expenses  Expense[]
 
   @@index([companyId])
+  @@index([headId])
 }
 
 model Position {
@@ -578,6 +586,8 @@ model Employee {
   dateOfBirth     DateTime?
   gender          Gender?
   address         String?
+  // Worker headshot, stored under uploads/employees and shown on the ID card.
+  photoUrl        String?
   departmentId    String?
   positionId      String?
   branchId        String?
@@ -586,6 +596,7 @@ model Employee {
   terminationDate DateTime?
   status          EmployeeStatus @default(ACTIVE)
   salary          Decimal?       @db.Decimal(18, 2)
+  reportsToId     String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   deletedAt       DateTime?
@@ -595,9 +606,16 @@ model Employee {
   position   Position?      @relation(fields: [positionId], references: [id], onDelete: SetNull)
   branch     CompanyBranch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
 
-  documents          EmployeeDocument[]
-  employeeId         EmployeeID?
-  managedProjects    Project[]                @relation("ProjectManager")
+  // Command chain: `reportsTo` is the employee's direct supervisor (the next
+  // rung up the hierarchy); `directReports` are the people who report to them.
+  reportsTo      Employee?   @relation("EmployeeReportsTo", fields: [reportsToId], references: [id], onDelete: SetNull)
+  directReports  Employee[]  @relation("EmployeeReportsTo")
+
+  // Department head of this employee (mirror of Department.head).
+  departmentHeadOf Department?              @relation("DepartmentHead")
+  documents        EmployeeDocument[]
+  employeeId       EmployeeID?
+  managedProjects  Project[]                @relation("ProjectManager")
   projectMemberships ProjectMember[]
   assignedTasks      ProjectTask[]
   attendance         EmployeeAttendance[]
@@ -605,11 +623,13 @@ model Employee {
   payslips           Payslip[]
   payrolls           Payroll[]
   idVerifications    EmployeeIDVerification[]
+  receiptsReceived   Receipt[]                @relation("ReceiptCashier")
 
   @@index([departmentId])
   @@index([positionId])
   @@index([branchId])
   @@index([status])
+  @@index([reportsToId])
 }
 
 model EmployeeDocument {
@@ -1589,14 +1609,19 @@ model MaintenanceRecord {
   cost            Decimal?          @db.Decimal(18, 2)
   serviceProvider String?
   description     String?
+  // Staff portal: who logged the maintenance request/record (scoped to their
+  // department for visibility; department head sees the whole department's).
+  createdById     String?
   status          MaintenanceStatus @default(SCHEDULED)
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
   equipment Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  createdBy User?     @relation("MaintenanceLoggedBy", fields: [createdById], references: [id], onDelete: SetNull)
 
   @@index([equipmentId])
   @@index([status])
+  @@index([createdById])
 }
 
 model FuelRecord {
@@ -1813,8 +1838,9 @@ model Receipt {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
-  invoice Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
-  client  Client   @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  invoice    Invoice?   @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  client     Client     @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  receivedBy Employee?  @relation("ReceiptCashier", fields: [receivedById], references: [id], onDelete: SetNull)
 
   @@index([invoiceId])
   @@index([clientId])
@@ -1832,15 +1858,25 @@ model Expense {
   approvedById String?
   receiptUrl   String?
   projectId    String?
+  // Department scoping for the staff portal: the expense is raised by a staff
+  // member (createdById) within their department (departmentId), then approved
+  // by the department head or admin (approvedById, status → APPROVED).
+  createdById  String?
+  departmentId String?
   status       ExpenseStatus @default(PENDING)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
-  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  project    Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  createdBy User?       @relation("UserCreatedExpenses", fields: [createdById], references: [id], onDelete: SetNull)
+  approvedBy User?      @relation("UserApprovedExpenses", fields: [approvedById], references: [id], onDelete: SetNull)
+  department Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
 
   @@index([category])
   @@index([status])
   @@index([incurredOn])
+  @@index([createdById])
+  @@index([departmentId])
 }
 
 model FinancialTransaction {

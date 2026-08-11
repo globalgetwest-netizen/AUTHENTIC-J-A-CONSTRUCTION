@@ -211,6 +211,63 @@ export class OrgService {
     await this.softDelete('position', id, 'Position');
   }
 
+  // ── Command hierarchy chart ───────────────────────────────────────────────
+
+  /**
+   * The org tree for the command hierarchy: company → CEO → departments, each
+   * with its head (employee) and the employees in it (with their reporting
+   * line and position level). Rendered as the org chart in the admin console.
+   */
+  async chart() {
+    const company = await this.prisma.company.findFirst({ orderBy: { createdAt: 'asc' } });
+    if (!company) throw new NotFoundException('No company is configured — run the seed first.');
+
+    // CEO = the employee holding the top executive position (level 1).
+    const ceo = await this.prisma.employee.findFirst({
+      where: {
+        deletedAt: null,
+        position: { level: 1 },
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        position: { select: { title: true } },
+      },
+    });
+
+    const departments = await this.prisma.department.findMany({
+      where: { companyId: company.id, deletedAt: null },
+      orderBy: { name: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        head: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            position: { select: { title: true } },
+          },
+        },
+        employees: {
+          where: { deletedAt: null },
+          orderBy: [{ position: { level: 'asc' } }, { lastName: 'asc' }],
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            reportsToId: true,
+            position: { select: { title: true, level: true } },
+          },
+        },
+      },
+    });
+
+    return { company: { id: company.id, name: company.name }, ceo, departments };
+  }
+
   // ── Helpers ──────────────────────────────────────────────────────────────
 
   private async ensureExists(

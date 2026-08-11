@@ -1,4 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { createReadStream, existsSync, statSync } from 'node:fs';
+import { extname } from 'node:path';
+import type { Readable } from 'node:stream';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@ajac/database';
 import type { Employee } from '@ajac/database';
 import { PrismaService } from '../prisma/prisma.service';
@@ -8,6 +11,7 @@ import {
   prismaSkipTake,
 } from '../common/dto/pagination.dto';
 import type { Paginated } from '../common/dto/pagination.dto';
+import { contentTypeFromFile, resolveStoredFile, uploadsUrl } from '../common/storage/uploads';
 import { generateBusinessCode } from '../common/utils/codegen';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { QueryEmployeesDto } from './dto/query-employees.dto';
@@ -141,6 +145,41 @@ export class EmployeesService {
     if (result.count === 0) {
       throw new NotFoundException(`Employee ${id} not found`);
     }
+  }
+
+  /**
+   * Store a worker headshot (multer has already written it to uploads/employees)
+   * and point the employee's `photoUrl` at it. The card, certificate and staff
+   * directory all read the same photo.
+   */
+  async uploadPhoto(id: string, file?: Express.Multer.File): Promise<Employee> {
+    await this.ensureExists(id);
+    if (!file) {
+      throw new BadRequestException('A photo file is required');
+    }
+    const photoUrl = uploadsUrl('employees', file.filename);
+    return this.prisma.employee.update({ where: { id }, data: { photoUrl }, include: INCLUDE });
+  }
+
+  /** Resolves the stored headshot for streaming (permission-gated upstream). */
+  async openPhoto(
+    id: string,
+  ): Promise<{ stream: Readable; length: number; type: string; filename: string }> {
+    const employee = await this.prisma.employee.findFirst({
+      where: { id, deletedAt: null },
+      select: { id: true, photoUrl: true, employeeCode: true },
+    });
+    if (!employee) throw new NotFoundException(`Employee ${id} not found`);
+    if (!employee.photoUrl) throw new NotFoundException('This employee has no photo yet');
+    const abs = resolveStoredFile(employee.photoUrl);
+    if (!existsSync(abs)) throw new NotFoundException('Photo file is missing on disk');
+    const stats = statSync(abs);
+    return {
+      stream: createReadStream(abs),
+      length: stats.size,
+      type: contentTypeFromFile(abs),
+      filename: `photo-${employee.employeeCode}${extname(abs)}`,
+    };
   }
 
   private async ensureExists(id: string): Promise<void> {

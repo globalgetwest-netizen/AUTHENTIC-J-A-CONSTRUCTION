@@ -1,11 +1,9 @@
 import { Document, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { Project } from "@/lib/admin/types";
 import { label } from "@/lib/admin/types";
-import { money } from "@/lib/documents/format";
 import { LETTERHEAD } from "@/config/documents";
 import {
   CERT_COLORS,
-  CERT_FONT,
   CERT_FONT_BOLD,
   CERT_FONT_ITALIC,
   FONT_DISPLAY,
@@ -125,7 +123,6 @@ export function CompanyProfileTemplate({
   letterheadSrc,
   signatureSrc,
   stampSrc,
-  issuedOn,
   projects = [],
   equipment = [],
 }: {
@@ -141,7 +138,9 @@ export function CompanyProfileTemplate({
     <Document>
       <Page size="A4" style={styles.page}>
         <CertificateWatermark watermarkSrc={logoSrc} />
-        <Letterhead logoSrc={logoSrc} letterheadSrc={letterheadSrc} />
+        {/* Header-band crop of the real letterhead — keeps this document's own
+            certificate-style footer and watermark, so the whole A4 is not overlaid. */}
+        <Letterhead logoSrc={logoSrc} letterheadSrc={letterheadSrc} bandHeight={185} />
         <Text style={styles.title}>COMPANY PROFILE</Text>
         <Text style={styles.subtitle}>Corporate Capability Statement</Text>
         <View style={styles.band}>

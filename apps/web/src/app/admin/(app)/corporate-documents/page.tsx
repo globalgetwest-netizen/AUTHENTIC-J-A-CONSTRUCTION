@@ -61,6 +61,11 @@ const DOC_CARDS: DocCard[] = [
     description: "Employee payslips per payroll period.",
     href: "/admin/payslips",
   },
+  {
+    title: "CEO & Founder Letter",
+    description: "Official executive correspondence composed on the CEO letterhead and signed.",
+    href: "/admin/ceo-letters",
+  },
 ];
 
 export default function CorporateDocumentsPage() {

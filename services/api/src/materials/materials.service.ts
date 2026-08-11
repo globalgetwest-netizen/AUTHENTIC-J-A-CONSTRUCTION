@@ -30,6 +30,7 @@ import {
 } from './dto/query-materials.dto';
 import { StockOpDto } from './dto/stock-op.dto';
 import { TransferStockDto } from './dto/transfer-stock.dto';
+import type { StaffContext } from '../common/staff/staff-context';
 
 const CATEGORY_SORTABLE = ['createdAt', 'name', 'code'] as const;
 const MATERIAL_SORTABLE = ['createdAt', 'name', 'sku', 'unit', 'currentStock', 'isActive'] as const;
@@ -389,6 +390,25 @@ export class MaterialsService {
 
   async listTransactions(query: QueryInventoryTransactionsDto): Promise<Paginated<object>> {
     const where: Prisma.InventoryTransactionWhereInput = {};
+    if (query.type) where.type = query.type;
+    if (query.materialId) where.materialId = query.materialId;
+    if (query.warehouseId) where.warehouseId = query.warehouseId;
+    const { skip, take } = prismaSkipTake(query);
+    const orderBy = buildOrderBy(query.sortBy, query.sortOrder, TX_SORTABLE);
+    const [data, total] = await Promise.all([
+      this.prisma.inventoryTransaction.findMany({ where, skip, take, orderBy, include: TX_INCLUDE }),
+      this.prisma.inventoryTransaction.count({ where }),
+    ]);
+    return paginate(data, total, query);
+  }
+
+  /**
+   * Inventory ledger for the staff portal. Regular storekeepers see the
+   * transactions they recorded; the Stores head sees the full ledger.
+   */
+  async listTransactionsForStaff(ctx: StaffContext, query: QueryInventoryTransactionsDto): Promise<Paginated<object>> {
+    const where: Prisma.InventoryTransactionWhereInput = {};
+    if (!ctx.isHead) where.createdById = ctx.userId;
     if (query.type) where.type = query.type;
     if (query.materialId) where.materialId = query.materialId;
     if (query.warehouseId) where.warehouseId = query.warehouseId;

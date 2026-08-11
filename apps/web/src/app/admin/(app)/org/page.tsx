@@ -1,5 +1,6 @@
 "use client";
 
+import { OrgChart } from "@/components/admin/OrgChart";
 import { OrgPanel } from "@/components/admin/OrgPanel";
 import type { CompanyBranch, Department, Position } from "@/lib/admin/types";
 
@@ -9,9 +10,12 @@ export default function OrgStructurePage() {
       <div>
         <h1 className="text-xl font-bold text-neutral-900">Org structure</h1>
         <p className="text-sm text-neutral-500">
-          Branches, departments and positions — used when assigning employees.
+          The command hierarchy, then the branches, departments and positions used when assigning
+          employees.
         </p>
       </div>
+
+      <OrgChart />
 
       <OrgPanel<CompanyBranch>
         title="Branches"

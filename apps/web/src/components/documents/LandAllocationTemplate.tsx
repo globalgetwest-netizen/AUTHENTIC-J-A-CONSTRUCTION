@@ -12,6 +12,8 @@ const styles = StyleSheet.create({
     color: C.charcoal,
     fontFamily: "Helvetica",
   },
+  /** Full-A4 letterhead: content sits in the white zone between header and footer bands. */
+  pageOnLetterhead: { paddingTop: 205, paddingBottom: 148 },
   heading: { alignItems: "center", marginBottom: 18 },
   headingTitle: { fontSize: 20, fontWeight: "bold", color: C.blue, letterSpacing: 3 },
   headingNo: { fontSize: 10, color: C.muted, marginTop: 3 },
@@ -101,8 +103,11 @@ export function LandAllocationTemplate({
 
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
-        <Letterhead logoSrc={logoSrc} letterheadSrc={letterheadSrc} />
+      <Page
+        size="A4"
+        style={[styles.page, ...(letterheadSrc ? [styles.pageOnLetterhead] : [])]}
+      >
+        <Letterhead logoSrc={logoSrc} letterheadSrc={letterheadSrc} fullPage />
 
         <View style={styles.heading}>
           <Text style={styles.headingTitle}>ALLOCATION OF LAND</Text>
@@ -155,15 +160,17 @@ export function LandAllocationTemplate({
           <Signature label="Allocatee" name={ownerName} role="Signature" />
         </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            {LETTERHEAD.name} • {LETTERHEAD.email}
-          </Text>
-          <Text
-            style={styles.footerText}
-            render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`}
-          />
-        </View>
+        {letterheadSrc ? null : (
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>
+              {LETTERHEAD.name} • {LETTERHEAD.email}
+            </Text>
+            <Text
+              style={styles.footerText}
+              render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`}
+            />
+          </View>
+        )}
       </Page>
     </Document>
   );

@@ -45,7 +45,7 @@ export const CERT_FONT_ITALIC = FONT_BODY_ITALIC;
 const styles = StyleSheet.create({
   page: {
     paddingTop: 30,
-    paddingBottom: 38,
+    paddingBottom: 60,
     paddingHorizontal: 38,
     backgroundColor: CERT_COLORS.cream,
     fontSize: 11,
@@ -194,21 +194,40 @@ const styles = StyleSheet.create({
   // ---- Footer ----
   footer: {
     position: "absolute",
-    bottom: 30,
+    bottom: 32,
     left: 70,
     right: 70,
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-between",
     borderTopWidth: 0.6,
     borderTopColor: CERT_COLORS.gold,
     paddingTop: 6,
   },
+  footerInfo: { flex: 1, paddingRight: 10 },
   footerText: {
     fontFamily: FONT_SANS,
     fontWeight: 400,
     fontSize: 6.4,
     color: CERT_COLORS.muted,
     letterSpacing: 0.4,
+  },
+  footerQrWrap: { alignItems: "center" },
+  footerQr: {
+    width: 40,
+    height: 40,
+    backgroundColor: "#ffffff",
+    borderWidth: 0.6,
+    borderColor: CERT_COLORS.gold,
+  },
+  footerQrCaption: {
+    fontFamily: FONT_SANS,
+    fontWeight: 600,
+    fontSize: 5,
+    color: CERT_COLORS.muted,
+    letterSpacing: 0.6,
+    marginTop: 2,
+    textAlign: "center",
   },
 });
 
@@ -366,13 +385,22 @@ export function SignatureRow({
   );
 }
 
-export function CertificateFooter() {
+export function CertificateFooter({ qrSrc }: { qrSrc?: string | null }) {
   return (
     <View style={styles.footer}>
-      <Text style={styles.footerText}>
-        {LETTERHEAD.name} • Reg No. {LETTERHEAD.registrationNo} • TIN: {LETTERHEAD.taxId}
-      </Text>
-      <Text style={styles.footerText}>{LETTERHEAD.headOffice}</Text>
+      <View style={styles.footerInfo}>
+        <Text style={styles.footerText}>
+          {LETTERHEAD.name} • Reg No. {LETTERHEAD.registrationNo} • TIN: {LETTERHEAD.taxId}
+        </Text>
+        <Text style={styles.footerText}>{LETTERHEAD.headOffice}</Text>
+      </View>
+      {qrSrc ? (
+        <View style={styles.footerQrWrap}>
+          {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}
+          <Image src={qrSrc} style={styles.footerQr} />
+          <Text style={styles.footerQrCaption}>Scan to verify</Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -405,10 +433,13 @@ export function CertificatePage({
   children,
   showFooter = true,
   watermarkSrc,
+  qrSrc,
 }: {
   children: React.ReactNode;
   showFooter?: boolean;
   watermarkSrc?: string | null;
+  /** Verification QR (with "Scan to verify" caption) shown in the footer. */
+  qrSrc?: string | null;
 }) {
   return (
     <View style={styles.page}>
@@ -421,7 +452,7 @@ export function CertificatePage({
       <View style={[styles.corner, styles.cornerBL]} />
       <View style={[styles.corner, styles.cornerBR]} />
       {children}
-      {showFooter ? <CertificateFooter /> : null}
+      {showFooter ? <CertificateFooter qrSrc={qrSrc} /> : null}
     </View>
   );
 }

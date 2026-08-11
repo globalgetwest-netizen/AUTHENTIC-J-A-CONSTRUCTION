@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@ajac/ui";
 import { EmployeeForm } from "@/components/admin/EmployeeForm";
+import { EmployeePhotoUpload } from "@/components/admin/EmployeePhotoUpload";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import {
   EMPLOYEE_STATUSES,
@@ -148,6 +149,12 @@ export default function EmployeeDetail() {
           </Button>
         </div>
       </div>
+
+      <EmployeePhotoUpload
+        employeeId={employee.id}
+        photoUrl={employee.photoUrl}
+        initials={`${employee.firstName.charAt(0)}${employee.lastName.charAt(0)}`}
+      />
 
       <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
         <dl className="divide-y divide-neutral-100 px-5">

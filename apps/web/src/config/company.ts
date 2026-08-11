@@ -83,6 +83,24 @@ export const SOCIAL_MEDIA: SocialEntry[] = [
   { platform: "linkedin", label: "LinkedIn", url: null },
 ];
 
+/**
+ * Company leadership — displayed in the footer. `email` doubles as the
+ * department email for that office (ceo@, daniel@, abdulrazak@).
+ */
+export const LEADERSHIP = [
+  { name: "Joseph Acquah", title: "CEO & Founder", email: "ceo@authenticjaconstruction.com" },
+  { name: "Rev. Daniel Acquah", title: "Director I", email: "daniel@authenticjaconstruction.com" },
+  { name: "Abdulrazak Acquah", title: "Secretary I", email: "abdulrazak@authenticjaconstruction.com" },
+] as const;
+
+/** Department contact emails shown in the footer alongside leadership. */
+export const DEPARTMENT_EMAILS = [
+  { department: "Administration", email: "admin@authenticjaconstruction.com" },
+  { department: "Human Resources", email: "hr@authenticjaconstruction.com" },
+  { department: "Projects", email: "projects@authenticjaconstruction.com" },
+  { department: "Support", email: "support@authenticjaconstruction.com" },
+] as const;
+
 export type RequestTypeKey =
   | "quote"
   | "project"

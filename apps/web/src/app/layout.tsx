@@ -24,10 +24,11 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
+      { url: "/app-icon.png", type: "image/png", sizes: "192x192" },
+      { url: "/app-icon.png", type: "image/png", sizes: "512x512" },
       { url: "/brand/aja-icon.svg", type: "image/svg+xml", sizes: "any" },
-      "/favicon.ico",
     ],
-    apple: "/brand/aja-icon.svg",
+    apple: "/app-icon.png",
   },
   themeColor: "#14324F",
 };

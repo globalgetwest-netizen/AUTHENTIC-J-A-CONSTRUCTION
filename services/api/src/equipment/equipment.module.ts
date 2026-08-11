@@ -7,6 +7,7 @@ import {
   MaintenanceController,
   VehiclesController,
 } from './equipment.controller';
+import { StaffEquipmentController, StaffMaintenanceController } from './staff-maintenance.controller';
 
 @Module({
   controllers: [
@@ -15,6 +16,8 @@ import {
     MaintenanceController,
     AssetsController,
     AssetAssignmentsController,
+    StaffMaintenanceController,
+    StaffEquipmentController,
   ],
   providers: [EquipmentService],
 })

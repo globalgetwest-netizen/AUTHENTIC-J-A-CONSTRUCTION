@@ -77,3 +77,6 @@ apps/web/*.txt
 .ver-audit.sh
 apps/web/public/brand/extract_assets.py
 apps/web/public/brand/extract_sig.py
+
+.vercel
+.env*

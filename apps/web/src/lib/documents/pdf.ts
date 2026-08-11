@@ -15,7 +15,9 @@ import type {
   Quotation,
 } from "@/lib/admin/types";
 import { label } from "@/lib/admin/types";
+import { apiFetch } from "@/lib/admin/auth";
 import { LETTERHEAD } from "@/config/documents";
+import { certificateVerifyUrl } from "@/lib/documents/verify";
 
 const MIME_BY_EXT: Record<string, string> = {
   ".png": "image/png",
@@ -137,6 +139,35 @@ export async function qrDataUri(text: string): Promise<string | null> {
 
 export interface EmployeeIdCardInput {
   card: EmployeeIdCard;
+  /**
+   * How the worker headshot is fetched: `admin` streams `/employees/:id/photo`
+   * (needs employees.read); `staff` streams `/staff/employee-id/photo` (the
+   * logged-in member's own photo, no permission code required).
+   */
+  scope?: "admin" | "staff";
+}
+
+/** Fetches a stored headshot through the API and returns it as a data URI. */
+async function photoDataUri(apiPath: string, photoUrl?: string | null): Promise<string | null> {
+  if (!photoUrl) return null;
+  try {
+    const res = await apiFetch(apiPath);
+    if (!res.ok) return null;
+    const type = res.headers.get("content-type") ?? "image/jpeg";
+    return `data:${type};base64,${Buffer.from(await res.arrayBuffer()).toString("base64")}`;
+  } catch {
+    return null;
+  }
+}
+
+/** Fetches the card holder's headshot as a data URI (null when none/no access). */
+async function employeePhotoDataUri(
+  card: EmployeeIdCard,
+  scope: "admin" | "staff",
+): Promise<string | null> {
+  if (!card.employee?.id || !card.employee.photoUrl) return null;
+  const path = scope === "staff" ? "/staff/employee-id/photo" : `/employees/${card.employee.id}/photo`;
+  return photoDataUri(path, card.employee.photoUrl);
 }
 
 /** Renders a staff ID card as a printable, credit-card-sized PDF. */
@@ -148,9 +179,11 @@ export async function renderEmployeeIdCardPdf(input: EmployeeIdCardInput): Promi
   const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
   const qrSrc = await qrDataUri(employeeIdVerifyUrl(input.card.cardNumber, input.card.qrToken));
   const card = input.card;
+  const photoSrc = await employeePhotoDataUri(card, input.scope ?? "admin");
   const template = createElement(EmployeeIdCardTemplate, {
     logoSrc,
     employee: card.employee ?? null,
+    photoSrc,
     cardNumber: card.cardNumber,
     qrSrc,
     issuedAt: card.issuedAt,
@@ -163,6 +196,10 @@ export async function renderEmployeeIdCardPdf(input: EmployeeIdCardInput): Promi
 export interface WorkerCertificateInput {
   employee: Employee;
   issuedOn?: string;
+  /** Include the CEO stamp/seal on the certificate. @default true */
+  includeStamp?: boolean;
+  /** Include the CEO handwritten signature. @default true */
+  includeSignature?: boolean;
 }
 
 /** Renders an employee's formal Certificate of Employment (Worker Certificate). */
@@ -174,15 +211,27 @@ export async function renderWorkerCertificatePdf(
     "@/components/documents/WorkerCertificateTemplate"
   );
   const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
-  const signatureSrc = await readAssetAsDataUri(LETTERHEAD.ceo.signature);
-  const stampSrc = await readAssetAsDataUri(LETTERHEAD.ceo.stamp);
+  const includeSig = input.includeSignature !== false;
+  const includeStmp = input.includeStamp !== false;
+  const signatureSrc = includeSig ? await readAssetAsDataUri(LETTERHEAD.ceo.signature) : null;
+  const stampSrc = includeStmp ? await readAssetAsDataUri(LETTERHEAD.ceo.stamp) : null;
+  const photoSrc = await photoDataUri(
+    `/employees/${input.employee.id}/photo`,
+    input.employee.photoUrl,
+  );
+  const issuedOn = input.issuedOn ?? new Date().toISOString();
+  const serial = `AJAC/COE/${issuedOn.slice(0, 4)}/${input.employee.employeeCode}`;
+  const qrSrc = await qrDataUri(certificateVerifyUrl(serial, issuedOn, "COE"));
   /* Certificate — uses text-band letterhead, not the full image header. */
   const template = createElement(WorkerCertificateTemplate, {
     employee: input.employee,
+    serial,
     logoSrc,
+    photoSrc,
     signatureSrc,
     stampSrc,
-    issuedOn: input.issuedOn ?? new Date().toISOString(),
+    qrSrc,
+    issuedOn,
   }) as unknown as ReactElement<DocumentProps>;
   return renderToBuffer(template);
 }
@@ -198,6 +247,10 @@ export interface AssetOwnershipCertificateInput {
   rows: Array<{ label: string; value: string }>;
   note?: string | null;
   issuedOn?: string;
+  /** Include the CEO stamp/seal on the certificate. @default true */
+  includeStamp?: boolean;
+  /** Include the CEO handwritten signature. @default true */
+  includeSignature?: boolean;
 }
 
 /** Renders a Certificate of Ownership for an asset, equipment, vehicle or property. */
@@ -209,15 +262,21 @@ export async function renderAssetOwnershipCertificatePdf(
     "@/components/documents/AssetOwnershipCertificateTemplate"
   );
   const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
-  const signatureSrc = await readAssetAsDataUri(LETTERHEAD.ceo.signature);
-  const stampSrc = await readAssetAsDataUri(LETTERHEAD.ceo.stamp);
+  const includeSig = input.includeSignature !== false;
+  const includeStmp = input.includeStamp !== false;
+  const signatureSrc = includeSig ? await readAssetAsDataUri(LETTERHEAD.ceo.signature) : null;
+  const stampSrc = includeStmp ? await readAssetAsDataUri(LETTERHEAD.ceo.stamp) : null;
+  const issuedOn = input.issuedOn ?? new Date().toISOString();
+  const verifyKind = input.serial.startsWith("AJAC/CTO") ? "CTO" : "AOC";
+  const qrSrc = await qrDataUri(certificateVerifyUrl(input.serial, issuedOn, verifyKind));
   /* Certificate — uses text-band letterhead, not the full image header. */
   const template = createElement(AssetOwnershipCertificateTemplate, {
     ...input,
     logoSrc,
     signatureSrc,
     stampSrc,
-    issuedOn: input.issuedOn ?? new Date().toISOString(),
+    qrSrc,
+    issuedOn,
   }) as unknown as ReactElement<DocumentProps>;
   return renderToBuffer(template);
 }
@@ -227,6 +286,10 @@ export interface ProjectCompletionCertificateInput {
   clientName?: string | null;
   managerName?: string | null;
   issuedOn?: string;
+  /** Include the CEO stamp/seal on the certificate. @default true */
+  includeStamp?: boolean;
+  /** Include the CEO handwritten signature. @default true */
+  includeSignature?: boolean;
 }
 
 /** Renders a completed project's Certificate of Practical Completion. */
@@ -238,17 +301,60 @@ export async function renderProjectCompletionCertificatePdf(
     "@/components/documents/ProjectCompletionCertificateTemplate"
   );
   const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
-  const signatureSrc = await readAssetAsDataUri(LETTERHEAD.ceo.signature);
-  const stampSrc = await readAssetAsDataUri(LETTERHEAD.ceo.stamp);
+  const includeSig = input.includeSignature !== false;
+  const includeStmp = input.includeStamp !== false;
+  const signatureSrc = includeSig ? await readAssetAsDataUri(LETTERHEAD.ceo.signature) : null;
+  const stampSrc = includeStmp ? await readAssetAsDataUri(LETTERHEAD.ceo.stamp) : null;
+  const issuedOn = input.issuedOn ?? new Date().toISOString();
+  const serial = `AJAC/PCC/${issuedOn.slice(0, 4)}/${input.project.code}`;
+  const qrSrc = await qrDataUri(certificateVerifyUrl(serial, issuedOn, "PCC"));
   /* Certificate — uses text-band letterhead, not the full image header. */
   const template = createElement(ProjectCompletionCertificateTemplate, {
     project: input.project,
     clientName: input.clientName ?? null,
     managerName: input.managerName ?? null,
+    serial,
     logoSrc,
     signatureSrc,
     stampSrc,
-    issuedOn: input.issuedOn ?? new Date().toISOString(),
+    qrSrc,
+    issuedOn,
+  }) as unknown as ReactElement<DocumentProps>;
+  return renderToBuffer(template);
+}
+
+export interface CeoLetterInput {
+  refNo: string;
+  date?: string;
+  recipient: string;
+  recipientAddress?: string;
+  salutation?: string;
+  subject: string;
+  paragraphs: string[];
+  /** Include the CEO stamp/seal on the letter. @default true */
+  includeStamp?: boolean;
+  /** Include the CEO handwritten signature. @default true */
+  includeSignature?: boolean;
+}
+
+/** Renders an official executive letter on the CEO & Founder letterhead. */
+export async function renderCeoLetterPdf(input: CeoLetterInput): Promise<Buffer> {
+  const { renderToBuffer } = await import("@react-pdf/renderer");
+  const { CeoLetterTemplate } = await import("@/components/documents/CeoLetterTemplate");
+  const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
+  const letterheadSrc = LETTERHEAD.ceoLetterheadImage
+    ? await readAssetAsDataUri(LETTERHEAD.ceoLetterheadImage)
+    : null;
+  const includeSig = input.includeSignature !== false;
+  const includeStmp = input.includeStamp !== false;
+  const signatureSrc = includeSig ? await readAssetAsDataUri(LETTERHEAD.ceo.signature) : null;
+  const stampSrc = includeStmp ? await readAssetAsDataUri(LETTERHEAD.ceo.stamp) : null;
+  const template = createElement(CeoLetterTemplate, {
+    letter: input,
+    logoSrc,
+    signatureSrc,
+    stampSrc,
+    letterheadSrc,
   }) as unknown as ReactElement<DocumentProps>;
   return renderToBuffer(template);
 }
@@ -259,6 +365,10 @@ export interface CompanyProfileInput {
   >;
   equipment?: Array<{ assetCode: string; name: string; category: string; status: string }>;
   issuedOn?: string;
+  /** Include the CEO stamp/seal on the profile. @default true */
+  includeStamp?: boolean;
+  /** Include the CEO handwritten signature. @default true */
+  includeSignature?: boolean;
 }
 
 /** Renders the corporate capability statement / company profile brochure. */
@@ -268,8 +378,10 @@ export async function renderCompanyProfilePdf(input: CompanyProfileInput): Promi
     "@/components/documents/CompanyProfileTemplate"
   );
   const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
-  const signatureSrc = await readAssetAsDataUri(LETTERHEAD.ceo.signature);
-  const stampSrc = await readAssetAsDataUri(LETTERHEAD.ceo.stamp);
+  const includeSig = input.includeSignature !== false;
+  const includeStmp = input.includeStamp !== false;
+  const signatureSrc = includeSig ? await readAssetAsDataUri(LETTERHEAD.ceo.signature) : null;
+  const stampSrc = includeStmp ? await readAssetAsDataUri(LETTERHEAD.ceo.stamp) : null;
   const letterheadSrc = LETTERHEAD.letterheadImage
     ? await readAssetAsDataUri(LETTERHEAD.letterheadImage)
     : null;

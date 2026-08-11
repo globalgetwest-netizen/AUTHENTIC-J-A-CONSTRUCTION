@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query, Req, StreamableFile } from '@nestjs/common';
 import type { Request } from 'express';
 import { CurrentUser } from '../common/auth/current-user.decorator';
 import type { AuthUser } from '../common/auth/auth-user.type';
@@ -43,6 +43,19 @@ export class EmployeeIdsController {
   verify(@Body() dto: VerifyEmployeeIdDto, @Req() req: Request) {
     return this.service.verify(dto, req.ip);
   }
+
+  /** Headshot for the public verify page — gated by the same card+token as verify. */
+  @Public()
+  @Get('verify/photo')
+  async verifyPhoto(
+    @Query() query: { card: string; t?: string },
+  ): Promise<StreamableFile> {
+    const { stream, length, type, filename } = await this.service.openPhotoForVerification(
+      query.card,
+      query.t,
+    );
+    return new StreamableFile(stream, { type, length, disposition: `inline; filename="${filename}"` });
+  }
 }
 
 /** The logged-in staff member's own ID card for self-service + card download. */
@@ -53,5 +66,12 @@ export class StaffEmployeeIDsController {
   @Get()
   myCard(@CurrentUser() user: AuthUser) {
     return this.service.myCard(user.id);
+  }
+
+  /** The staff member's own headshot (used by the self-service card PDF). */
+  @Get('photo')
+  async myPhoto(@CurrentUser() user: AuthUser): Promise<StreamableFile> {
+    const { stream, length, type, filename } = await this.service.myPhoto(user.id);
+    return new StreamableFile(stream, { type, length, disposition: `inline; filename="${filename}"` });
   }
 }

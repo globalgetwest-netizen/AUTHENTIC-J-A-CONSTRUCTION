@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   ExpenseStatus,
   InvoiceStatus,
@@ -34,6 +39,8 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { QueryPaymentsDto } from './dto/payment-query.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
+import type { AuthUser } from '../common/auth/auth-user.type';
+import type { StaffContext } from '../common/staff/staff-context';
 
 const INVOICE_SORTABLE = ['createdAt', 'invoiceNo', 'total', 'issueOn', 'dueOn', 'status'] as const;
 const INVOICE_INCLUDE = {
@@ -51,6 +58,20 @@ const RECEIPT_INCLUDE = {
 const EXPENSE_SORTABLE = ['incurredOn', 'amount', 'category', 'status', 'expenseNo', 'createdAt'] as const;
 const EXPENSE_INCLUDE = {
   project: { select: { id: true, name: true, code: true } },
+} as const;
+
+/** Expense include for the staff portal — who raised it, who approved, and for which department. */
+const STAFF_EXPENSE_INCLUDE = {
+  ...EXPENSE_INCLUDE,
+  createdBy: { select: { id: true, firstName: true, lastName: true } },
+  approvedBy: { select: { id: true, firstName: true, lastName: true } },
+  department: { select: { id: true, name: true, code: true } },
+} as const;
+
+/** Receipt include for the staff portal — which cashier (employee) recorded the payment. */
+const STAFF_RECEIPT_INCLUDE = {
+  ...RECEIPT_INCLUDE,
+  receivedBy: { select: { id: true, firstName: true, lastName: true } },
 } as const;
 
 const TXN_SORTABLE = ['occurredOn', 'amount', 'type', 'status', 'createdAt'] as const;
@@ -260,6 +281,56 @@ export class FinanceService {
     return receipt;
   }
 
+  // ── Staff portal: payments received (Finance cashier) ──────────────────────
+
+  /**
+   * Receipts scoped to the caller: regular staff see the payments they received;
+   * a department head (the Finance head) sees the department's full receipt book.
+   */
+  async listReceiptsForStaff(ctx: StaffContext, query: QueryReceiptsDto): Promise<Paginated<object>> {
+    const where: Prisma.ReceiptWhereInput = {};
+    if (!ctx.isHead) where.receivedById = ctx.employeeId;
+    if (query.clientId) where.clientId = query.clientId;
+    if (query.invoiceId) where.invoiceId = query.invoiceId;
+    if (query.method) where.method = query.method;
+    if (query.search) {
+      where.OR = [
+        { receiptNo: { contains: query.search, mode: 'insensitive' } },
+        { reference: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+    const { skip, take } = prismaSkipTake(query);
+    const orderBy = buildOrderBy(query.sortBy, query.sortOrder, RECEIPT_SORTABLE);
+    const [data, total] = await Promise.all([
+      this.prisma.receipt.findMany({ where, skip, take, orderBy, include: STAFF_RECEIPT_INCLUDE }),
+      this.prisma.receipt.count({ where }),
+    ]);
+    return paginate(data, total, query);
+  }
+
+  /**
+   * Records a payment received by the Finance cashier. The caller's employee is
+   * recorded as `receivedById`, so the receipt book stays attributed.
+   */
+  async createStaffReceipt(ctx: StaffContext, dto: CreateReceiptDto): Promise<Receipt> {
+    await this.ensureClient(dto.clientId);
+    const receipt = await this.prisma.receipt.create({
+      data: {
+        receiptNo: generateBusinessCode('RCP'),
+        invoiceId: dto.invoiceId ?? null,
+        clientId: dto.clientId,
+        amount: new Prisma.Decimal(dto.amount),
+        method: dto.method ?? PaymentMethod.BANK_TRANSFER,
+        reference: asNullable(dto.reference),
+        notes: asNullable(dto.notes),
+        receivedById: ctx.employeeId,
+      },
+      include: STAFF_RECEIPT_INCLUDE,
+    });
+    if (dto.invoiceId) await this.reconcileInvoiceStatus(dto.invoiceId);
+    return receipt;
+  }
+
   async updateReceipt(id: string, dto: UpdateReceiptDto): Promise<Receipt> {
     const current = await this.ensureReceipt(id);
     const data: Prisma.ReceiptUncheckedUpdateInput = {
@@ -359,6 +430,90 @@ export class FinanceService {
         status: dto.status ? (dto.status as ExpenseStatus) : ExpenseStatus.PENDING,
       },
       include: EXPENSE_INCLUDE,
+    });
+  }
+
+  // ── Staff portal: departmental expenses ─────────────────────────────────────
+
+  /**
+   * Expenses scoped to the caller: regular staff see the expenses they raised;
+   * a department head sees their department's whole ledger (including PENDING
+   * work awaiting their approval).
+   */
+  async listExpensesForStaff(ctx: StaffContext, query: QueryExpensesDto): Promise<Paginated<object>> {
+    const where: Prisma.ExpenseWhereInput = {};
+    if (ctx.isHead && ctx.departmentId) {
+      where.departmentId = ctx.departmentId;
+    } else {
+      where.createdById = ctx.userId;
+    }
+    if (query.category) where.category = query.category;
+    if (query.status) where.status = query.status as ExpenseStatus;
+    if (query.projectId) where.projectId = query.projectId;
+    if (query.search) {
+      where.OR = [
+        { expenseNo: { contains: query.search, mode: 'insensitive' } },
+        { description: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+    const { skip, take } = prismaSkipTake(query);
+    const orderBy = buildOrderBy(query.sortBy, query.sortOrder, EXPENSE_SORTABLE);
+    const [data, total] = await Promise.all([
+      this.prisma.expense.findMany({ where, skip, take, orderBy, include: STAFF_EXPENSE_INCLUDE }),
+      this.prisma.expense.count({ where }),
+    ]);
+    return paginate(data, total, query);
+  }
+
+  /**
+   * Staff raise an expense for their department. Always recorded as PENDING —
+   * staff can never self-approve — and attributed to the caller and their
+   * department so the head sees it on their work list.
+   */
+  async createStaffExpense(ctx: StaffContext, dto: CreateExpenseDto): Promise<Expense> {
+    return this.prisma.expense.create({
+      data: {
+        expenseNo: generateBusinessCode('EXP'),
+        category: dto.category,
+        description: dto.description,
+        amount: new Prisma.Decimal(dto.amount),
+        incurredOn: dto.incurredOn ? new Date(dto.incurredOn) : new Date(),
+        paidById: dto.paidById ?? null,
+        receiptUrl: asNullable(dto.receiptUrl),
+        projectId: dto.projectId ?? null,
+        createdById: ctx.userId,
+        departmentId: ctx.departmentId,
+        status: ExpenseStatus.PENDING,
+      },
+      include: STAFF_EXPENSE_INCLUDE,
+    });
+  }
+
+  /**
+   * Approves a PENDING expense. Only the head of the expense's department, or
+   * any user holding the `finance.write` permission (an administrator), may
+   * approve. The approver is recorded on `approvedById`.
+   */
+  async approveStaffExpense(ctx: StaffContext, user: AuthUser, id: string): Promise<Expense> {
+    const expense = await this.prisma.expense.findFirst({
+      where: { id },
+      select: { id: true, departmentId: true, status: true },
+    });
+    if (!expense) throw new NotFoundException(`Expense ${id} not found`);
+    if (expense.status !== ExpenseStatus.PENDING) {
+      throw new BadRequestException('Only PENDING expenses can be approved');
+    }
+    const isAdmin = user.permissions.includes('finance.write');
+    const isDeptHead = ctx.isHead && expense.departmentId !== null && expense.departmentId === ctx.departmentId;
+    if (!isAdmin && !isDeptHead) {
+      throw new ForbiddenException(
+        'Only the head of the expense’s department or an administrator can approve it',
+      );
+    }
+    return this.prisma.expense.update({
+      where: { id },
+      data: { status: ExpenseStatus.APPROVED, approvedById: user.id },
+      include: STAFF_EXPENSE_INCLUDE,
     });
   }
 

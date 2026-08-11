@@ -7,7 +7,6 @@ import {
   CERT_FONT_ITALIC,
   FONT_DISPLAY,
   FONT_SANS,
-  CertificateFooter,
   CertificateHeading,
   CertificatePage,
   SignatureRow,
@@ -78,6 +77,7 @@ export function AssetOwnershipCertificateTemplate({
   letterheadSrc,
   signatureSrc,
   stampSrc,
+  qrSrc,
   issuedOn,
 }: {
   title: string;
@@ -93,12 +93,13 @@ export function AssetOwnershipCertificateTemplate({
   letterheadSrc?: string | null;
   signatureSrc?: string | null;
   stampSrc?: string | null;
+  qrSrc?: string | null;
   issuedOn: string;
 }) {
   return (
     <Document>
       <Page size="A4">
-        <CertificatePage watermarkSrc={logoSrc}>
+        <CertificatePage watermarkSrc={logoSrc} qrSrc={qrSrc}>
           <CertificateHeading
             logoSrc={logoSrc}
             letterheadSrc={letterheadSrc}
@@ -109,7 +110,7 @@ export function AssetOwnershipCertificateTemplate({
 
           <Text style={styles.intro}>
             This is to certify that <Text style={styles.highlight}>{owner}</Text> is the lawful
-            owner of the {kind} described below, as recorded in the Company's official
+            owner of the {kind} described below, as recorded in the Company&apos;s official
             Asset Register and subject to all applicable legal and regulatory requirements.
           </Text>
 
@@ -156,8 +157,6 @@ export function AssetOwnershipCertificateTemplate({
             </Text>
           )}
           <Text style={styles.note}>Issued on {dateLabel(issuedOn)}.</Text>
-
-          <CertificateFooter />
         </CertificatePage>
       </Page>
     </Document>

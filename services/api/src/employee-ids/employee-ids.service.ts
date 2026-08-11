@@ -4,7 +4,11 @@ import {
 } from '@nestjs/common';
 import { VerificationResult, Prisma } from '@ajac/database';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { createReadStream, existsSync, statSync } from 'node:fs';
+import { extname } from 'node:path';
+import type { Readable } from 'node:stream';
 import { PrismaService } from '../prisma/prisma.service';
+import { contentTypeFromFile, resolveStoredFile } from '../common/storage/uploads';
 import {
   buildOrderBy,
   paginate,
@@ -23,6 +27,7 @@ const EMPLOYEE_SELECT = {
   employeeCode: true,
   firstName: true,
   lastName: true,
+  photoUrl: true,
   department: { select: { name: true } },
   position: { select: { title: true } },
   branch: { select: { name: true } },
@@ -142,6 +147,55 @@ export class EmployeeIdsService {
     });
   }
 
+  /** The logged-in staff member's own headshot (for the self-service card PDF). */
+  async myPhoto(
+    userId: string,
+  ): Promise<{ stream: Readable; length: number; type: string; filename: string }> {
+    const employee = await this.prisma.employee.findFirst({
+      where: { userId, deletedAt: null },
+      select: { id: true, photoUrl: true, employeeCode: true },
+    });
+    if (!employee) throw new NotFoundException('No employee profile is linked to this account');
+    if (!employee.photoUrl) throw new NotFoundException('This employee has no photo yet');
+    return this.streamStoredPhoto(employee.photoUrl, employee.employeeCode);
+  }
+
+  /**
+   * Headshot for the public QR-verify page. Gated exactly like `verify`: only a
+   * card number with the correct embedded token can stream the photo, so the
+   * face is visible to a guard scanning the card without opening a general
+   * public directory of worker photos.
+   */
+  async openPhotoForVerification(
+    card: string,
+    token?: string,
+  ): Promise<{ stream: Readable; length: number; type: string; filename: string }> {
+    const record = await this.prisma.employeeID.findFirst({
+      where: { cardNumber: card },
+      include: { employee: { select: { photoUrl: true, employeeCode: true } } },
+    });
+    if (!record || !record.qrToken || !token || !safeEqual(token, record.qrToken)) {
+      throw new NotFoundException('No matching card');
+    }
+    if (!record.employee.photoUrl) throw new NotFoundException('This employee has no photo yet');
+    return this.streamStoredPhoto(record.employee.photoUrl, record.employee.employeeCode);
+  }
+
+  private streamStoredPhoto(
+    photoUrl: string,
+    employeeCode: string,
+  ): { stream: Readable; length: number; type: string; filename: string } {
+    const abs = resolveStoredFile(photoUrl);
+    if (!existsSync(abs)) throw new NotFoundException('Photo file is missing on disk');
+    const stats = statSync(abs);
+    return {
+      stream: createReadStream(abs),
+      length: stats.size,
+      type: contentTypeFromFile(abs),
+      filename: `photo-${employeeCode}${extname(abs)}`,
+    };
+  }
+
   /**
    * Public QR verification: resolve the card by its number, compare the embedded
    * token, and derive a result. Every scan is logged with its outcome.
@@ -191,6 +245,7 @@ export class EmployeeIdsService {
             name: [card.employee.firstName, card.employee.lastName].filter(Boolean).join(' '),
             department: card.employee.department?.name ?? null,
             position: card.employee.position?.title ?? null,
+            photoUrl: card.employee.photoUrl ?? null,
           }
         : null,
     };

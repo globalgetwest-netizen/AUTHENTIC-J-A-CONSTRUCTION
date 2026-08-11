@@ -13,10 +13,11 @@ const CANDIDATES = [COMPANY_LOGO.src, ...COMPANY_LOGO.candidates];
  * component tries legacy filenames; when all fail, a neutral "AJ.A"
  * wordmark renders instead.
  */
-export function Logo({ width = 60, inverted = false }: { width?: number; inverted?: boolean }) {
+export function Logo({ width = 60, inverted = false, src: override }: { width?: number; inverted?: boolean; src?: string }) {
   const [attempt, setAttempt] = useState(0);
-  const src = CANDIDATES[attempt];
-  const exhausted = attempt >= CANDIDATES.length;
+  const base = override ? [override, ...CANDIDATES] : CANDIDATES;
+  const src = base[attempt];
+  const exhausted = attempt >= base.length;
 
   return (
     <span

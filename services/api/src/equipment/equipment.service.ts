@@ -30,6 +30,7 @@ import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { QueryAssetAssignmentsDto } from './dto/asset-assignment-query.dto';
 import { CreateAssetAssignmentDto } from './dto/create-asset-assignment.dto';
+import type { StaffContext } from '../common/staff/staff-context';
 
 const EQUIPMENT_SORTABLE = ['createdAt', 'name', 'assetCode', 'status', 'category', 'purchasePrice'] as const;
 const EQUIPMENT_INCLUDE = {
@@ -47,6 +48,12 @@ const VEHICLE_INCLUDE = {
 const MAINTENANCE_SORTABLE = ['scheduledAt', 'completedAt', 'cost', 'status', 'createdAt'] as const;
 const MAINTENANCE_INCLUDE = {
   equipment: { select: { id: true, name: true, assetCode: true } },
+} as const;
+
+/** Maintenance include for the staff portal — who logged the request. */
+const MAINTENANCE_STAFF_INCLUDE = {
+  ...MAINTENANCE_INCLUDE,
+  createdBy: { select: { id: true, firstName: true, lastName: true } },
 } as const;
 
 const ASSET_SORTABLE = ['createdAt', 'name', 'assetCode', 'status', 'category', 'currentValue'] as const;
@@ -296,6 +303,49 @@ export class EquipmentService {
       select: { id: true },
     });
     if (!exists) throw new NotFoundException(`Maintenance record ${id} not found`);
+  }
+
+  // ── Staff portal: plant & equipment maintenance ────────────────────────────
+
+  /**
+   * Maintenance scoped to the caller: regular staff see the jobs they logged;
+   * the Plant & Equipment head sees every maintenance record (the department's
+   * full worklist).
+   */
+  async listMaintenanceForStaff(ctx: StaffContext, query: QueryMaintenanceDto): Promise<Paginated<object>> {
+    const where: Prisma.MaintenanceRecordWhereInput = {};
+    if (!ctx.isHead) where.createdById = ctx.userId;
+    if (query.equipmentId) where.equipmentId = query.equipmentId;
+    if (query.status) where.status = query.status;
+    const { skip, take } = prismaSkipTake(query);
+    const orderBy = buildOrderBy(query.sortBy, query.sortOrder, MAINTENANCE_SORTABLE);
+    const [data, total] = await Promise.all([
+      this.prisma.maintenanceRecord.findMany({ where, skip, take, orderBy, include: MAINTENANCE_STAFF_INCLUDE }),
+      this.prisma.maintenanceRecord.count({ where }),
+    ]);
+    return paginate(data, total, query);
+  }
+
+  /**
+   * A staff member logs a maintenance job for an equipment. Recorded against
+   * the caller and always SCHEDULED — completing/approving stays with the head
+   * and the admin console.
+   */
+  async createStaffMaintenance(ctx: StaffContext, dto: CreateMaintenanceDto): Promise<MaintenanceRecord> {
+    await this.ensureEquipment(dto.equipmentId);
+    return this.prisma.maintenanceRecord.create({
+      data: {
+        equipmentId: dto.equipmentId,
+        scheduledAt: new Date(dto.scheduledAt),
+        completedAt: null,
+        cost: dto.cost ?? null,
+        serviceProvider: asNullable(dto.serviceProvider),
+        description: asNullable(dto.description),
+        createdById: ctx.userId,
+        status: MaintenanceStatus.SCHEDULED,
+      },
+      include: MAINTENANCE_STAFF_INCLUDE,
+    });
   }
 
   // ── Assets (non-equipment assets) ──────────────────────────────────────────

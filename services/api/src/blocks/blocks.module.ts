@@ -5,12 +5,18 @@ import {
   BlockProductionsController,
   BlockSalesController,
 } from './blocks.controller';
+import {
+  StaffBlockProductionsController,
+  StaffBlockProductsController,
+} from './staff-block-productions.controller';
 
 @Module({
   controllers: [
     BlockProductsController,
     BlockProductionsController,
     BlockSalesController,
+    StaffBlockProductionsController,
+    StaffBlockProductsController,
   ],
   providers: [BlocksService],
 })

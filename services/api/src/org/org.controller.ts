@@ -128,3 +128,14 @@ export class PositionsController {
     await this.orgService.removePosition(id);
   }
 }
+
+@Controller('org')
+export class OrgChartController {
+  constructor(private readonly orgService: OrgService) {}
+
+  @Get('chart')
+  @RequirePermissions('org.read')
+  chart() {
+    return this.orgService.chart();
+  }
+}

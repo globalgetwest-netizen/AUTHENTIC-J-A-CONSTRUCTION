@@ -57,6 +57,94 @@ const ADMIN_FIRST_NAME = 'System';
 const ADMIN_LAST_NAME = 'Administrator';
 const COMPANY_NAME = 'Authentic J.A. Construction Limited';
 
+/**
+ * Creates or updates a staff user with a linked Employee record under a given
+ * department/position/reporting line. When a credential is provided (dev seed
+ * passwords) it is made authoritative on every run; otherwise a random one is
+ * generated. Idempotent by email — existing employees are relinked to the
+ * org structure rather than duplicated.
+ */
+async function ensureStaffUser(
+  prisma: PrismaClient,
+  opts: {
+    email: string;
+    credential: string | undefined;
+    firstName: string;
+    lastName: string;
+    roleId: string;
+    employeeCode: string;
+    departmentId: string;
+    positionId: string;
+    branchId: string;
+    reportsToId?: string | null;
+    salary?: number;
+    phone?: string;
+  },
+): Promise<{ userId: string; employeeId: string; isNew: boolean }> {
+  const provided = opts.credential ?? randomBytes(12).toString('base64url');
+  const passwordHash = await hashPassword(provided);
+
+  let user = await prisma.user.findUnique({ where: { email: opts.email } });
+  const isNew = !user;
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        email: opts.email,
+        passwordHash,
+        firstName: opts.firstName,
+        lastName: opts.lastName,
+        isActive: true,
+      },
+    });
+    console.log(`[seed] created user ${opts.email}`);
+  }
+  if (user.deletedAt) {
+    user = await prisma.user.update({ where: { id: user.id }, data: { deletedAt: null } });
+  }
+  // Deterministic credentials stay authoritative across re-seeds.
+  if (opts.credential) {
+    await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
+  }
+  await prisma.userRole.upsert({
+    where: { userId_roleId: { userId: user.id, roleId: opts.roleId } },
+    update: {},
+    create: { userId: user.id, roleId: opts.roleId },
+  });
+
+  let employee = await prisma.employee.findFirst({ where: { userId: user.id } });
+  if (!employee) {
+    employee = await prisma.employee.create({
+      data: {
+        userId: user.id,
+        employeeCode: opts.employeeCode,
+        firstName: opts.firstName,
+        lastName: opts.lastName,
+        email: opts.email,
+        phone: opts.phone ?? '+233 245 295 866',
+        departmentId: opts.departmentId,
+        positionId: opts.positionId,
+        branchId: opts.branchId,
+        reportsToId: opts.reportsToId ?? null,
+        employmentType: 'FULL_TIME',
+        hireDate: new Date('2026-01-05'),
+        status: 'ACTIVE',
+        salary: opts.salary ?? 4500,
+      },
+    });
+  } else {
+    employee = await prisma.employee.update({
+      where: { id: employee.id },
+      data: {
+        departmentId: opts.departmentId,
+        positionId: opts.positionId,
+        branchId: opts.branchId,
+        reportsToId: opts.reportsToId ?? null,
+      },
+    });
+  }
+  return { userId: user.id, employeeId: employee.id, isNew };
+}
+
 async function main(): Promise<void> {
   const prisma = new PrismaClient();
   try {
@@ -136,23 +224,31 @@ async function main(): Promise<void> {
       admin = await prisma.user.update({ where: { id: admin.id }, data: { deletedAt: null } });
       console.log(`[seed] restored deleted admin user ${email}`);
     }
+    // When SEED_ADMIN_PASSWORD is explicitly set, make it authoritative: sync
+    // the hash onto the existing user so the admin always signs in with the
+    // known credential (not the hash captured at first create / a random one).
+    if (process.env.SEED_ADMIN_PASSWORD) {
+      await prisma.user.update({ where: { id: admin.id }, data: { passwordHash } });
+      console.log('[seed] admin password synced to SEED_ADMIN_PASSWORD');
+    }
     await prisma.userRole.upsert({
       where: { userId_roleId: { userId: admin.id, roleId: superAdminId } },
       update: {},
       create: { userId: admin.id, roleId: superAdminId },
     });
 
-    // 4b. Demo STAFF account — exercise the staff portal end-to-end.
-    // Creates a demo branch/department/position only if absent, links one Employee
-    // record to a Staff user (STAFF role) with self-scoped /staff access.
+    // 4b. Command hierarchy — the real org structure the staff portal operates
+    // against: positions (with command levels), departments, department heads
+    // (who approve their department's work), and one operator per core
+    // department. Seeded staff log in with SEED_STAFF_PASSWORD. Idempotent.
     const staffEmail = (process.env.SEED_STAFF_EMAIL ?? 'staff@authenticja.com').toLowerCase();
-    let staffCredential = process.env.SEED_STAFF_PASSWORD;
-    let isFreshStaff = false;
+    const staffCredential = process.env.SEED_STAFF_PASSWORD;
 
     const staffCompany = await prisma.company.findFirst({ where: { name: COMPANY_NAME } });
     const staffRoleId = roles.get('STAFF');
+    const managementRoleId = roles.get('MANAGEMENT');
     if (!staffCompany) {
-      console.log('[seed] demochars: company record missing — skipping demo staff');
+      console.log('[seed] company record missing — skipping command hierarchy seed');
     } else {
       const branch = await prisma.companyBranch.upsert({
         where: { code: 'BR-QTDEMO' },
@@ -165,76 +261,143 @@ async function main(): Promise<void> {
           companyId: staffCompany.id,
         },
       });
-      const department = await prisma.department.upsert({
-        where: { code: 'DPT-CONOPS' },
-        update: { deletedAt: null },
-        create: { code: 'DPT-CONOPS', name: 'Construction Operations', companyId: staffCompany.id },
-      });
-      const position = await prisma.position.upsert({
-        where: { code: 'POS-FOREMAN' },
-        update: { deletedAt: null },
-        create: { code: 'POS-FOREMAN', title: 'Site Foreman', companyId: staffCompany.id },
+
+      // Positions with command levels (1 = executive … 5 = general worker).
+      const demoPositions = [
+        { code: 'POS-CEO', title: 'Chief Executive Officer', level: 1 },
+        { code: 'POS-DEPT-HEAD', title: 'Department Head', level: 2 },
+        { code: 'POS-SUPERVISOR', title: 'Supervisor', level: 3 },
+        { code: 'POS-ENGINEER', title: 'Engineer', level: 3 },
+        { code: 'POS-OFFICER', title: 'Officer', level: 4 },
+        { code: 'POS-FOREMAN', title: 'Site Foreman', level: 3 },
+        { code: 'POS-GENERAL', title: 'General Worker', level: 5 },
+      ] as const;
+      const positionIds = new Map<string, string>();
+      for (const pos of demoPositions) {
+        const position = await prisma.position.upsert({
+          where: { code: pos.code },
+          update: { title: pos.title, level: pos.level, companyId: staffCompany.id, deletedAt: null },
+          create: { code: pos.code, title: pos.title, level: pos.level, companyId: staffCompany.id },
+        });
+        positionIds.set(pos.code, position.id);
+      }
+
+      // The company's departments — each a command chain beneath the CEO.
+      const demoDepartments = [
+        { code: 'DPT-ADMIN', name: 'Administration' },
+        { code: 'DPT-COMMERCIAL', name: 'Commercial' },
+        { code: 'DPT-PROJECTS', name: 'Projects & Construction' },
+        { code: 'DPT-ENGINEERING', name: 'Engineering' },
+        { code: 'DPT-QS', name: 'Quantity Surveying' },
+        { code: 'DPT-PROCUREMENT', name: 'Procurement' },
+        { code: 'DPT-STORES', name: 'Stores & Inventory' },
+        { code: 'DPT-BLOCKFACTORY', name: 'Block Production' },
+        { code: 'DPT-PLANT', name: 'Plant & Equipment' },
+        { code: 'DPT-FLEET', name: 'Fleet & Transport' },
+        { code: 'DPT-PROPERTY', name: 'Property & Land' },
+        { code: 'DPT-FINANCE', name: 'Finance & Accounts' },
+        { code: 'DPT-HR', name: 'Human Resources' },
+        { code: 'DPT-HSE', name: 'Health, Safety & Quality' },
+      ] as const;
+      const departmentIds = new Map<string, string>();
+      for (const dep of demoDepartments) {
+        const department = await prisma.department.upsert({
+          where: { code: dep.code },
+          update: { name: dep.name, companyId: staffCompany.id, deletedAt: null },
+          create: { code: dep.code, name: dep.name, companyId: staffCompany.id },
+        });
+        departmentIds.set(dep.code, department.id);
+      }
+      // Retire the placeholder department from earlier seeds once it is empty.
+      await prisma.department.updateMany({
+        where: { code: 'DPT-CONOPS', deletedAt: null, employees: { none: {} } },
+        data: { deletedAt: new Date() },
       });
 
-      let staff = await prisma.user.findUnique({ where: { email: staffEmail } });
-      if (!staff) {
-        if (!staffCredential) {
-          staffCredential = randomBytes(12).toString('base64url');
-          console.log('\n[seed] SEED_STAFF_PASSWORD not set — generated for first login:');
-          console.log(`[seed]   ${staffEmail} / ${staffCredential}`);
-          console.log('[seed] An admin can change it, or re-seed to rotate.\n');
+      const ceoPositionId = positionIds.get('POS-CEO') ?? '';
+      const headPositionId = positionIds.get('POS-DEPT-HEAD') ?? '';
+
+      // CEO — Joseph Acquah, founder, top of the command chain.
+      const ceo = await ensureStaffUser(prisma, {
+        email: 'ceo@authenticja.com',
+        credential: staffCredential,
+        firstName: 'Joseph',
+        lastName: 'Acquah',
+        roleId: managementRoleId ?? staffRoleId ?? '',
+        employeeCode: 'EMP-CEO-0001',
+        departmentId: departmentIds.get('DPT-ADMIN') ?? '',
+        positionId: ceoPositionId,
+        branchId: branch.id,
+      });
+
+      // Department heads — lead each department's chain and approve its work.
+      const demoHeads = [
+        { code: 'DPT-PROJECTS', firstName: 'Efua', lastName: 'Arthur', email: 'projects@authenticja.com' },
+        { code: 'DPT-PROCUREMENT', firstName: 'Kojo', lastName: 'Osei', email: 'procurement@authenticja.com' },
+        { code: 'DPT-STORES', firstName: 'Yaw', lastName: 'Boateng', email: 'stores@authenticja.com' },
+        { code: 'DPT-BLOCKFACTORY', firstName: 'Adjoa', lastName: 'Tetteh', email: 'blockfactory@authenticja.com' },
+        { code: 'DPT-PLANT', firstName: 'Kwesi', lastName: 'Asante', email: 'plant@authenticja.com' },
+        { code: 'DPT-FINANCE', firstName: 'Akosua', lastName: 'Mensah', email: 'finance@authenticja.com' },
+      ] as const;
+      const headEmployeeIds = new Map<string, string>();
+      for (const head of demoHeads) {
+        const result = await ensureStaffUser(prisma, {
+          email: head.email,
+          credential: staffCredential,
+          firstName: head.firstName,
+          lastName: head.lastName,
+          roleId: staffRoleId ?? '',
+          employeeCode: `EMP-${head.code.replace('DPT-', '')}-HEAD`,
+          departmentId: departmentIds.get(head.code) ?? '',
+          positionId: headPositionId,
+          branchId: branch.id,
+          reportsToId: ceo.employeeId,
+          salary: 8000,
+        });
+        headEmployeeIds.set(head.code, result.employeeId);
+      }
+      for (const head of demoHeads) {
+        const employeeId = headEmployeeIds.get(head.code);
+        if (!employeeId) continue;
+        await prisma.department.update({
+          where: { id: departmentIds.get(head.code) ?? '' },
+          data: { headId: employeeId },
+        });
+      }
+
+      // One operator per core department (the existing Ama Owusu account is
+      // relinked to Projects & Construction, reporting to its head).
+      const demoOperators = [
+        { code: 'DPT-PROJECTS', firstName: 'Ama', lastName: 'Owusu', email: staffEmail, employeeCode: 'EMP-DEMO-0001', positionCode: 'POS-FOREMAN' },
+        { code: 'DPT-PROCUREMENT', firstName: 'Esi', lastName: 'Sarpong', email: 'procurement.op@authenticja.com', employeeCode: 'EMP-PROC-OP', positionCode: 'POS-OFFICER' },
+        { code: 'DPT-STORES', firstName: 'Kofi', lastName: 'Agyeman', email: 'stores.op@authenticja.com', employeeCode: 'EMP-STORES-OP', positionCode: 'POS-OFFICER' },
+        { code: 'DPT-BLOCKFACTORY', firstName: 'Nana', lastName: 'Boadu', email: 'blockfactory.op@authenticja.com', employeeCode: 'EMP-BLOCKS-OP', positionCode: 'POS-OFFICER' },
+        { code: 'DPT-PLANT', firstName: 'Joe', lastName: 'Nkrumah', email: 'plant.op@authenticja.com', employeeCode: 'EMP-PLANT-OP', positionCode: 'POS-OFFICER' },
+        { code: 'DPT-FINANCE', firstName: 'Adwoa', lastName: 'Acheampong', email: 'finance.op@authenticja.com', employeeCode: 'EMP-FIN-OP', positionCode: 'POS-OFFICER' },
+      ] as const;
+      for (const op of demoOperators) {
+        const result = await ensureStaffUser(prisma, {
+          email: op.email,
+          credential: staffCredential,
+          firstName: op.firstName,
+          lastName: op.lastName,
+          roleId: staffRoleId ?? '',
+          employeeCode: op.employeeCode,
+          departmentId: departmentIds.get(op.code) ?? '',
+          positionId: positionIds.get(op.positionCode) ?? '',
+          branchId: branch.id,
+          reportsToId: headEmployeeIds.get(op.code) ?? null,
+        });
+        if (result.isNew) {
+          await prisma.notification.create({
+            data: {
+              userId: result.userId,
+              type: 'SYSTEM',
+              title: 'Welcome to the Employee Portal',
+              body: 'Your staff account is ready. Sign in to operate your department’s work.',
+            },
+          });
         }
-        const staffHash = await hashPassword(staffCredential);
-        staff = await prisma.user.create({
-          data: { email: staffEmail, passwordHash: staffHash, firstName: 'Ama', lastName: 'Owusu', isActive: true },
-        });
-        isFreshStaff = true;
-        console.log(`[seed] created staff user ${staffEmail}`);
-      }
-      if (staff.deletedAt) {
-        staff = await prisma.user.update({ where: { id: staff.id }, data: { deletedAt: null } });
-        console.log(`[seed] restored deleted staff user ${staffEmail}`);
-      }
-
-      const linkedEmployee = await prisma.employee.findFirst({ where: { userId: staff.id } });
-      if (!linkedEmployee) {
-        await prisma.employee.create({
-          data: {
-            userId: staff.id,
-            employeeCode: 'EMP-DEMO-0001',
-            firstName: 'Ama',
-            lastName: 'Owusu',
-            email: staffEmail,
-            phone: '+233 245 295 866',
-            departmentId: department.id,
-            positionId: position.id,
-            branchId: branch.id,
-            employmentType: 'FULL_TIME',
-            hireDate: new Date('2026-08-01'),
-            salary: 4500,
-            status: 'ACTIVE',
-          },
-        });
-        console.log(`[seed] created demo employee → linked to ${staffEmail}`);
-      }
-
-      if (staffRoleId) {
-        await prisma.userRole.upsert({
-          where: { userId_roleId: { userId: staff.id, roleId: staffRoleId } },
-          update: {},
-          create: { userId: staff.id, roleId: staffRoleId },
-        });
-      }
-
-      if (isFreshStaff) {
-        await prisma.notification.create({
-          data: {
-            userId: staff.id,
-            type: 'SYSTEM',
-            title: 'Welcome to the Employee Portal',
-            body: 'Your staff account is ready. Sign in to view your profile and notifications.',
-          },
-        });
       }
     }
 
@@ -267,6 +430,11 @@ async function main(): Promise<void> {
       if (clientUser.deletedAt) {
         clientUser = await prisma.user.update({ where: { id: clientUser.id }, data: { deletedAt: null } });
         console.log(`[seed] restored deleted client user ${clientEmail}`);
+      }
+      if (process.env.SEED_CLIENT_PASSWORD) {
+        const clientHash = await hashPassword(process.env.SEED_CLIENT_PASSWORD);
+        await prisma.user.update({ where: { id: clientUser.id }, data: { passwordHash: clientHash } });
+        console.log('[seed] client password synced to SEED_CLIENT_PASSWORD');
       }
 
       let client = await prisma.client.findFirst({ where: { userId: clientUser.id } });

@@ -169,6 +169,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
     items: [
       { label: "Documents", href: "/admin/documents", permission: "documents.read" },
       { label: "Corporate documents", href: "/admin/corporate-documents" },
+      { label: "CEO & Founder letter", href: "/admin/ceo-letters" },
     ],
   },
   {

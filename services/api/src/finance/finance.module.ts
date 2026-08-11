@@ -7,6 +7,8 @@ import {
   ReceiptsController,
   TransactionsController,
 } from './finance.controller';
+import { StaffExpensesController } from './staff-expenses.controller';
+import { StaffInvoicesController, StaffReceiptsController } from './staff-receipts.controller';
 
 @Module({
   controllers: [
@@ -15,6 +17,9 @@ import {
     ExpensesController,
     TransactionsController,
     PaymentsController,
+    StaffExpensesController,
+    StaffReceiptsController,
+    StaffInvoicesController,
   ],
   providers: [FinanceService],
 })

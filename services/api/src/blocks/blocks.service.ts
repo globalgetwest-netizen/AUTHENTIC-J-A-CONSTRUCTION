@@ -25,6 +25,7 @@ import {
   QueryBlockProductionsDto,
   QueryBlockSalesDto,
 } from './dto/query-blocks.dto';
+import type { StaffContext } from '../common/staff/staff-context';
 
 const PRODUCT_SORTABLE = ['createdAt', 'name', 'code', 'unitPrice', 'isActive'] as const;
 const PRODUCTION_SORTABLE = ['createdAt', 'quantity', 'producedOn', 'status'] as const;
@@ -137,6 +138,50 @@ export class BlocksService {
         notes: dto.notes ?? null,
         status: dto.status ?? 'COMPLETED',
         supervisorId: dto.supervisorId ?? null,
+      },
+      include: PRODUCTION_INCLUDE,
+    });
+  }
+
+  // ── Staff portal: block production batches ─────────────────────────────────
+
+  /**
+   * Production batches scoped to the caller: regular operators see the batches
+   * they supervised; the Block Production head sees every batch from the
+   * department's floor.
+   */
+  async listProductionsForStaff(ctx: StaffContext, query: QueryBlockProductionsDto): Promise<Paginated<object>> {
+    const where: Prisma.BlockProductionWhereInput = {};
+    if (!ctx.isHead) where.supervisorId = ctx.employeeId;
+    if (query.productId) where.productId = query.productId;
+    const { skip, take } = prismaSkipTake(query);
+    const orderBy = buildOrderBy(query.sortBy, query.sortOrder, PRODUCTION_SORTABLE);
+    const [data, total] = await Promise.all([
+      this.prisma.blockProduction.findMany({ where, skip, take, orderBy, include: PRODUCTION_INCLUDE }),
+      this.prisma.blockProduction.count({ where }),
+    ]);
+    return paginate(data, total, query);
+  }
+
+  /**
+   * A block-factory operator records a production batch they supervised. The
+   * caller's employee is recorded as `supervisorId` so batches stay attributed.
+   */
+  async createStaffProduction(ctx: StaffContext, dto: CreateBlockProductionDto): Promise<BlockProduction> {
+    const product = await this.prisma.blockProduct.findFirst({
+      where: { id: dto.productId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!product) throw new NotFoundException(`Block product ${dto.productId} not found`);
+    return this.prisma.blockProduction.create({
+      data: {
+        productId: dto.productId,
+        batchNo: generateBusinessCode('PRD'),
+        quantity: dto.quantity,
+        producedOn: dto.producedOn ? new Date(dto.producedOn) : new Date(),
+        notes: dto.notes ?? null,
+        status: dto.status ?? 'COMPLETED',
+        supervisorId: ctx.employeeId,
       },
       include: PRODUCTION_INCLUDE,
     });

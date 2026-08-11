@@ -227,6 +227,7 @@ export interface Employee {
   dateOfBirth?: string | null;
   gender?: Gender | null;
   address?: string | null;
+  photoUrl?: string | null;
   departmentId?: string | null;
   positionId?: string | null;
   branchId?: string | null;
@@ -646,6 +647,7 @@ export interface MaintenanceRecord {
   createdAt: string;
   updatedAt: string;
   equipment?: { id: string; name: string; assetCode: string } | null;
+  createdBy?: { id: string; firstName: string; lastName: string } | null;
 }
 
 export interface Asset {
@@ -753,6 +755,7 @@ export interface Receipt {
   updatedAt: string;
   client?: { id: string; companyName?: string | null; contactName?: string | null } | null;
   invoice?: { id: string; invoiceNo: string } | null;
+  receivedBy?: { id: string; firstName: string; lastName: string } | null;
 }
 
 export interface Expense {
@@ -770,6 +773,9 @@ export interface Expense {
   createdAt: string;
   updatedAt: string;
   project?: { id: string; name: string; code: string } | null;
+  createdBy?: { id: string; firstName: string; lastName: string } | null;
+  approvedBy?: { id: string; firstName: string; lastName: string } | null;
+  department?: { id: string; name: string; code: string } | null;
 }
 
 export interface FinancialTransaction {
@@ -921,6 +927,7 @@ export interface EmployeeIdRef {
   employeeCode: string;
   firstName: string;
   lastName: string;
+  photoUrl?: string | null;
   department?: { name: string } | null;
   position?: { title: string } | null;
   branch?: { name: string } | null;
@@ -1079,5 +1086,6 @@ export interface EmployeeIdVerifyResult {
     name: string;
     department?: string | null;
     position?: string | null;
+    photoUrl?: string | null;
   } | null;
 }

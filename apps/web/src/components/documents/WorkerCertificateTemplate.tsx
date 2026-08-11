@@ -1,4 +1,4 @@
-import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { Document, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { Employee } from "@/lib/admin/types";
 import { label } from "@/lib/admin/types";
 import { dateLabel } from "@/lib/documents/format";
@@ -8,7 +8,6 @@ import {
   CERT_FONT_BOLD,
   CERT_FONT_ITALIC,
   FONT_SANS,
-  CertificateFooter,
   CertificateHeading,
   CertificatePage,
   SignatureRow,
@@ -18,6 +17,19 @@ const styles = StyleSheet.create({
   intro: { fontSize: 11, lineHeight: 1.85, textAlign: "justify" },
   highlight: { fontFamily: CERT_FONT_BOLD, color: CERT_COLORS.blue },
   block: { marginTop: 18 },
+  particularsRow: { flexDirection: "row", alignItems: "flex-start" },
+  particularsTable: { flex: 1 },
+  photoBox: {
+    width: 78,
+    height: 96,
+    marginLeft: 16,
+    borderWidth: 1,
+    borderColor: CERT_COLORS.blue,
+    borderRadius: 4,
+    backgroundColor: CERT_COLORS.paper,
+    overflow: "hidden",
+  },
+  photoImg: { width: "100%", height: "100%", objectFit: "cover" },
   blockTitle: {
     fontSize: 7.5,
     fontFamily: FONT_SANS,
@@ -71,17 +83,23 @@ function Row({ label: lab, value }: { label: string; value: string }) {
 
 export function WorkerCertificateTemplate({
   employee,
+  serial,
   logoSrc,
+  photoSrc,
   letterheadSrc,
   signatureSrc,
   stampSrc,
+  qrSrc,
   issuedOn,
 }: {
   employee: Employee;
+  serial: string;
   logoSrc?: string | null;
+  photoSrc?: string | null;
   letterheadSrc?: string | null;
   signatureSrc?: string | null;
   stampSrc?: string | null;
+  qrSrc?: string | null;
   issuedOn: string;
 }) {
   const fullName = [employee.firstName, employee.lastName, employee.otherNames]
@@ -90,13 +108,12 @@ export function WorkerCertificateTemplate({
   const position = employee.position?.title ?? "a member of staff";
   const department = employee.department?.name ?? "the company";
   const branch = employee.branch?.name ?? "Kumasi, Ghana";
-  const serial = `AJAC/COE/${issuedOn.slice(0, 4)}/${employee.employeeCode}`;
   const terminated = employee.status === "TERMINATED";
 
   return (
     <Document>
       <Page size="A4">
-        <CertificatePage watermarkSrc={logoSrc}>
+        <CertificatePage watermarkSrc={logoSrc} qrSrc={qrSrc}>
           <CertificateHeading
             logoSrc={logoSrc}
             letterheadSrc={letterheadSrc}
@@ -123,19 +140,29 @@ export function WorkerCertificateTemplate({
 
           <View style={styles.block}>
             <Text style={styles.blockTitle}>Worker particulars</Text>
-            <View style={styles.table}>
-              <Row label="Full name" value={fullName} />
-              <Row label="Staff number" value={employee.employeeCode} />
-              <Row label="Position" value={position} />
-              <Row label="Department" value={employee.department?.name ?? "—"} />
-              <Row label="Employment type" value={label(employee.employmentType)} />
-              <Row label="Date of employment" value={dateLabel(employee.hireDate)} />
-              {employee.terminationDate ? (
-                <Row label="Date of exit" value={dateLabel(employee.terminationDate)} />
+            <View style={styles.particularsRow}>
+              <View style={styles.particularsTable}>
+                <View style={styles.table}>
+                  <Row label="Full name" value={fullName} />
+                  <Row label="Staff number" value={employee.employeeCode} />
+                  <Row label="Position" value={position} />
+                  <Row label="Department" value={employee.department?.name ?? "—"} />
+                  <Row label="Employment type" value={label(employee.employmentType)} />
+                  <Row label="Date of employment" value={dateLabel(employee.hireDate)} />
+                  {employee.terminationDate ? (
+                    <Row label="Date of exit" value={dateLabel(employee.terminationDate)} />
+                  ) : null}
+                  <Row label="Employment status" value={label(employee.status)} />
+                  {employee.gender ? <Row label="Gender" value={label(employee.gender)} /> : null}
+                  {employee.nationalId ? <Row label="National ID" value={employee.nationalId} /> : null}
+                </View>
+              </View>
+              {photoSrc ? (
+                <View style={styles.photoBox}>
+                  {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}
+                  <Image src={photoSrc} style={styles.photoImg} />
+                </View>
               ) : null}
-              <Row label="Employment status" value={label(employee.status)} />
-              {employee.gender ? <Row label="Gender" value={label(employee.gender)} /> : null}
-              {employee.nationalId ? <Row label="National ID" value={employee.nationalId} /> : null}
             </View>
           </View>
 
@@ -158,15 +185,13 @@ export function WorkerCertificateTemplate({
 
           <Text style={styles.note}>
             This certificate is issued by AUTHENTIC J.A. CONSTRUCTION LTD. as a true and accurate
-            record of the worker's employment with the company. It is provided for employment
+            record of the worker&apos;s employment with the company. It is provided for employment
             confirmation and identification purposes only, and does not constitute a guarantee of
             future or continued employment.
           </Text>
           <Text style={styles.note}>
             Issued on {dateLabel(issuedOn)}. Any alteration renders this certificate void.
           </Text>
-
-          <CertificateFooter />
         </CertificatePage>
       </Page>
     </Document>

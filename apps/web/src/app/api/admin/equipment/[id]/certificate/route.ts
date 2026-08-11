@@ -5,10 +5,13 @@ import type { Equipment } from "@/lib/admin/types";
 export const runtime = "nodejs";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   ctx: RouteContext<"/api/admin/equipment/[id]/certificate">,
 ) {
   const { id } = await ctx.params;
+  const url = new URL(req.url);
+  const includeStamp = url.searchParams.get("stamp") !== "false";
+  const includeSignature = url.searchParams.get("signature") !== "false";
   const res = await apiFetch(`/equipment/${id}`);
   if (!res.ok) {
     const text = await res.text();
@@ -59,6 +62,8 @@ export async function GET(
     rows,
     note: "This certificate confirms company ownership of the above equipment / vehicle as recorded in the fixed-asset register of AUTHENTIC J.A. CONSTRUCTION LTD.",
     issuedOn,
+    includeStamp,
+    includeSignature,
   });
 
   return new Response(new Uint8Array(pdf), {
