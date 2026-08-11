@@ -79,13 +79,10 @@ export async function renderPropertyCertificatePdf(
     "@/components/documents/PropertyCertificateTemplate"
   );
   const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
-  const letterheadSrc = LETTERHEAD.letterheadImage
-    ? await readAssetAsDataUri(LETTERHEAD.letterheadImage)
-    : null;
+  /* Certificates use the text-band letterhead, not the full image header. */
   const template = createElement(PropertyCertificateTemplate, {
     ...input,
     logoSrc,
-    letterheadSrc,
   }) as unknown as ReactElement<DocumentProps>;
   return renderToBuffer(template);
 }
@@ -179,15 +176,12 @@ export async function renderWorkerCertificatePdf(
   const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
   const signatureSrc = await readAssetAsDataUri(LETTERHEAD.ceo.signature);
   const stampSrc = await readAssetAsDataUri(LETTERHEAD.ceo.stamp);
-  const letterheadSrc = LETTERHEAD.letterheadImage
-    ? await readAssetAsDataUri(LETTERHEAD.letterheadImage)
-    : null;
+  /* Certificate — uses text-band letterhead, not the full image header. */
   const template = createElement(WorkerCertificateTemplate, {
     employee: input.employee,
     logoSrc,
     signatureSrc,
     stampSrc,
-    letterheadSrc,
     issuedOn: input.issuedOn ?? new Date().toISOString(),
   }) as unknown as ReactElement<DocumentProps>;
   return renderToBuffer(template);
@@ -217,15 +211,12 @@ export async function renderAssetOwnershipCertificatePdf(
   const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
   const signatureSrc = await readAssetAsDataUri(LETTERHEAD.ceo.signature);
   const stampSrc = await readAssetAsDataUri(LETTERHEAD.ceo.stamp);
-  const letterheadSrc = LETTERHEAD.letterheadImage
-    ? await readAssetAsDataUri(LETTERHEAD.letterheadImage)
-    : null;
+  /* Certificate — uses text-band letterhead, not the full image header. */
   const template = createElement(AssetOwnershipCertificateTemplate, {
     ...input,
     logoSrc,
     signatureSrc,
     stampSrc,
-    letterheadSrc,
     issuedOn: input.issuedOn ?? new Date().toISOString(),
   }) as unknown as ReactElement<DocumentProps>;
   return renderToBuffer(template);
@@ -249,9 +240,7 @@ export async function renderProjectCompletionCertificatePdf(
   const logoSrc = await readAssetAsDataUri(LETTERHEAD.logo);
   const signatureSrc = await readAssetAsDataUri(LETTERHEAD.ceo.signature);
   const stampSrc = await readAssetAsDataUri(LETTERHEAD.ceo.stamp);
-  const letterheadSrc = LETTERHEAD.letterheadImage
-    ? await readAssetAsDataUri(LETTERHEAD.letterheadImage)
-    : null;
+  /* Certificate — uses text-band letterhead, not the full image header. */
   const template = createElement(ProjectCompletionCertificateTemplate, {
     project: input.project,
     clientName: input.clientName ?? null,
@@ -259,7 +248,6 @@ export async function renderProjectCompletionCertificatePdf(
     logoSrc,
     signatureSrc,
     stampSrc,
-    letterheadSrc,
     issuedOn: input.issuedOn ?? new Date().toISOString(),
   }) as unknown as ReactElement<DocumentProps>;
   return renderToBuffer(template);

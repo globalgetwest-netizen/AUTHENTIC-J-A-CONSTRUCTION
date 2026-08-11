@@ -31,9 +31,8 @@ export const LETTERHEAD = {
   registeredAddress: "Accra, Ghana",
   phones: ["+233 245 295 866", "+233 553 864 636"] as const,
   phoneLabels: ["Tel", "Mob"] as const,
-  /** Replace with the real domain email once registered (next week). */
-  email: "authenticjaconstruction.gh@gmail.com",
-  website: "",
+  email: "info@authenticjaconstruction.com",
+  website: "www.authenticjaconstruction.com",
   /** Real company logo (photo of physical sign, background-removed) — used on documents. */
   logo: "/brand/aja-logo-clean.png",
   /** Real company logo — used in the company seal/stamp. */
@@ -45,8 +44,9 @@ export const LETTERHEAD = {
     signature: "/brand/ceo-signature.png",
     stamp: "/brand/ceo-stamp.png",
   },
-  /** Set to a public/ path to render the full letterhead image in the PDF header. */
-  letterheadImage: null as string | null,
+  /** Real company letterhead header — used on official correspondence (quotations,
+   *  land allocations, company profile). Certificates use the text-band instead. */
+  letterheadImage: "/brand/aja-letterhead-header.jpg" as string | null,
   banks: [
     { name: "Universal Merchant Bank (UMB)", accountName: "", accountNumber: "", branch: "" },
     { name: "Fidelity Bank", accountName: "", accountNumber: "", branch: "" },

@@ -37,7 +37,7 @@ export const COMPANY = {
   taxId: "C0061318752",
   headOffice: "Kumasi, Ghana",
   registeredAddress: "Accra, Ghana",
-  email: "authenticjaconstruction.gh@gmail.com",
+  email: "info@authenticjaconstruction.com",
   /** International display format. `telHref()` derives the dialable link. */
   phones: ["+233 245 295 866", "+233 545 008 282", "+233 553 864 636"] as const,
   /** Purpose label shown alongside each number (same order as `phones`). */
