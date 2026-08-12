@@ -12,19 +12,19 @@
  */
 
 /**
- * Official company logo — drop-in path with fallback chain.
+ * Official company logo — approved branding asset.
  *
- * To change the logo site-wide: overwrite `public/brand/aja-logo.png`
- * with the new file (same extension). No code edit required — the
- * `Logo` component and `CompanySignboard` both read this config.
+ * Uses the approved clean logo `/brand/aja-logo-clean.png` everywhere
+ * on the public site (header, footer, CompanySignboard). The `Logo`
+ * component and `CompanySignboard` both read this config, so changing
+ * it here updates the whole site.
  *
- * `candidates` lists legacy filenames tried as fallbacks when the
- * primary file is missing, so historical naming drift never breaks
- * the site.
+ * NOTE: legacy filenames (`aja-logo.png`, `ajac-logo.jpg`) were retired
+ * as part of the corporate-branding unification — do not reintroduce them.
  */
 export const COMPANY_LOGO = {
-  src: "/brand/aja-logo.png",
-  candidates: ["/brand/ajac-logo.jpg"] as readonly string[],
+  src: "/brand/aja-logo-clean.png",
+  candidates: [] as readonly string[],
   alt: "AUTHENTIC J.A. CONSTRUCTION LTD. official logo",
 } as const;
 

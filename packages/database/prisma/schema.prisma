@@ -361,6 +361,13 @@ enum LeadSource {
   OTHER
 }
 
+enum EmployeeIdType {
+  STAFF
+  WORKER
+  ADMIN
+  CEO
+}
+
 // ===========================================================================
 // IDENTITY & ACCESS
 // ===========================================================================
@@ -646,21 +653,33 @@ model EmployeeDocument {
 
 model EmployeeID {
   id           String             @id @default(uuid())
-  employeeId   String             @unique
+  employeeId   String?            @unique
   cardNumber   String             @unique
   qrToken      String?            @unique
   issuedAt     DateTime           @default(now())
   expiresAt    DateTime?
   status       VerificationResult @default(VERIFIED)
   replacedById String?
+  // Distinguishes the four corporate ID tiers (CEO / Admin / Staff / Worker).
+  idType       EmployeeIdType     @default(STAFF)
+  // Standalone card holder details — used when the card is not linked to an
+  // existing employee record (e.g. a one-off Worker or Admin pass). When the
+  // card is linked to an employee, these mirror the employee's profile.
+  holderName   String?
+  position     String?
+  department   String?
+  contactPhone String?
+  contactEmail String?
+  photoUrl     String?
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
-  employee      Employee                 @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employee      Employee?                @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   verifications EmployeeIDVerification[]
 
   @@index([expiresAt])
   @@index([status])
+  @@index([idType])
 }
 
 model EmployeeIDVerification {

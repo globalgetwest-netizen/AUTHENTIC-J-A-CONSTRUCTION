@@ -1,13 +1,20 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query, Req, StreamableFile } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Put, Query, Req, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import type { Request } from 'express';
 import { CurrentUser } from '../common/auth/current-user.decorator';
 import type { AuthUser } from '../common/auth/auth-user.type';
 import { Public } from '../common/auth/public.decorator';
 import { RequirePermissions } from '../common/auth/require-permissions.decorator';
+import { employeePhotosDiskStorage } from '../common/storage/uploads';
 import { EmployeeIdsService } from './employee-ids.service';
-import { CreateEmployeeIdDto } from './dto/create-employee-id.dto';
+import { CreateEmployeeIdDto, UpdateEmployeeIdDto } from './dto/create-employee-id.dto';
 import { QueryEmployeeIdsDto } from './dto/employee-id-query.dto';
 import { VerifyEmployeeIdDto } from './dto/verify-employee-id.dto';
+
+const PHOTO_UPLOAD_OPTIONS = {
+  storage: employeePhotosDiskStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+};
 
 @Controller('employee-ids')
 export class EmployeeIdsController {
@@ -31,10 +38,33 @@ export class EmployeeIdsController {
     return this.service.issue(dto);
   }
 
+  /** Uploads a headshot for a standalone card (multipart field: `photo`). */
+  @Post('photo')
+  @RequirePermissions('employee-ids.write')
+  @UseInterceptors(FileInterceptor('photo', PHOTO_UPLOAD_OPTIONS))
+  uploadPhoto(@UploadedFile() file?: Express.Multer.File) {
+    return this.service.uploadPhoto(file);
+  }
+
   @Post(':id/revoke')
   @RequirePermissions('employee-ids.write')
   revoke(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.revoke(id);
+  }
+
+  @Put(':id')
+  @RequirePermissions('employee-ids.write')
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateEmployeeIdDto) {
+    return this.service.update(id, dto);
+  }
+
+  @Post(':id/reissue')
+  @RequirePermissions('employee-ids.write')
+  reissue(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: { expiresAt?: string },
+  ) {
+    return this.service.reissue(id, dto?.expiresAt);
   }
 
   /** Reachable without a token so a guard can scan the card using any device. */

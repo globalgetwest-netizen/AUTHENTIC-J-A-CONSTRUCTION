@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SupportWidget } from "../components/SupportWidget";
 import "@ajac/ui/tokens.css";
@@ -30,6 +30,9 @@ export const metadata: Metadata = {
     ],
     apple: "/app-icon.png",
   },
+};
+
+export const viewport: Viewport = {
   themeColor: "#14324F",
 };
 

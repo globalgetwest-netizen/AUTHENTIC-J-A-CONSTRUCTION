@@ -33,6 +33,15 @@ export default function EmployeeIdsListPage() {
       header: "Card no.",
       render: (c) => <span className="font-medium text-neutral-700">{c.cardNumber}</span>,
     },
+    {
+      key: "idType",
+      header: "Type",
+      render: (c) => (
+        <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-semibold text-neutral-700">
+          {c.idType}
+        </span>
+      ),
+    },
     { key: "employee", header: "Employee", render: (c) => idFullName(c.employee) },
     { key: "employeeCode", header: "Staff code", render: (c) => c.employee?.employeeCode ?? "—" },
     { key: "status", header: "Status", render: (c) => <StatusBadge value={c.status} /> },

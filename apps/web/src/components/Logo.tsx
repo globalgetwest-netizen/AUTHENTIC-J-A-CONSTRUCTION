@@ -8,10 +8,10 @@ const CANDIDATES = [COMPANY_LOGO.src, ...COMPANY_LOGO.candidates];
 /**
  * Official company logo with config-driven drop-in and graceful fallback.
  *
- * Drop a logo at the path documented in `COMPANY_LOGO.src` (`public/brand/`)
- * and it renders site-wide — no code change. If the file is missing the
- * component tries legacy filenames; when all fail, a neutral "AJ.A"
- * wordmark renders instead.
+ * Drop the approved logo at `public/brand/aja-logo-clean.png`
+ * and it renders site-wide — no code change. If the file is missing
+ * the component tries fallback filenames; when all fail, a neutral
+ * "AJ.A" wordmark renders instead.
  */
 export function Logo({ width = 60, inverted = false, src: override }: { width?: number; inverted?: boolean; src?: string }) {
   const [attempt, setAttempt] = useState(0);

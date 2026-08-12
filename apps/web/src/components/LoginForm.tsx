@@ -21,7 +21,6 @@ export function LoginForm({
   subtitle: string;
 }) {
   const router = useRouter();
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [error, setError] = useState("");
@@ -36,7 +35,7 @@ export function LoginForm({
       const res = await fetch("/api/admin/auth/login", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ password }),
       });
       const data = (await res.json().catch(() => null)) as LoginResponse | null;
       if (!res.ok) {
@@ -76,17 +75,6 @@ export function LoginForm({
         </div>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          <Field label="Email" htmlFor="login-email">
-            <Input
-              id="login-email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@authenticja.com"
-              required
-            />
-          </Field>
           <Field label="Password" htmlFor="login-password">
             <Input
               id="login-password"

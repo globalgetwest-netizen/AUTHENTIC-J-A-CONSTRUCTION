@@ -140,6 +140,12 @@ export default function EmployeeIdDetailPage() {
           >
             Download ID card (PDF)
           </a>
+          <Link
+            href={`/admin/employee-ids/${card.id}/edit`}
+            className="rounded-md border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 transition hover:border-neutral-400"
+          >
+            Edit
+          </Link>
           <Button
             variant="danger"
             loading={revoking}
@@ -163,10 +169,24 @@ export default function EmployeeIdDetailPage() {
             <DetailRow label="Status">
               <StatusBadge value={card.status} />
             </DetailRow>
-            <DetailRow label="Employee">{idFullName(card.employee)}</DetailRow>
-            <DetailRow label="Staff code">{card.employee?.employeeCode ?? "—"}</DetailRow>
-            <DetailRow label="Department">{card.employee?.department?.name ?? "—"}</DetailRow>
-            <DetailRow label="Position">{card.employee?.position?.title ?? "—"}</DetailRow>
+            <DetailRow label="ID type">
+              <span className="font-semibold text-neutral-900">{card.idType}</span>
+            </DetailRow>
+            <DetailRow label="Holder">
+              {card.employee ? idFullName(card.employee) : (card.holderName ?? "—")}
+            </DetailRow>
+            <DetailRow label="Staff code">
+              {card.employee?.employeeCode ?? (card.holderName ? "—" : "—")}
+            </DetailRow>
+            <DetailRow label="Position">
+              {card.employee?.position?.title ?? card.position ?? "—"}
+            </DetailRow>
+            <DetailRow label="Department">
+              {card.employee?.department?.name ?? card.department ?? "—"}
+            </DetailRow>
+            <DetailRow label="Contact">
+              {[card.contactPhone, card.contactEmail].filter(Boolean).join(" · ") || "—"}
+            </DetailRow>
             <DetailRow label="Branch">{card.employee?.branch?.name ?? "—"}</DetailRow>
             <DetailRow label="Issued">{formatDate(card.issuedAt)}</DetailRow>
             <DetailRow label="Expires">

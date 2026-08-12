@@ -948,15 +948,25 @@ export interface VerificationRecord {
   verifiedAt: string;
 }
 
+export type EmployeeIdType = "STAFF" | "WORKER" | "ADMIN" | "CEO";
+export const EMPLOYEE_ID_TYPES: readonly EmployeeIdType[] = ["CEO", "ADMIN", "STAFF", "WORKER"];
+
 export interface EmployeeIdCard {
   id: string;
-  employeeId: string;
+  employeeId: string | null;
   cardNumber: string;
   qrToken?: string | null;
   issuedAt: string;
   expiresAt?: string | null;
   status: VerificationStatus;
   replacedById?: string | null;
+  idType: EmployeeIdType;
+  holderName?: string | null;
+  position?: string | null;
+  department?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+  photoUrl?: string | null;
   createdAt: string;
   updatedAt: string;
   employee?: EmployeeIdRef | null;

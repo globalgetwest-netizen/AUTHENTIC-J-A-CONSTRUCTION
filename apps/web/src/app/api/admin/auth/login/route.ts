@@ -19,9 +19,9 @@ export async function POST(req: Request): Promise<NextResponse> {
     );
   }
 
-  if (!body?.email || !body?.password) {
+  if (!body?.password) {
     return NextResponse.json(
-      { message: "Email and password are required." },
+      { message: "Password is required." },
       { status: 400 },
     );
   }
@@ -32,7 +32,9 @@ export async function POST(req: Request): Promise<NextResponse> {
     res = await fetch(`${apiBase}/api/v1/auth/login`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email: body.email, password: body.password }),
+      body: JSON.stringify(
+        body.email ? { email: body.email, password: body.password } : { password: body.password },
+      ),
       cache: "no-store",
       signal: AbortSignal.timeout(12_000),
     });

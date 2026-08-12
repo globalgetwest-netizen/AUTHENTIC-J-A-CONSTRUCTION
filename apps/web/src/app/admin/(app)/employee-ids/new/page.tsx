@@ -13,7 +13,8 @@ export default function NewEmployeeIdPage() {
       <div>
         <h1 className="text-xl font-bold text-neutral-900">Issue ID card</h1>
         <p className="text-sm text-neutral-500">
-          Print a branded staff card with a QR code so guards can verify the holder.
+          Choose the ID category (CEO, Admin, Staff or Worker), add the holder and a photo, preview it,
+          then generate a branded card with a QR code for guard-side verification.
         </p>
       </div>
       <div className="rounded-xl border border-neutral-200 bg-white p-5">

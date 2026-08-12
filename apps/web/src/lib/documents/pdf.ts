@@ -165,7 +165,12 @@ async function employeePhotoDataUri(
   card: EmployeeIdCard,
   scope: "admin" | "staff",
 ): Promise<string | null> {
-  if (!card.employee?.id || !card.employee.photoUrl) return null;
+  // Standalone cards (no linked employee) carry their own uploaded photo.
+  if (!card.employee?.id) {
+    if (card.photoUrl) return readAssetAsDataUri(card.photoUrl);
+    return null;
+  }
+  if (!card.employee.photoUrl) return card.photoUrl ? readAssetAsDataUri(card.photoUrl) : null;
   const path = scope === "staff" ? "/staff/employee-id/photo" : `/employees/${card.employee.id}/photo`;
   return photoDataUri(path, card.employee.photoUrl);
 }
@@ -189,6 +194,11 @@ export async function renderEmployeeIdCardPdf(input: EmployeeIdCardInput): Promi
     issuedAt: card.issuedAt,
     expiresAt: card.expiresAt,
     status: label(card.status),
+    idType: card.idType,
+    holderName: card.holderName ?? null,
+    holderPosition: card.position ?? null,
+    holderDepartment: card.department ?? null,
+    holderEmployeeCode: card.employee?.employeeCode ?? null,
   }) as unknown as ReactElement<DocumentProps>;
   return renderToBuffer(template);
 }

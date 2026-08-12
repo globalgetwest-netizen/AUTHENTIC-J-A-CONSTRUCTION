@@ -2,13 +2,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { VerificationResult, Prisma } from '@ajac/database';
+import { EmployeeIdType, VerificationResult, Prisma } from '@ajac/database';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { extname } from 'node:path';
 import type { Readable } from 'node:stream';
 import { PrismaService } from '../prisma/prisma.service';
-import { contentTypeFromFile, resolveStoredFile } from '../common/storage/uploads';
+import { contentTypeFromFile, resolveStoredFile, uploadsUrl } from '../common/storage/uploads';
 import {
   buildOrderBy,
   paginate,
@@ -16,7 +16,7 @@ import {
   type Paginated,
 } from '../common/dto/pagination.dto';
 import { generateBusinessCode } from '../common/utils/codegen';
-import { CreateEmployeeIdDto } from './dto/create-employee-id.dto';
+import { CreateEmployeeIdDto, UpdateEmployeeIdDto } from './dto/create-employee-id.dto';
 import { QueryEmployeeIdsDto } from './dto/employee-id-query.dto';
 import { VerifyEmployeeIdDto } from './dto/verify-employee-id.dto';
 
@@ -50,20 +50,27 @@ export class EmployeeIdsService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Issue a staff ID card. If the employee already holds a live (non-REVOKED)
-   * card, it is revoked and the new one linked via `replacedById`.
+   * Issue an ID card. The card can be linked to an existing employee
+   * (`employeeId`) or created standalone from the holder fields on the DTO.
+   * If the employee already holds a live (non-REVOKED) card, it is revoked and
+   * the new one linked via `replacedById`.
    */
   async issue(dto: CreateEmployeeIdDto): Promise<object> {
-    const employee = await this.prisma.employee.findFirst({
-      where: { id: dto.employeeId, deletedAt: null },
-    });
-    if (!employee) {
-      throw new NotFoundException(`Employee ${dto.employeeId} not found`);
+    const idType = dto.idType ?? EmployeeIdType.STAFF;
+    let employeeId: string | undefined = dto.employeeId;
+
+    if (employeeId) {
+      const employee = await this.prisma.employee.findFirst({
+        where: { id: employeeId, deletedAt: null },
+      });
+      if (!employee) throw new NotFoundException(`Employee ${employeeId} not found`);
     }
 
-    const active = await this.prisma.employeeID.findFirst({
-      where: { employeeId: dto.employeeId, status: { not: VerificationResult.REVOKED } },
-    });
+    const active = employeeId
+      ? await this.prisma.employeeID.findFirst({
+          where: { employeeId, status: { not: VerificationResult.REVOKED } },
+        })
+      : null;
 
     const cardNumber = generateBusinessCode('EID');
     const qrToken = randomBytes(24).toString('hex');
@@ -77,10 +84,17 @@ export class EmployeeIdsService {
       }
       return tx.employeeID.create({
         data: {
-          employeeId: dto.employeeId,
+          employeeId: employeeId ?? null,
           cardNumber,
           qrToken,
           status: VerificationResult.VERIFIED,
+          idType,
+          holderName: dto.holderName ?? null,
+          position: dto.position ?? null,
+          department: dto.department ?? null,
+          contactPhone: dto.contactPhone ?? null,
+          contactEmail: dto.contactEmail ?? null,
+          photoUrl: dto.photoUrl ?? null,
           issuedAt: new Date(),
           expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
           ...(active ? { replacedById: active.id } : {}),
@@ -88,6 +102,77 @@ export class EmployeeIdsService {
         include: CARD_INCLUDE,
       });
     });
+  }
+
+  /** Patch an existing card's type, holder details or expiry. */
+  async update(id: string, dto: UpdateEmployeeIdDto): Promise<object> {
+    const card = await this.prisma.employeeID.findFirst({ where: { id } });
+    if (!card) throw new NotFoundException(`Employee ID ${id} not found`);
+    return this.prisma.employeeID.update({
+      where: { id },
+      data: {
+        ...(dto.idType !== undefined ? { idType: dto.idType } : {}),
+        ...(dto.holderName !== undefined ? { holderName: dto.holderName } : {}),
+        ...(dto.position !== undefined ? { position: dto.position } : {}),
+        ...(dto.department !== undefined ? { department: dto.department } : {}),
+        ...(dto.contactPhone !== undefined ? { contactPhone: dto.contactPhone } : {}),
+        ...(dto.contactEmail !== undefined ? { contactEmail: dto.contactEmail } : {}),
+        ...(dto.photoUrl !== undefined ? { photoUrl: dto.photoUrl } : {}),
+        ...(dto.expiresAt !== undefined
+          ? { expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null }
+          : {}),
+      },
+      include: CARD_INCLUDE,
+    });
+  }
+
+  /**
+   * Reissue a card: revoke the current one and issue a fresh card carrying the
+   * same holder details and ID type (new card number + QR token). Used to
+   * replace a lost, damaged or expired card while keeping the lineage.
+   */
+  async reissue(id: string, expiresAt?: string): Promise<object> {
+    const current = await this.prisma.employeeID.findFirst({
+      where: { id },
+      include: { employee: { select: { id: true } } },
+    });
+    if (!current) throw new NotFoundException(`Employee ID ${id} not found`);
+
+    const cardNumber = generateBusinessCode('EID');
+    const qrToken = randomBytes(24).toString('hex');
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.employeeID.update({
+        where: { id: current.id },
+        data: { status: VerificationResult.REVOKED },
+      });
+      return tx.employeeID.create({
+        data: {
+          employeeId: current.employeeId ?? null,
+          cardNumber,
+          qrToken,
+          status: VerificationResult.VERIFIED,
+          idType: current.idType,
+          holderName: current.holderName,
+          position: current.position,
+          department: current.department,
+          contactPhone: current.contactPhone,
+          contactEmail: current.contactEmail,
+          photoUrl: current.photoUrl,
+          issuedAt: new Date(),
+          expiresAt: expiresAt ? new Date(expiresAt) : current.expiresAt,
+          replacedById: current.id,
+        },
+        include: CARD_INCLUDE,
+      });
+    });
+  }
+
+  /** Stores an uploaded headshot and returns its `/uploads/...` URL. */
+  async uploadPhoto(file?: Express.Multer.File): Promise<{ photoUrl: string }> {
+    if (!file) throw new NotFoundException('No photo file was uploaded');
+    const photoUrl = uploadsUrl('employees', file.filename);
+    return { photoUrl };
   }
 
   async revoke(id: string): Promise<object> {
@@ -164,7 +249,8 @@ export class EmployeeIdsService {
    * Headshot for the public QR-verify page. Gated exactly like `verify`: only a
    * card number with the correct embedded token can stream the photo, so the
    * face is visible to a guard scanning the card without opening a general
-   * public directory of worker photos.
+   * public directory of worker photos. A standalone card (no linked employee)
+   * uses the photo uploaded with the card.
    */
   async openPhotoForVerification(
     card: string,
@@ -177,8 +263,10 @@ export class EmployeeIdsService {
     if (!record || !record.qrToken || !token || !safeEqual(token, record.qrToken)) {
       throw new NotFoundException('No matching card');
     }
-    if (!record.employee.photoUrl) throw new NotFoundException('This employee has no photo yet');
-    return this.streamStoredPhoto(record.employee.photoUrl, record.employee.employeeCode);
+    const photoUrl = record.photoUrl ?? record.employee?.photoUrl;
+    if (!photoUrl) throw new NotFoundException('This employee has no photo yet');
+    const code = record.cardNumber || record.employee?.employeeCode || 'card';
+    return this.streamStoredPhoto(photoUrl, code);
   }
 
   private streamStoredPhoto(
@@ -217,10 +305,10 @@ export class EmployeeIdsService {
       result = VerificationResult.VERIFIED;
     }
 
-    // Persist the scan only when the referenced card exists — `cardNumber` and
-    // `employeeId` are required foreign keys, so an unrecognised number cannot be
-    // stored. The scan's outcome is still returned to the caller either way.
-    if (card) {
+    // Persist the scan only when the referenced card exists and has an employeeId —
+    // both are required foreign keys in EmployeeIDVerification, so a standalone
+    // card (no linked employee) cannot create a verification record.
+    if (card && card.employeeId) {
       await this.prisma.employeeIDVerification.create({
         data: {
           employeeId: card.employeeId,

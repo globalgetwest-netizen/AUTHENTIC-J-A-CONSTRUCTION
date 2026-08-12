@@ -55,18 +55,28 @@ export class AuthService {
   constructor(private readonly prisma: PrismaService) {}
 
   async login(dto: LoginDto, meta: ClientMeta): Promise<LoginResult> {
-    this.assertNotThrottled(dto.email, meta.ipAddress);
-    const user = await this.prisma.user.findFirst({
-      where: { email: dto.email, deletedAt: null },
-      include: USER_WITH_ROLES,
-    });
+    // Lockout key: email when supplied, otherwise per-IP (password-only mode).
+    const throttleKey = dto.email ?? meta.ipAddress ?? 'anonymous';
+
+    this.assertNotThrottled(throttleKey, meta.ipAddress);
+
+    // Resolve the user. When an email is provided we look up the single account
+    // directly; otherwise (password-only sign-in) we match the password against
+    // every active, non-deleted account and take the first hit.
+    const user = dto.email
+      ? await this.prisma.user.findFirst({
+          where: { email: dto.email, deletedAt: null },
+          include: USER_WITH_ROLES,
+        })
+      : await this.matchByPassword(dto.password);
+
     const passwordOk = user ? await verifyPassword(dto.password, user.passwordHash) : false;
     if (!user || !user.isActive || !passwordOk) {
-      this.recordFailure(dto.email, meta.ipAddress);
+      this.recordFailure(throttleKey, meta.ipAddress);
       await recordAudit(this.prisma, 'auth.login_failed', 'User', user?.id, { email: dto.email }, meta);
       throw new UnauthorizedException('Invalid email or password');
     }
-    this.clearFailures(dto.email, meta.ipAddress);
+    this.clearFailures(throttleKey, meta.ipAddress);
 
     const principal = rolesAndPermissions(user);
     const tokens = await this.issueTokens(user.id, principal, meta);
@@ -192,6 +202,26 @@ export class AuthService {
 
   private clearFailures(email: string, ip?: string): void {
     this.loginThrottle.delete(this.loginKey(email, ip));
+  }
+
+  /**
+   * Password-only lookup: iterate active, non-deleted accounts and return the
+   * first whose stored hash verifies against the supplied password. We never
+   * short-circuit on a miss, so the work done is independent of which (if any)
+   * account matches — this avoids leaking which password is shared by how many
+   * users. Returns null when nothing matches.
+   */
+  private async matchByPassword(password: string): Promise<UserWithRoles | null> {
+    const candidates = await this.prisma.user.findMany({
+      where: { deletedAt: null, isActive: true },
+      include: USER_WITH_ROLES,
+    });
+    if (candidates.length === 0) return null;
+    for (const candidate of candidates) {
+      const ok = await verifyPassword(password, candidate.passwordHash);
+      if (ok) return candidate;
+    }
+    return null;
   }
 
   private loginKey(email: string, ip?: string): string {
