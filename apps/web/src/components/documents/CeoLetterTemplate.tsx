@@ -81,6 +81,7 @@ export function CeoLetterTemplate({
   stampSrc?: string | null;
 }) {
   const salutation = letter.salutation ?? "Dear Sir/Madam,";
+  const isFullLetterhead = !!letterheadSrc;
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -119,24 +120,26 @@ export function CeoLetterTemplate({
 
         <Text style={styles.signOff}>Yours faithfully,</Text>
 
-        <View style={styles.signatureBlock}>
-          <View style={styles.signLeft}>
-            {signatureSrc ? (
-              /* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */
-              <Image src={signatureSrc} style={styles.sigImage} />
-            ) : null}
-            <View style={styles.sigLine} />
-            <Text style={styles.sigName}>{LETTERHEAD.ceo.name}</Text>
-            <Text style={styles.sigTitle}>{LETTERHEAD.ceo.title}</Text>
-            <Text style={styles.sigTitle}>For and on behalf of {LETTERHEAD.name}</Text>
-          </View>
-          {stampSrc ? (
-            <View style={{ width: 100, alignItems: "center", justifyContent: "flex-end", paddingBottom: 4 }}>
-              {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}
-              <Image src={stampSrc} style={{ width: 96, height: 96, objectFit: "contain" }} />
+        {!isFullLetterhead && (
+          <View style={styles.signatureBlock}>
+            <View style={styles.signLeft}>
+              {signatureSrc ? (
+                /* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */
+                <Image src={signatureSrc} style={styles.sigImage} />
+              ) : null}
+              <View style={styles.sigLine} />
+              <Text style={styles.sigName}>{LETTERHEAD.ceo.name}</Text>
+              <Text style={styles.sigTitle}>{LETTERHEAD.ceo.title}</Text>
+              <Text style={styles.sigTitle}>For and on behalf of {LETTERHEAD.name}</Text>
             </View>
-          ) : null}
-        </View>
+            {stampSrc ? (
+              <View style={{ width: 100, alignItems: "center", justifyContent: "flex-end", paddingBottom: 4 }}>
+                {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}
+                <Image src={stampSrc} style={{ width: 96, height: 96, objectFit: "contain" }} />
+              </View>
+            ) : null}
+          </View>
+        )}
       </Page>
     </Document>
   );
