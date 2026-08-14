@@ -15,6 +15,8 @@ import { BrandLogo } from "../components/BrandLogo";
 import { Logo } from "../components/Logo";
 import { MobileNav } from "../components/MobileNav";
 import { PhotoBlock } from "../components/PhotoBlock";
+import { ProjectGallery } from "../components/ProjectGallery";
+import { getGalleryImages } from "../lib/gallery";
 import {
   COMPANY,
   COMPANY_IMAGES,
@@ -199,7 +201,9 @@ const FOOTER_COLS: { title: string; rows: { label: string; href?: string }[] }[]
 /* Home                                                               */
 /* ------------------------------------------------------------------ */
 
-export default function Home() {
+export default async function Home() {
+  const galleryImages = await getGalleryImages();
+
   return (
     <div className="flex min-h-full flex-col">
       {/* Utility bar */}
@@ -473,6 +477,20 @@ export default function Home() {
                 ))}
               </div>
             </div>
+
+            {galleryImages.length > 0 && (
+              <div className="mt-14 scroll-mt-24">
+                <Stack wrap={false} gap={3}>
+                  <Kicker>Featured projects</Kicker>
+                  <Heading level={3}>Our work, in pictures</Heading>
+                  <Text color="muted">
+                    A look at completed and ongoing AUTHENTIC J.A. projects across residential,
+                    commercial and civil works.
+                  </Text>
+                </Stack>
+                <ProjectGallery images={galleryImages} />
+              </div>
+            )}
           </Container>
         </section>
 
