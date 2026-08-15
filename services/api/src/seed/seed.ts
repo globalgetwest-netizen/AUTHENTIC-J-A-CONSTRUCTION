@@ -285,6 +285,9 @@ async function main(): Promise<void> {
       });
 
       // Positions with command levels (1 = executive … 5 = general worker).
+      // The trades below are the real construction roles the site runs — they are
+      // seeded so they can be assigned to employees and printed on ID cards and
+      // profiles (mason, tiler, painter, labourer, steam bender, etc.).
       const demoPositions = [
         { code: 'POS-CEO', title: 'Chief Executive Officer', level: 1 },
         { code: 'POS-DEPT-HEAD', title: 'Department Head', level: 2 },
@@ -293,6 +296,26 @@ async function main(): Promise<void> {
         { code: 'POS-OFFICER', title: 'Officer', level: 4 },
         { code: 'POS-FOREMAN', title: 'Site Foreman', level: 3 },
         { code: 'POS-GENERAL', title: 'General Worker', level: 5 },
+        // ── Construction trades ──────────────────────────────────────────────
+        { code: 'POS-MASON', title: 'Mason', level: 5 },
+        { code: 'POS-TILER', title: 'Tiler', level: 5 },
+        { code: 'POS-PAINTER', title: 'Painter', level: 5 },
+        { code: 'POS-LABOURER', title: 'Labourer', level: 5 },
+        { code: 'POS-STEAM-BENDER', title: 'Steam Bender', level: 5 },
+        { code: 'POS-CONCRETE-MIXER', title: 'Concrete Mixer', level: 5 },
+        { code: 'POS-BRICKLAYER', title: 'Bricklayer', level: 5 },
+        { code: 'POS-STEEL-FIXER', title: 'Steel Fixer', level: 5 },
+        { code: 'POS-CARPENTER', title: 'Carpenter', level: 5 },
+        { code: 'POS-WELDER', title: 'Welder', level: 5 },
+        { code: 'POS-ELECTRICIAN', title: 'Electrician', level: 5 },
+        { code: 'POS-PLUMBER', title: 'Plumber', level: 5 },
+        { code: 'POS-PLASTERER', title: 'Plasterer', level: 5 },
+        { code: 'POS-ROOFER', title: 'Roofer', level: 5 },
+        { code: 'POS-SCAFFOLDER', title: 'Scaffolder', level: 5 },
+        { code: 'POS-PLANT-OPERATOR', title: 'Plant Operator', level: 5 },
+        { code: 'POS-PLANT-MECHANIC', title: 'Plant Mechanic', level: 5 },
+        { code: 'POS-SURVEY-ASSIST', title: 'Survey Assistant', level: 4 },
+        { code: 'POS-SITE-SECURITY', title: 'Site Security', level: 5 },
       ] as const;
       const positionIds = new Map<string, string>();
       for (const pos of demoPositions) {
@@ -420,6 +443,66 @@ async function main(): Promise<void> {
             },
           });
         }
+      }
+
+      // A crew of real construction tradesmen — plain Employee records (no portal
+      // login) that hold the new trade positions so the catalog is exercised
+      // end-to-end: they appear in the admin employee list, can be issued WORKER
+      // ID cards, and render their trade as the card's position. Reporting lines
+      // chain up through the Projects & Construction foreman. Idempotent.
+      const foremanEmp = await prisma.employee.findFirst({
+        where: { employeeCode: 'EMP-DEMO-0001', deletedAt: null },
+        select: { id: true },
+      });
+      const tradeCrew = [
+        { employeeCode: 'EMP-TRD-MASON', firstName: 'Kwabena', lastName: 'Mensah', positionCode: 'POS-MASON', departmentCode: 'DPT-PROJECTS' },
+        { employeeCode: 'EMP-TRD-TILER', firstName: 'Yaw', lastName: 'Frimpong', positionCode: 'POS-TILER', departmentCode: 'DPT-PROJECTS' },
+        { employeeCode: 'EMP-TRD-PAINT', firstName: 'Akosua', lastName: 'Boateng', positionCode: 'POS-PAINTER', departmentCode: 'DPT-PROJECTS' },
+        { employeeCode: 'EMP-TRD-LAB', firstName: 'Kofi', lastName: 'Mensah', positionCode: 'POS-LABOURER', departmentCode: 'DPT-PROJECTS' },
+        { employeeCode: 'EMP-TRD-BEND', firstName: 'Osei', lastName: 'Yaw', positionCode: 'POS-STEAM-BENDER', departmentCode: 'DPT-PROJECTS' },
+        { employeeCode: 'EMP-TRD-CONC', firstName: 'Kwasi', lastName: 'Adu', positionCode: 'POS-CONCRETE-MIXER', departmentCode: 'DPT-PROJECTS' },
+        { employeeCode: 'EMP-TRD-BRK', firstName: 'Kwame', lastName: 'Owusu', positionCode: 'POS-BRICKLAYER', departmentCode: 'DPT-PROJECTS' },
+        { employeeCode: 'EMP-TRD-STL', firstName: 'Yaw', lastName: 'Mensah', positionCode: 'POS-STEEL-FIXER', departmentCode: 'DPT-PROJECTS' },
+        { employeeCode: 'EMP-TRD-CARP', firstName: 'Kwaku', lastName: 'Sarpong', positionCode: 'POS-CARPENTER', departmentCode: 'DPT-PROJECTS' },
+        { employeeCode: 'EMP-TRD-WELD', firstName: 'Ekow', lastName: 'Afful', positionCode: 'POS-WELDER', departmentCode: 'DPT-PROJECTS' },
+        { employeeCode: 'EMP-TRD-ELEC', firstName: 'Kojo', lastName: 'Boateng', positionCode: 'POS-ELECTRICIAN', departmentCode: 'DPT-ENGINEERING' },
+        { employeeCode: 'EMP-TRD-PLMB', firstName: 'Nana', lastName: 'Yaw', positionCode: 'POS-PLUMBER', departmentCode: 'DPT-ENGINEERING' },
+        { employeeCode: 'EMP-TRD-PLST', firstName: 'Adwoa', lastName: 'Frimpong', positionCode: 'POS-PLASTERER', departmentCode: 'DPT-PROJECTS' },
+        { employeeCode: 'EMP-TRD-ROOF', firstName: 'Kweku', lastName: 'Mensah', positionCode: 'POS-ROOFER', departmentCode: 'DPT-PROJECTS' },
+        { employeeCode: 'EMP-TRD-SCAF', firstName: 'Yaw', lastName: 'Owusu', positionCode: 'POS-SCAFFOLDER', departmentCode: 'DPT-PROJECTS' },
+        { employeeCode: 'EMP-TRD-PLNT', firstName: 'Kwasi', lastName: 'Boateng', positionCode: 'POS-PLANT-OPERATOR', departmentCode: 'DPT-PLANT' },
+      ] as const;
+      for (const trd of tradeCrew) {
+        const existing = await prisma.employee.findFirst({ where: { employeeCode: trd.employeeCode, deletedAt: null } });
+        if (existing) {
+          await prisma.employee.update({
+            where: { id: existing.id },
+            data: {
+              positionId: positionIds.get(trd.positionCode) ?? null,
+              departmentId: departmentIds.get(trd.departmentCode) ?? null,
+              branchId: branch.id,
+              reportsToId: foremanEmp?.id ?? null,
+            },
+          });
+          continue;
+        }
+        await prisma.employee.create({
+          data: {
+            employeeCode: trd.employeeCode,
+            firstName: trd.firstName,
+            lastName: trd.lastName,
+            email: `${trd.employeeCode.toLowerCase()}@authenticja.com`,
+            phone: '+233 245 295 866',
+            departmentId: departmentIds.get(trd.departmentCode) ?? null,
+            positionId: positionIds.get(trd.positionCode) ?? null,
+            branchId: branch.id,
+            reportsToId: foremanEmp?.id ?? null,
+            employmentType: 'CONTRACT',
+            hireDate: new Date('2026-02-02'),
+            status: 'ACTIVE',
+            salary: 2200,
+          },
+        });
       }
     }
 
