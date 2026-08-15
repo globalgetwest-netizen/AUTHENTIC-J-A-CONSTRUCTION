@@ -55,7 +55,7 @@ Featured Projects section — more photos will arrive as their own slots.
   the Featured Projects gallery and photo galleries that ship in later phases.
   Name files meaningfully (e.g. `project-01.jpg`); they'll be surfaced from the
   admin panel once DB-backed media storage lands — nothing here will need to move.
-- **Logo** — `public/brand/aja-icon.svg` (approved). The public site logo
+- **Logo** — `public/brand/aja-logo-clean.png` (approved). The public site logo
   is config-driven via `COMPANY_LOGO.src` in `company.ts`.
 
 ## Guidance

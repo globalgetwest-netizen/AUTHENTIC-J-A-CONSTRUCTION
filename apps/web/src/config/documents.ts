@@ -38,9 +38,9 @@ export const LETTERHEAD = {
    * one baked into the letterhead artwork. Replaces the old physical-signboard
    * photo. Used on every generated document (ID cards, certificates, letters…).
    */
-  logo: "/brand/aja-icon.svg",
+  logo: "/brand/aja-logo-clean.png",
   /** AJA monogram — used in the company seal/stamp. */
-  monogram: "/brand/aja-icon.svg",
+  monogram: "/brand/aja-logo-clean.png",
   /** Chief Executive Officer — signs official documents. */
   ceo: {
     name: "JOSEPH ACQUAH",

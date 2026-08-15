@@ -20,7 +20,7 @@ removed as part of the corporate-branding unification.
 ## Source of truth
 
 - **Public site logo** — `COMPANY_LOGO.src` in `apps/web/src/config/company.ts`
-  points at `/brand/aja-icon.svg`. Change it there to update the whole site.
+  points at `/brand/aja-logo-clean.png`. Change it there to update the whole site.
 - **Generated-document branding** — `LETTERHEAD` in `apps/web/src/config/documents.ts`
   is the single source of truth for every generated PDF (logos, letterheads,
   signatures, stamp, company name, Reg. No., TIN, addresses).

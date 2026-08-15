@@ -23,7 +23,7 @@
  * as part of the corporate-branding unification — do not reintroduce them.
  */
 export const COMPANY_LOGO = {
-  src: "/brand/aja-icon.svg",
+  src: "/brand/aja-logo-clean.png",
   candidates: [] as readonly string[],
   alt: "AUTHENTIC J.A. CONSTRUCTION LTD. official logo",
 } as const;
