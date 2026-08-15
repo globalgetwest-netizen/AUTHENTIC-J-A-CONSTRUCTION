@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { Button } from "@ajac/ui";
 import { toDataURL } from "qrcode";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { EmployeeIdCardPreview } from "@/components/documents/EmployeeIdCardPreview";
 import {
   formatDate,
   formatDateTime,
@@ -163,6 +164,29 @@ export default function EmployeeIdDetailPage() {
         </p>
       )}
 
+      {/* Live card preview — mirrors the PDF so admin sees exactly what's issued */}
+      <div className="flex flex-col items-center gap-2 rounded-xl border border-neutral-200 bg-white px-5 py-6">
+        <EmployeeIdCardPreview
+          idType={card.idType}
+          employee={card.employee ?? null}
+          photoUrl={
+            card.employee?.id
+              ? `/api/admin/employees/${card.employee.id}/photo`
+              : (card.photoUrl ?? undefined)
+          }
+          holderName={card.holderName ?? null}
+          holderPosition={card.position ?? null}
+          holderDepartment={card.department ?? null}
+          holderCode={card.employee?.employeeCode ?? null}
+          cardNumber={card.cardNumber}
+          issuedAt={formatDate(card.issuedAt)}
+          expiresAt={card.expiresAt ? formatDate(card.expiresAt) : null}
+          status={label(card.status)}
+          scale={360}
+        />
+        <p className="text-xs text-neutral-400">On-screen preview of the issued card</p>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_200px]">
         <div className="rounded-xl border border-neutral-200 bg-white px-5 py-2">
           <dl className="divide-y divide-neutral-100">
@@ -176,7 +200,7 @@ export default function EmployeeIdDetailPage() {
               {card.employee ? idFullName(card.employee) : (card.holderName ?? "—")}
             </DetailRow>
             <DetailRow label="Staff code">
-              {card.employee?.employeeCode ?? (card.holderName ? "—" : "—")}
+              {card.employee?.employeeCode ?? "—"}
             </DetailRow>
             <DetailRow label="Position">
               {card.employee?.position?.title ?? card.position ?? "—"}

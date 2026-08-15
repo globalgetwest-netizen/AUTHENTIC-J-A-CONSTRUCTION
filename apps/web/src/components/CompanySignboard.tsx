@@ -7,7 +7,7 @@ import { Logo } from './Logo';
  * "AUTHENTIC J.A" / navy "CONSTRUCTION LIMITED" header, blue accent line,
  * and the real service lines. Contacts live in the site footer.
  *
- * The approved logo asset lives at `public/brand/aja-logo-clean.png`.
+ * The approved logo asset lives at `public/brand/aja-icon.svg`.
  * Config-driven via `COMPANY_LOGO` in `apps/web/src/config/company.ts`.
  */
 

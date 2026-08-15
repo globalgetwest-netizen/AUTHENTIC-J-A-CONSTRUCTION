@@ -1,6 +1,7 @@
 "use client";
 
 import type { EmployeeIdRef, EmployeeIdType } from "@/lib/admin/types";
+import { LETTERHEAD_LOGO } from "@/config/documents";
 
 export const ID_TYPE_THEME: Record<
   EmployeeIdType,
@@ -26,6 +27,8 @@ export interface EmployeeIdCardPreviewProps {
   status?: string;
   /** Width in px the card renders at (preserves the 242×152 ratio). */
   scale?: number;
+  /** Optional logo path (defaults to approved AJA monogram). */
+  logoSrc?: string;
 }
 
 /**
@@ -46,6 +49,7 @@ export function EmployeeIdCardPreview(props: EmployeeIdCardPreviewProps) {
     expiresAt,
     status = "VERIFIED",
     scale = 320,
+    logoSrc = LETTERHEAD_LOGO,
   } = props;
 
   const theme = ID_TYPE_THEME[idType];
@@ -94,7 +98,7 @@ export function EmployeeIdCardPreview(props: EmployeeIdCardPreviewProps) {
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- local brand asset */}
         <img
-          src="/brand/aja-logo-clean.png"
+          src={logoSrc}
           alt="AUTHENTIC J.A. logo"
           style={{ width: 24, height: 24, objectFit: "contain", borderRadius: 3 }}
         />

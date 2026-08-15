@@ -90,7 +90,7 @@ export function Letterhead({
       <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
         {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}
         <Image
-          src={logoSrc || "/brand/aja-logo-clean.png"}
+          src={logoSrc || LETTERHEAD.logo}
           style={{ width: 52, height: 52, objectFit: "contain" }}
         />
         <View style={{ flex: 1 }}>

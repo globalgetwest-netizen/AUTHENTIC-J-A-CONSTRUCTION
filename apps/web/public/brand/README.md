@@ -10,7 +10,7 @@ removed as part of the corporate-branding unification.
 
 | Asset | File | Used by |
 |-------|------|---------|
-| Official logo (clean, transparent) | `aja-logo-clean.png` | Public site header/footer/signboard; all generated PDFs |
+| Official logo (clean, transparent) | `aja-icon.svg` | Public site header/footer/signboard; all generated PDFs |
 | App / favicon icon | `aja-icon.svg` | App shell, favicon |
 | Main company letterhead | `aja-main-company-letterhead.png` | Company documents, certificates, letters, ID cards |
 | CEO & Founder letterhead | `aja-ceo-founder-letterhead.png` | CEO & Founder letters, CEO documents |
@@ -20,7 +20,7 @@ removed as part of the corporate-branding unification.
 ## Source of truth
 
 - **Public site logo** — `COMPANY_LOGO.src` in `apps/web/src/config/company.ts`
-  points at `/brand/aja-logo-clean.png`. Change it there to update the whole site.
+  points at `/brand/aja-icon.svg`. Change it there to update the whole site.
 - **Generated-document branding** — `LETTERHEAD` in `apps/web/src/config/documents.ts`
   is the single source of truth for every generated PDF (logos, letterheads,
   signatures, stamp, company name, Reg. No., TIN, addresses).

@@ -33,10 +33,14 @@ export const LETTERHEAD = {
   phoneLabels: ["Tel", "Mob"] as const,
   email: "info@authenticjaconstruction.com",
   website: "www.authenticjaconstruction.com",
-  /** Real company logo (photo of physical sign, background-removed) — used on documents. */
-  logo: "/brand/aja-logo-clean.png",
-  /** Real company logo — used in the company seal/stamp. */
-  monogram: "/brand/aja-logo-clean.png",
+  /**
+   * Clean AJA monogram (vector) — the approved corporate logo, matching the
+   * one baked into the letterhead artwork. Replaces the old physical-signboard
+   * photo. Used on every generated document (ID cards, certificates, letters…).
+   */
+  logo: "/brand/aja-icon.svg",
+  /** AJA monogram — used in the company seal/stamp. */
+  monogram: "/brand/aja-icon.svg",
   /** Chief Executive Officer — signs official documents. */
   ceo: {
     name: "JOSEPH ACQUAH",
@@ -61,3 +65,6 @@ export const LETTERHEAD = {
   defaultTerms:
     "This quotation is valid for 30 days from the date of issue. All prices are in Ghana Cedis (GHS). A binding contract is formed only upon written acceptance followed by a signed agreement.",
 } as const;
+
+/** Public path to the approved AJA monogram used on all documents (incl. ID cards). */
+export const LETTERHEAD_LOGO = LETTERHEAD.logo;
