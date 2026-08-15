@@ -20,9 +20,9 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/brand/aja-icon.svg",
+      "src": "/brand/aja-logo-clean.png",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     }
   ]

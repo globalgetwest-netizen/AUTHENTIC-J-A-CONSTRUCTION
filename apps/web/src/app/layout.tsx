@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     icon: [
       { url: "/app-icon.png", type: "image/png", sizes: "192x192" },
       { url: "/app-icon.png", type: "image/png", sizes: "512x512" },
-      { url: "/brand/aja-icon.svg", type: "image/svg+xml", sizes: "any" },
+      { url: "/brand/aja-logo-clean.png", type: "image/png", sizes: "any" },
     ],
     apple: "/app-icon.png",
   },

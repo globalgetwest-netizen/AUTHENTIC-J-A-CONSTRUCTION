@@ -194,7 +194,7 @@ migrations/endpoints/frontend/mobile, and fixing errors** before continuing.
   construction, materials, equipment); sections render a clean branded panel until
   a photo is configured — never a broken image or a fabricated one.
 - **Official logo**: header, footer and CompanySignboard render the real
-  `/brand/aja-logo.png` (config-driven via `COMPANY_LOGO`, with a graceful
+  `/brand/aja-logo-clean.png` (config-driven via `COMPANY_LOGO`, with a graceful
   fallback chain), replacing the "AJ.A" placeholder text in the public site.
 - **Tests**: `requests` unit + e2e (validation-only) added; repo gate green:
   typecheck, lint, test (57 API tests), build.

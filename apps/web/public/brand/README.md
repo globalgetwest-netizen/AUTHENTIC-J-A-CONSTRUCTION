@@ -10,8 +10,8 @@ removed as part of the corporate-branding unification.
 
 | Asset | File | Used by |
 |-------|------|---------|
-| Official logo (clean, transparent) | `aja-icon.svg` | Public site header/footer/signboard; all generated PDFs |
-| App / favicon icon | `aja-icon.svg` | App shell, favicon |
+| Official logo (clean, transparent) | `aja-logo-clean.png` | Public site header/footer/signboard; all generated PDFs |
+| App / favicon icon | `app-icon.png` | App shell, favicon |
 | Main company letterhead | `aja-main-company-letterhead.png` | Company documents, certificates, letters, ID cards |
 | CEO & Founder letterhead | `aja-ceo-founder-letterhead.png` | CEO & Founder letters, CEO documents |
 | CEO signature | `ceo-signature.png` | Certificates, letters, ID cards |
