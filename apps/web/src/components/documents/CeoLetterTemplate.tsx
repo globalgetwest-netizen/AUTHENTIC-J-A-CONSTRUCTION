@@ -50,6 +50,17 @@ const styles = StyleSheet.create({
   sigLine: { width: 190, borderBottomWidth: 0.9, borderBottomColor: C.charcoal, marginTop: 18 },
   sigName: { fontSize: 11, fontFamily: FONT_DISPLAY, fontWeight: 600, color: C.navy, marginTop: 4 },
   sigTitle: { fontSize: 8.5, fontFamily: FONT_SANS, color: C.muted, marginTop: 1.5 },
+  pageFooter: {
+    position: "absolute",
+    bottom: 16,
+    left: 0,
+    right: 0,
+    textAlign: "center",
+    fontSize: 7,
+    fontFamily: FONT_SANS,
+    color: C.goldDeep,
+    letterSpacing: 1,
+  },
 });
 
 export interface CeoLetterData {
@@ -67,9 +78,11 @@ export interface CeoLetterData {
  * background). The CEO signature block closes the letter; no separate footer is
  * rendered because the letterhead carries its own.
  *
- * Supports multi-page letters: letterhead background on page 1 only,
- * clean continuation pages for overflow content, and signature/stamp
- * always rendered on the final page.
+ * Pagination is delegated to @react-pdf/renderer: all body paragraphs plus the
+ * signature/stamp are placed in a single flowing block, so the engine splits
+ * the content across as many A4 pages as needed, repeats the letterhead
+ * background on every page, and naturally lands the signature on the final
+ * page. A fixed "Page X / Y" line is stamped at the bottom of each page.
  */
 export function CeoLetterTemplate({
   letter,
@@ -85,12 +98,11 @@ export function CeoLetterTemplate({
   stampSrc?: string | null;
 }) {
   const salutation = letter.salutation ?? "Dear Sir/Madam,";
-  const isFullLetterhead = !!letterheadSrc;
   return (
     <Document>
-      {/* Page 1: letterhead background + content */}
       <Page size="A4" style={styles.page}>
-        <Letterhead logoSrc={logoSrc} letterheadSrc={letterheadSrc} fullPage repeat={false} />
+        {/* Letterhead background repeats on every page of the letter. */}
+        <Letterhead logoSrc={logoSrc} letterheadSrc={letterheadSrc} fullPage repeat />
 
         <Text style={styles.officeLabel}>OFFICE OF THE CEO & FOUNDER</Text>
 
@@ -117,81 +129,38 @@ export function CeoLetterTemplate({
         <Text style={styles.salutation}>{salutation}</Text>
         <Text style={styles.subject}>{letter.subject}</Text>
 
-        {/* Reserve space for signature/stamp on final page - render conditionally on last page */}
         {letter.paragraphs.map((p, i) => (
-          <Text key={i} style={styles.paragraph}>
+          <Text key={i} style={styles.paragraph} wrap>
             {p}
           </Text>
         ))}
 
         <Text style={styles.signOff}>Yours faithfully,</Text>
-      </Page>
 
-      {/* Page 2+: clean continuation pages (if needed) */}
-      {letter.paragraphs.length > 3 && (
-        <>
-          {/* Calculate how many overflow pages we need */}
-          {Array.from({ length: Math.max(0, letter.paragraphs.length - 3) }).map((_, pageIndex) => (
-            <Page key={pageIndex + 2} size="A4" style={styles.page}>
-              {/* Continuation pages get only the letterhead logo at top (no full background) */}
-              <View style={{ paddingTop: 20, paddingBottom: 48, paddingHorizontal: 48 }}>
-                {logoSrc ? (
-                  <Image
-                    src={logoSrc}
-                    style={{ width: 60, height: 60, objectFit: "contain", marginBottom: 20 }}
-                  />
-                ) : null}
-                <Text style={{ fontSize: 9, color: C.charcoal, textAlign: "center", marginBottom: 10 }}>
-                  — {letter.refNo} — Page {pageIndex + 2} —
-                </Text>
-                {/* Render overflow paragraphs starting from index 3 */}
-                {letter.paragraphs.slice(3 + pageIndex * 2, 3 + (pageIndex + 1) * 2).map((p, paraIndex) => (
-                  <Text key={paraIndex} style={styles.paragraph}>
-                    {p}
-                  </Text>
-                ))}
-              </View>
-            </Page>
-          ))}
-        </>
-      )}
-
-      {/* Final page: signature and stamp (always rendered on last page) */}
-      <Page size="A4" style={styles.page}>
-        <View style={{ paddingTop: 20, paddingBottom: 48, paddingHorizontal: 48 }}>
-          {logoSrc ? (
-            <Image
-              src={logoSrc}
-              style={{ width: 60, height: 60, objectFit: "contain", marginBottom: 20 }}
-            />
-          ) : null}
-          <Text style={{ fontSize: 9, color: C.charcoal, textAlign: "center", marginBottom: 30 }}>
-            — {letter.refNo} —
-          </Text>
-
-          <View style={styles.signatureBlock}>
-            <View style={styles.signLeft}>
-              {signatureSrc ? (
-              <Image
-                src={signatureSrc}
-                style={styles.sigImage}
-              />
+        {/* Signature block closes the letter — flows to wherever the last page is. */}
+        <View style={styles.signatureBlock} wrap={false}>
+          <View style={styles.signLeft}>
+            {signatureSrc ? (
+              <Image src={signatureSrc} style={styles.sigImage} />
             ) : null}
-              <View style={styles.sigLine} />
-              <Text style={styles.sigName}>{LETTERHEAD.ceo.name}</Text>
-              <Text style={styles.sigTitle}>{LETTERHEAD.ceo.title}</Text>
-              <Text style={styles.sigTitle}>For and on behalf of {LETTERHEAD.name}</Text>
-            </View>
-            {stampSrc ? (
-              <View style={{ width: 100, alignItems: "center", justifyContent: "flex-end", paddingBottom: 4 }}>
-                <Image
-                  src={stampSrc}
-                  style={{ width: 96, height: 96, objectFit: "contain" }}
-                />
-              </View>
-            ) : null}
+            <View style={styles.sigLine} />
+            <Text style={styles.sigName}>{LETTERHEAD.ceo.name}</Text>
+            <Text style={styles.sigTitle}>{LETTERHEAD.ceo.title}</Text>
+            <Text style={styles.sigTitle}>For and on behalf of {LETTERHEAD.name}</Text>
           </View>
+          {stampSrc ? (
+            <View style={{ width: 100, alignItems: "center", justifyContent: "flex-end", paddingBottom: 4 }}>
+              <Image src={stampSrc} style={{ width: 96, height: 96, objectFit: "contain" }} />
+            </View>
+          ) : null}
         </View>
+
+        {/* Fixed page number on every page. */}
+        <Text
+          style={styles.pageFooter}
+          fixed
+          render={({ pageNumber, totalPages }) => `${letter.refNo}    ·    Page ${pageNumber} of ${totalPages}`}
+        />
       </Page>
     </Document>
   );

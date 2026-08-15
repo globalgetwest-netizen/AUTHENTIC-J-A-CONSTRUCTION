@@ -108,17 +108,6 @@ const styles = StyleSheet.create({
   sigRole: { fontSize: 8, fontFamily: CERT_FONT_ITALIC, color: CERT_COLORS.muted, marginTop: 1 },
 });
 
-const SERVICES: Array<{ name: string; desc: string }> = [
-  { name: "Construction", desc: "Residential and commercial construction, delivered to specification on time." },
-  { name: "Engineering", desc: "Civil and structural engineering, site works and infrastructure." },
-  { name: "Real Estate", desc: "Property development, sales and rentals of houses and units." },
-  { name: "Land Allocation", desc: "Land acquisition, plot allocation and documentation." },
-  { name: "Building Materials", desc: "Supply of quarry stones, sand, gravel, cement and aggregates." },
-  { name: "Block Factory", desc: "High-strength factory-made blocks of consistent quality." },
-  { name: "Project Management", desc: "End-to-end planning, supervision, quality and cost control." },
-  { name: "Equipment & Fleet", desc: "Heavy equipment and fleet services for construction and haulage." },
-];
-
 export function CompanyProfileTemplate({
   logoSrc,
   letterheadSrc,
