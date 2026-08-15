@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "installCommand": "npm install",
+  "env": {
+    "API_PUBLIC_URL": "https://api.authenticjaconstruction.com",
+    "NEXT_PUBLIC_APP_URL": "https://authenticjaconstruction.com"
+  }
+}

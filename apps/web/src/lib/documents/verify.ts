@@ -18,7 +18,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * value and keep it stable for the life of issued certificates.
  */
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://authenticjaconstruction.com";
 
 const SECRET = process.env.CERT_VERIFY_SECRET ?? "ajac-dev-cert-verify-secret";
 

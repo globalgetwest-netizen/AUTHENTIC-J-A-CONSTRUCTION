@@ -60,7 +60,7 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ ok: false, errors }, { status: 400 });
   }
 
-  const apiBase = process.env.API_PUBLIC_URL ?? "http://localhost:4000";
+  const apiBase = process.env.API_PUBLIC_URL ?? "https://api.authenticjaconstruction.com";
   let res: Response;
   try {
     res = await fetch(`${apiBase}/api/v1/requests`, {

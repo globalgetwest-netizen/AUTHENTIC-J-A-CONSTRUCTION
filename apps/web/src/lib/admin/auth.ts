@@ -6,7 +6,9 @@ export const REFRESH_COOKIE = 'ajac_rt';
 const COOKIE_MAX_AGE = 3600; // s — matches the API access-token TTL
 
 export function getApiBase(): string {
-  return process.env.API_PUBLIC_URL ?? 'http://localhost:4000';
+  // Production default so server-side proxying works on Vercel even if the
+  // dashboard env var is unset; localhost kept only for local dev override.
+  return process.env.API_PUBLIC_URL ?? 'https://api.authenticjaconstruction.com';
 }
 
 export interface AdminAuthUser {

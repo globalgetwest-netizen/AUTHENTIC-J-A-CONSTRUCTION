@@ -114,7 +114,7 @@ export async function renderLandAllocationPdf(input: LandAllocationDocumentInput
   return renderToBuffer(template);
 }
 
-const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const APP_BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://authenticjaconstruction.com";
 
 /** Absolute URL a scanned employee-ID QR points at (the public verify page). */
 export function employeeIdVerifyUrl(cardNumber: string, token?: string | null): string {
