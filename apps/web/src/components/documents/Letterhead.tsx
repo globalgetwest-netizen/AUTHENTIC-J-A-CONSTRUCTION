@@ -37,6 +37,8 @@ export function Letterhead({
   letterheadSrc,
   fullPage = false,
   bandHeight,
+  /** When `fullPage`, repeat the background on every page (`true`) or only page 1 (`false`). */
+  repeat = true,
 }: {
   logoSrc?: string | null;
   letterheadSrc?: string | null;
@@ -44,12 +46,14 @@ export function Letterhead({
   fullPage?: boolean;
   /** Instead of the whole page, crop the letterhead to a header band of this height. */
   bandHeight?: number;
+  /** When `fullPage`, repeat the background on every page (`true`) or only page 1 (`false`). */
+  repeat?: boolean;
 }) {
   if (letterheadSrc) {
     if (fullPage) {
       return (
         <View
-          fixed
+          fixed={repeat}
           debug={false}
           style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
         >

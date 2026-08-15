@@ -21,6 +21,8 @@ export default function CeoLetterComposePage() {
   const [salutation, setSalutation] = useState("Dear Sir/Madam,");
   const [subject, setSubject] = useState("");
   const [paragraphs, setParagraphs] = useState([""]);
+  const [includeStamp, setIncludeStamp] = useState(true);
+  const [includeSignature, setIncludeSignature] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -58,6 +60,8 @@ export default function CeoLetterComposePage() {
           salutation: salutation.trim() || undefined,
           subject: subject.trim(),
           paragraphs: bodyText,
+          includeStamp,
+          includeSignature,
         }),
       });
       if (!res.ok) {
@@ -220,6 +224,33 @@ export default function CeoLetterComposePage() {
           >
             + Add paragraph
           </button>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className={labelClass} htmlFor="cl-signature">
+              Include CEO signature
+            </label>
+            <input
+              id="cl-signature"
+              type="checkbox"
+              checked={includeSignature}
+              onChange={(e) => setIncludeSignature(e.target.checked)}
+              className="h-4 w-4 text-brand-blue focus:ring-brand-blue border-neutral-300 rounded"
+            />
+          </div>
+          <div>
+            <label className={labelClass} htmlFor="cl-stamp">
+              Include CEO stamp/seal
+            </label>
+            <input
+              id="cl-stamp"
+              type="checkbox"
+              checked={includeStamp}
+              onChange={(e) => setIncludeStamp(e.target.checked)}
+              className="h-4 w-4 text-brand-blue focus:ring-brand-blue border-neutral-300 rounded"
+            />
+          </div>
         </div>
 
         <div className="flex items-center gap-3">

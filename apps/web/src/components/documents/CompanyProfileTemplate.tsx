@@ -14,6 +14,7 @@ import {
 } from "./CertificateFrame";
 import { FONT_BODY } from "@/lib/documents/fonts";
 import { Letterhead } from "./Letterhead";
+import { companyProfileData } from "@/lib/company-data";
 
 const styles = StyleSheet.create({
   page: {
@@ -151,11 +152,7 @@ export function CompanyProfileTemplate({
 
         <Text style={styles.sectionTitle}>About the company</Text>
         <Text style={styles.paragraph}>
-          {LETTERHEAD.name} is a fully registered Ghanaian construction, engineering and real
-          estate group (Reg No. {LETTERHEAD.registrationNo}, TIN {LETTERHEAD.taxId}), delivering
-          quality structures and trusted solutions across construction, engineering, real estate,
-          property development, land allocation, building materials and block manufacturing —
-          every project executed under experienced management with full documentation.
+          {companyProfileData.description}
         </Text>
 
         <View style={styles.facts}>
@@ -192,7 +189,7 @@ export function CompanyProfileTemplate({
 
         <Text style={styles.sectionTitle}>Core services & capabilities</Text>
         <View style={styles.services}>
-          {SERVICES.map((s) => (
+          {companyProfileData.services.map((s) => (
             <View key={s.name} style={styles.serviceRow}>
               <Text style={styles.bullet}>•</Text>
               <Text style={styles.serviceName}>{s.name}</Text>
