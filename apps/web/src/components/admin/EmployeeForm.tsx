@@ -7,6 +7,7 @@ import {
   EMPLOYEE_STATUSES,
   EMPLOYMENT_TYPES,
   GENDERS,
+  JOB_CATEGORIES,
   label,
   type CompanyBranch,
   type Department,
@@ -41,15 +42,20 @@ export function EmployeeForm({
   const [nationalId, setNationalId] = useState(initial?.nationalId ?? "");
   const [gender, setGender] = useState(initial?.gender ?? "");
   const [dateOfBirth, setDateOfBirth] = useState(toDate(initial?.dateOfBirth));
+  const [nationality, setNationality] = useState(initial?.nationality ?? "");
+  const [placeOfBirth, setPlaceOfBirth] = useState(initial?.placeOfBirth ?? "");
   const [address, setAddress] = useState(initial?.address ?? "");
   const [departmentId, setDepartmentId] = useState(initial?.departmentId ?? "");
   const [positionId, setPositionId] = useState(initial?.positionId ?? "");
   const [branchId, setBranchId] = useState(initial?.branchId ?? "");
+  const [jobCategory, setJobCategory] = useState<string>(initial?.jobCategory ?? "");
   const [employmentType, setEmploymentType] = useState<string>(
     initial?.employmentType ?? "FULL_TIME",
   );
   const [hireDate, setHireDate] = useState(toDate(initial?.hireDate));
   const [terminationDate, setTerminationDate] = useState(toDate(initial?.terminationDate));
+  const [contractStart, setContractStart] = useState(toDate(initial?.contractStart));
+  const [contractEnd, setContractEnd] = useState(toDate(initial?.contractEnd));
   const [status, setStatus] = useState<string>(initial?.status ?? "ACTIVE");
   const [salary, setSalary] = useState(initial ? String(Number(initial.salary) || 0) : "");
   const [busy, setBusy] = useState(false);
@@ -108,14 +114,23 @@ export function EmployeeForm({
             nationalId: nationalId.trim() || null,
             gender: gender || undefined,
             dateOfBirth: dateOfBirth ? new Date(`${dateOfBirth}T00:00:00`).toISOString() : null,
+            nationality: nationality.trim() || null,
+            placeOfBirth: placeOfBirth.trim() || null,
             address: address.trim() || null,
             departmentId: departmentId || null,
             positionId: positionId || null,
             branchId: branchId || null,
+            jobCategory: jobCategory || undefined,
             employmentType,
             hireDate: new Date(`${hireDate}T00:00:00`).toISOString(),
             terminationDate: terminationDate
               ? new Date(`${terminationDate}T00:00:00`).toISOString()
+              : null,
+            contractStart: contractStart
+              ? new Date(`${contractStart}T00:00:00`).toISOString()
+              : null,
+            contractEnd: contractEnd
+              ? new Date(`${contractEnd}T00:00:00`).toISOString()
               : null,
             status,
             salary: salary ? Number(salary) : null,
@@ -260,6 +275,29 @@ export function EmployeeForm({
             onChange={(e) => setDateOfBirth(e.target.value)}
           />
         </div>
+        <div>
+          <label className={labelClass} htmlFor="emp-nationality">
+            Nationality
+          </label>
+          <input
+            id="emp-nationality"
+            className={inputClass}
+            value={nationality}
+            onChange={(e) => setNationality(e.target.value)}
+            placeholder="Ghanaian"
+          />
+        </div>
+        <div>
+          <label className={labelClass} htmlFor="emp-pob">
+            Place of birth
+          </label>
+          <input
+            id="emp-pob"
+            className={inputClass}
+            value={placeOfBirth}
+            onChange={(e) => setPlaceOfBirth(e.target.value)}
+          />
+        </div>
         <div className="sm:col-span-2">
           <label className={labelClass} htmlFor="emp-address">
             Address
@@ -341,6 +379,24 @@ export function EmployeeForm({
           </select>
         </div>
         <div>
+          <label className={labelClass} htmlFor="emp-jobcat">
+            Job category
+          </label>
+          <select
+            id="emp-jobcat"
+            className={inputClass}
+            value={jobCategory}
+            onChange={(e) => setJobCategory(e.target.value)}
+          >
+            <option value="">Not specified</option>
+            {JOB_CATEGORIES.map((jc) => (
+              <option key={jc} value={jc}>
+                {label(jc)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
           <label className={labelClass} htmlFor="emp-branch">
             Branch
           </label>
@@ -378,6 +434,30 @@ export function EmployeeForm({
             className={inputClass}
             value={terminationDate}
             onChange={(e) => setTerminationDate(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className={labelClass} htmlFor="emp-contract-start">
+            Contract start
+          </label>
+          <input
+            id="emp-contract-start"
+            type="date"
+            className={inputClass}
+            value={contractStart}
+            onChange={(e) => setContractStart(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className={labelClass} htmlFor="emp-contract-end">
+            Contract end
+          </label>
+          <input
+            id="emp-contract-end"
+            type="date"
+            className={inputClass}
+            value={contractEnd}
+            onChange={(e) => setContractEnd(e.target.value)}
           />
         </div>
         <div>

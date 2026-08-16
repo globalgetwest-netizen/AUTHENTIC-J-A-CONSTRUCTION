@@ -97,12 +97,17 @@ export class EmployeesService {
         dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : null,
         gender: dto.gender,
         address: dto.address,
+        nationality: dto.nationality,
+        placeOfBirth: dto.placeOfBirth,
         departmentId: dto.departmentId,
         positionId: dto.positionId,
         branchId: dto.branchId,
+        jobCategory: dto.jobCategory,
         employmentType: dto.employmentType,
         hireDate: new Date(dto.hireDate),
         terminationDate: dto.terminationDate ? new Date(dto.terminationDate) : null,
+        contractStart: dto.contractStart ? new Date(dto.contractStart) : null,
+        contractEnd: dto.contractEnd ? new Date(dto.contractEnd) : null,
         status: dto.status,
         salary: dto.salary ?? null,
       },
@@ -124,13 +129,22 @@ export class EmployeesService {
     }
     if (dto.gender !== undefined) data.gender = dto.gender;
     if (dto.address !== undefined) data.address = dto.address;
+    if (dto.nationality !== undefined) data.nationality = dto.nationality;
+    if (dto.placeOfBirth !== undefined) data.placeOfBirth = dto.placeOfBirth;
     if (dto.departmentId !== undefined) data.departmentId = dto.departmentId;
     if (dto.positionId !== undefined) data.positionId = dto.positionId;
     if (dto.branchId !== undefined) data.branchId = dto.branchId;
+    if (dto.jobCategory !== undefined) data.jobCategory = dto.jobCategory;
     if (dto.employmentType !== undefined) data.employmentType = dto.employmentType;
     if (dto.hireDate !== undefined) data.hireDate = new Date(dto.hireDate);
     if (dto.terminationDate !== undefined) {
       data.terminationDate = dto.terminationDate === null ? null : new Date(dto.terminationDate);
+    }
+    if (dto.contractStart !== undefined) {
+      data.contractStart = dto.contractStart === null ? null : new Date(dto.contractStart);
+    }
+    if (dto.contractEnd !== undefined) {
+      data.contractEnd = dto.contractEnd === null ? null : new Date(dto.contractEnd);
     }
     if (dto.status !== undefined) data.status = dto.status;
     if (dto.salary !== undefined) data.salary = dto.salary;

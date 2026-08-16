@@ -198,7 +198,10 @@ export async function renderEmployeeIdCardPdf(input: EmployeeIdCardInput): Promi
     holderName: card.holderName ?? null,
     holderPosition: card.position ?? null,
     holderDepartment: card.department ?? null,
+    holderJobCategory: card.jobCategory ?? null,
     holderEmployeeCode: card.employee?.employeeCode ?? null,
+    holderContactPhone: card.contactPhone ?? null,
+    holderContactEmail: card.contactEmail ?? null,
   }) as unknown as ReactElement<DocumentProps>;
   return renderToBuffer(template);
 }

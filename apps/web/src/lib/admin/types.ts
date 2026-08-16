@@ -191,6 +191,24 @@ export const EMPLOYEE_STATUSES: readonly EmployeeStatus[] = [
 export type Gender = "MALE" | "FEMALE" | "OTHER";
 export const GENDERS: readonly Gender[] = ["MALE", "FEMALE", "OTHER"];
 
+export type JobCategory =
+  | "EXECUTIVE"
+  | "MANAGEMENT"
+  | "PROFESSIONAL"
+  | "TECHNICAL"
+  | "SKILLED"
+  | "ADMINISTRATIVE"
+  | "SUPPORT";
+export const JOB_CATEGORIES: readonly JobCategory[] = [
+  "EXECUTIVE",
+  "MANAGEMENT",
+  "PROFESSIONAL",
+  "TECHNICAL",
+  "SKILLED",
+  "ADMINISTRATIVE",
+  "SUPPORT",
+];
+
 export interface Department {
   id: string;
   name: string;
@@ -226,14 +244,19 @@ export interface Employee {
   nationalId?: string | null;
   dateOfBirth?: string | null;
   gender?: Gender | null;
+  nationality?: string | null;
+  placeOfBirth?: string | null;
   address?: string | null;
   photoUrl?: string | null;
   departmentId?: string | null;
   positionId?: string | null;
   branchId?: string | null;
+  jobCategory?: JobCategory | null;
   employmentType: EmploymentType;
   hireDate: string;
   terminationDate?: string | null;
+  contractStart?: string | null;
+  contractEnd?: string | null;
   status: EmployeeStatus;
   salary?: number | string | null;
   createdAt: string;
@@ -931,6 +954,9 @@ export interface EmployeeIdRef {
   department?: { name: string } | null;
   position?: { title: string } | null;
   branch?: { name: string } | null;
+  jobCategory?: JobCategory | null;
+  phone?: string | null;
+  email?: string | null;
 }
 
 export function idFullName(employee: EmployeeIdRef | null | undefined): string {
@@ -964,6 +990,7 @@ export interface EmployeeIdCard {
   holderName?: string | null;
   position?: string | null;
   department?: string | null;
+  jobCategory?: JobCategory | null;
   contactPhone?: string | null;
   contactEmail?: string | null;
   photoUrl?: string | null;

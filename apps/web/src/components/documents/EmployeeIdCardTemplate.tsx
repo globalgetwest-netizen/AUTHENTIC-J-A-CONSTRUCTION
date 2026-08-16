@@ -1,7 +1,8 @@
 import { Document, Image, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { EmployeeIdRef, EmployeeIdType } from "@/lib/admin/types";
-import { idFullName } from "@/lib/admin/types";
+import { idFullName, label } from "@/lib/admin/types";
 import { dateLabel } from "@/lib/documents/format";
+import { LETTERHEAD } from "@/config/documents";
 import { DOC_COLORS as C } from "./Letterhead";
 
 // Card dimensions (landscape credit-card, readable at 100%): 242 x 152 pt.
@@ -30,6 +31,39 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: "hidden",
     position: "relative",
+  },
+  backHeader: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  backBody: {
+    flexDirection: "row",
+    paddingHorizontal: 10,
+    paddingTop: 6,
+    paddingBottom: 6,
+    flex: 1,
+  },
+  backLeft: { flex: 1, paddingRight: 8 },
+  backRight: { width: 64, alignItems: "center", justifyContent: "center" },
+  backTitle: {
+    fontSize: 7,
+    fontWeight: "bold",
+    color: "#ffffff",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  verifyText: { fontSize: 6, color: C.charcoal, lineHeight: 1.3, marginTop: 2 },
+  contactRow: { flexDirection: "row", marginTop: 3 },
+  contactKey: { width: 38, fontSize: 5.5, color: C.muted, textTransform: "uppercase" },
+  contactVal: { flex: 1, fontSize: 6, color: C.charcoal, fontWeight: 600 },
+  disclaimer: {
+    fontSize: 4.8,
+    color: C.muted,
+    marginTop: 4,
+    lineHeight: 1.25,
+    textAlign: "justify",
   },
   header: {
     paddingHorizontal: 10,
@@ -98,7 +132,10 @@ export interface EmployeeIdCardTemplateProps {
   holderName?: string | null;
   holderPosition?: string | null;
   holderDepartment?: string | null;
+  holderJobCategory?: string | null;
   holderEmployeeCode?: string | null;
+  holderContactPhone?: string | null;
+  holderContactEmail?: string | null;
 }
 
 export function EmployeeIdCardTemplate(props: EmployeeIdCardTemplateProps) {
@@ -115,7 +152,10 @@ export function EmployeeIdCardTemplate(props: EmployeeIdCardTemplateProps) {
     holderName,
     holderPosition,
     holderDepartment,
+    holderJobCategory,
     holderEmployeeCode,
+    holderContactPhone,
+    holderContactEmail,
   } = props;
 
   const theme = TYPE_THEME[idType];
@@ -128,10 +168,15 @@ export function EmployeeIdCardTemplate(props: EmployeeIdCardTemplateProps) {
     .toUpperCase();
   const position = employee?.position?.title ?? holderPosition ?? "—";
   const department = employee?.department?.name ?? holderDepartment ?? "";
+  const jobCategory = employee?.jobCategory ? label(employee.jobCategory) : (holderJobCategory ?? "");
   const employeeCode = employee?.employeeCode ?? holderEmployeeCode ?? "—";
+
+  const contactPhone = employee?.phone ?? holderContactPhone ?? "";
+  const contactEmail = employee?.email ?? holderContactEmail ?? "";
 
   return (
     <Document>
+      {/* FRONT */}
       <Page size={{ width: CARD_W, height: CARD_H }} style={styles.page}>
         <View style={[styles.card, { borderColor: theme.accent }]}>
           <View style={[styles.header, { backgroundColor: theme.header }]}>
@@ -163,6 +208,11 @@ export function EmployeeIdCardTemplate(props: EmployeeIdCardTemplateProps) {
                 {position}
                 {department ? ` · ${department}` : ""}
               </Text>
+              {jobCategory ? (
+                <Text style={{ fontSize: 6, color: theme.accent, marginTop: 1, fontWeight: 600 }}>
+                  {jobCategory}
+                </Text>
+              ) : null}
 
               <View style={styles.meta}>
                 <View style={styles.metaRow}>
@@ -185,6 +235,68 @@ export function EmployeeIdCardTemplate(props: EmployeeIdCardTemplateProps) {
             </View>
 
             <View style={styles.right}>
+              {qrSrc ? (
+                <View style={styles.qrBox}>
+                  {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}
+                  <Image src={qrSrc} style={styles.qr} />
+                  <Text style={styles.qrCaption}>Scan to verify</Text>
+                </View>
+              ) : null}
+            </View>
+          </View>
+
+          <View style={[styles.statusBand, { backgroundColor: theme.band }]}>
+            <Text style={styles.statusText}>Authentic J.A. Construction Limited</Text>
+            <Text style={styles.statusText}>{status}</Text>
+          </View>
+        </View>
+      </Page>
+
+      {/* BACK */}
+      <Page size={{ width: CARD_W, height: CARD_H }} style={styles.page}>
+        <View style={[styles.card, { borderColor: theme.accent }]}>
+          <View style={[styles.backHeader, { backgroundColor: theme.header }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.backTitle}>Verification & Authorisation</Text>
+            </View>
+            <View style={styles.typeChip}>
+              <Text style={styles.typeChipText}>{theme.label}</Text>
+            </View>
+          </View>
+
+          <View style={styles.backBody}>
+            <View style={styles.backLeft}>
+              <Text style={styles.verifyText}>
+                This card is the property of AUTHENTIC J.A. CONSTRUCTION LIMITED.
+                Scan the QR code to verify the holder's identity and current
+                employment status in real time.
+              </Text>
+
+              <View style={{ marginTop: 6 }}>
+                <View style={styles.contactRow}>
+                  <Text style={styles.contactKey}>Phone</Text>
+                  <Text style={styles.contactVal}>{contactPhone || LETTERHEAD.phones[0]}</Text>
+                </View>
+                <View style={styles.contactRow}>
+                  <Text style={styles.contactKey}>Email</Text>
+                  <Text style={styles.contactVal}>{contactEmail || LETTERHEAD.email}</Text>
+                </View>
+                <View style={styles.contactRow}>
+                  <Text style={styles.contactKey}>Web</Text>
+                  <Text style={styles.contactVal}>{LETTERHEAD.website}</Text>
+                </View>
+              </View>
+
+              <Text style={styles.disclaimer}>
+                If found, please return to the head office: {LETTERHEAD.headOffice},
+                GPS {LETTERHEAD.gps}, {LETTERHEAD.city}. Unauthorised duplication,
+                alteration or use of this card is prohibited and may be prosecuted.
+                The QR code links only to the public verification page and reveals
+                no personal data beyond the holder's name and employment status.
+              </Text>
+            </View>
+
+            <View style={styles.backRight}>
               {qrSrc ? (
                 <View style={styles.qrBox}>
                   {/* eslint-disable-next-line jsx-a11y/alt-text -- React-PDF <Image> has no alt support */}

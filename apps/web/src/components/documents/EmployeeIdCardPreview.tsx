@@ -1,6 +1,7 @@
 "use client";
 
 import type { EmployeeIdRef, EmployeeIdType } from "@/lib/admin/types";
+import { label } from "@/lib/admin/types";
 import { LETTERHEAD_LOGO } from "@/config/documents";
 
 export const ID_TYPE_THEME: Record<
@@ -20,6 +21,7 @@ export interface EmployeeIdCardPreviewProps {
   holderName?: string | null;
   holderPosition?: string | null;
   holderDepartment?: string | null;
+  holderJobCategory?: string | null;
   holderCode?: string | null;
   cardNumber?: string;
   issuedAt?: string;
@@ -43,6 +45,7 @@ export function EmployeeIdCardPreview(props: EmployeeIdCardPreviewProps) {
     holderName,
     holderPosition,
     holderDepartment,
+    holderJobCategory,
     holderCode,
     cardNumber = "AJAC-EID-000000",
     issuedAt = "—",
@@ -68,6 +71,7 @@ export function EmployeeIdCardPreview(props: EmployeeIdCardPreviewProps) {
     .toUpperCase();
   const position = employee?.position?.title ?? holderPosition ?? "—";
   const department = employee?.department?.name ?? holderDepartment ?? "";
+  const jobCategory = employee?.jobCategory ? label(employee.jobCategory) : (holderJobCategory ?? "");
   const code = employee?.employeeCode ?? holderCode ?? "—";
 
   return (
@@ -170,6 +174,11 @@ export function EmployeeIdCardPreview(props: EmployeeIdCardPreviewProps) {
             {position}
             {department ? ` · ${department}` : ""}
           </div>
+          {jobCategory ? (
+            <div style={{ fontSize: 6, color: theme.accent, marginTop: 1, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {jobCategory}
+            </div>
+          ) : null}
           <div style={{ marginTop: 6, fontSize: 7 }}>
             <div style={{ display: "flex", gap: 4 }}>
               <span style={{ width: 56, color: "#5B6674", textTransform: "uppercase" }}>Staff code</span>

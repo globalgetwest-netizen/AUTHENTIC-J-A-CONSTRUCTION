@@ -7,7 +7,7 @@ import {
   IsUUID,
   MaxLength,
 } from 'class-validator';
-import { EmployeeIdType } from '@ajac/database';
+import { EmployeeIdType, JobCategory } from '@ajac/database';
 
 /**
  * Body for issuing an ID card. The card can be linked to an existing employee
@@ -38,6 +38,10 @@ export class CreateEmployeeIdDto {
   @IsString()
   @MaxLength(120)
   department?: string;
+
+  @IsOptional()
+  @IsEnum(JobCategory)
+  jobCategory?: JobCategory;
 
   @IsOptional()
   @IsString()
@@ -78,6 +82,10 @@ export class UpdateEmployeeIdDto {
   @IsString()
   @MaxLength(120)
   department?: string;
+
+  @IsOptional()
+  @IsEnum(JobCategory)
+  jobCategory?: JobCategory;
 
   @IsOptional()
   @IsString()

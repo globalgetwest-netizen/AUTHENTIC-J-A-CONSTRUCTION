@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@ajac/ui";
 import {
   EMPLOYEE_ID_TYPES,
+  JOB_CATEGORIES,
+  label,
   type Employee,
   type EmployeeIdType,
 } from "@/lib/admin/types";
@@ -37,6 +39,7 @@ export function EmployeeIdIssueForm() {
   const [holderName, setHolderName] = useState("");
   const [position, setPosition] = useState("");
   const [department, setDepartment] = useState("");
+  const [jobCategory, setJobCategory] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
@@ -117,6 +120,7 @@ export function EmployeeIdIssueForm() {
                 holderName: holderName.trim() || null,
                 position: position.trim() || null,
                 department: department.trim() || null,
+                jobCategory: jobCategory || null,
                 contactPhone: contactPhone.trim() || null,
                 contactEmail: contactEmail.trim() || null,
               }
@@ -253,6 +257,24 @@ export function EmployeeIdIssueForm() {
                   onChange={(e) => setDepartment(e.target.value)}
                   placeholder="e.g. Executive"
                 />
+              </div>
+              <div>
+                <label className={labelClass} htmlFor="eid-jobcat">
+                  Job category
+                </label>
+                <select
+                  id="eid-jobcat"
+                  className={inputClass}
+                  value={jobCategory}
+                  onChange={(e) => setJobCategory(e.target.value)}
+                >
+                  <option value="">Not specified</option>
+                  {JOB_CATEGORIES.map((jc) => (
+                    <option key={jc} value={jc}>
+                      {label(jc)}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className={labelClass} htmlFor="eid-phone">

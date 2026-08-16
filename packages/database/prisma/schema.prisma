@@ -368,6 +368,17 @@ enum EmployeeIdType {
   CEO
 }
 
+// Professional job categories used on staff ID cards and HR records.
+enum JobCategory {
+  EXECUTIVE
+  MANAGEMENT
+  PROFESSIONAL
+  TECHNICAL
+  SKILLED
+  ADMINISTRATIVE
+  SUPPORT
+}
+
 // ===========================================================================
 // IDENTITY & ACCESS
 // ===========================================================================
@@ -592,15 +603,21 @@ model Employee {
   nationalId      String?
   dateOfBirth     DateTime?
   gender          Gender?
+  nationality     String?
+  placeOfBirth    String?
   address         String?
   // Worker headshot, stored under uploads/employees and shown on the ID card.
   photoUrl        String?
   departmentId    String?
   positionId      String?
   branchId        String?
+  jobCategory     JobCategory?
   employmentType  EmploymentType @default(FULL_TIME)
   hireDate        DateTime
   terminationDate DateTime?
+  // Contract period — distinct from the hire/termination dates.
+  contractStart  DateTime?
+  contractEnd    DateTime?
   status          EmployeeStatus @default(ACTIVE)
   salary          Decimal?       @db.Decimal(18, 2)
   reportsToId     String?
@@ -668,6 +685,7 @@ model EmployeeID {
   holderName   String?
   position     String?
   department   String?
+  jobCategory  JobCategory?
   contactPhone String?
   contactEmail String?
   photoUrl     String?

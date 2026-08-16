@@ -235,7 +235,7 @@ export function CompanyProfileTemplate({
           )}
         </View>
 
-        <View style={{ flexDirection: "row", alignItems: "flex-start", marginTop: 16 }}>
+        <View style={{ flexDirection: "row", alignItems: "flex-start", marginTop: 16 }} wrap={false}>
           <View style={{ flex: 1 }}>
             <Seal stampSrc={stampSrc} scale={0.68} />
           </View>

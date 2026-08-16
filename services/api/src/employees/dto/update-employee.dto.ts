@@ -10,7 +10,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { EmploymentType, EmployeeStatus, Gender } from '@ajac/database';
+import { EmploymentType, EmployeeStatus, Gender, JobCategory } from '@ajac/database';
 
 export class UpdateEmployeeDto {
   @IsOptional()
@@ -58,6 +58,14 @@ export class UpdateEmployeeDto {
   address?: string;
 
   @IsOptional()
+  @IsString()
+  nationality?: string;
+
+  @IsOptional()
+  @IsString()
+  placeOfBirth?: string;
+
+  @IsOptional()
   @IsUUID()
   departmentId?: string;
 
@@ -70,6 +78,10 @@ export class UpdateEmployeeDto {
   branchId?: string;
 
   @IsOptional()
+  @IsEnum(JobCategory)
+  jobCategory?: JobCategory;
+
+  @IsOptional()
   @IsEnum(EmploymentType)
   employmentType?: EmploymentType;
 
@@ -80,6 +92,14 @@ export class UpdateEmployeeDto {
   @IsOptional()
   @IsDateString()
   terminationDate?: string;
+
+  @IsOptional()
+  @IsDateString()
+  contractStart?: string;
+
+  @IsOptional()
+  @IsDateString()
+  contractEnd?: string;
 
   @IsOptional()
   @IsEnum(EmployeeStatus)

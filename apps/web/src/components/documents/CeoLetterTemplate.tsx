@@ -6,9 +6,9 @@ import { DOC_COLORS as C, Letterhead } from "./Letterhead";
 
 const styles = StyleSheet.create({
   page: {
-    /** Full-A4 CEO letterhead: content sits in the white zone between bands. */
-    paddingTop: 205,
-    paddingBottom: 148,
+    /** CEO letterhead header band on page 1 only. */
+    paddingTop: 34,
+    paddingBottom: 48,
     paddingHorizontal: 48,
     fontSize: 10,
     color: C.charcoal,
@@ -101,8 +101,8 @@ export function CeoLetterTemplate({
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Letterhead background repeats on every page of the letter. */}
-        <Letterhead logoSrc={logoSrc} letterheadSrc={letterheadSrc} fullPage repeat />
+        {/* Letterhead header band on page 1 only. */}
+        <Letterhead logoSrc={logoSrc} letterheadSrc={letterheadSrc} bandHeight={205} />
 
         <Text style={styles.officeLabel}>OFFICE OF THE CEO & FOUNDER</Text>
 

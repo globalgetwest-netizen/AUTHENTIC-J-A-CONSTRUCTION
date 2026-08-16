@@ -28,9 +28,12 @@ const EMPLOYEE_SELECT = {
   firstName: true,
   lastName: true,
   photoUrl: true,
+  phone: true,
+  email: true,
   department: { select: { name: true } },
   position: { select: { title: true } },
   branch: { select: { name: true } },
+  jobCategory: true,
 } as const;
 
 const CARD_INCLUDE = {
@@ -92,6 +95,7 @@ export class EmployeeIdsService {
           holderName: dto.holderName ?? null,
           position: dto.position ?? null,
           department: dto.department ?? null,
+          jobCategory: dto.jobCategory ?? null,
           contactPhone: dto.contactPhone ?? null,
           contactEmail: dto.contactEmail ?? null,
           photoUrl: dto.photoUrl ?? null,
@@ -115,6 +119,7 @@ export class EmployeeIdsService {
         ...(dto.holderName !== undefined ? { holderName: dto.holderName } : {}),
         ...(dto.position !== undefined ? { position: dto.position } : {}),
         ...(dto.department !== undefined ? { department: dto.department } : {}),
+        ...(dto.jobCategory !== undefined ? { jobCategory: dto.jobCategory } : {}),
         ...(dto.contactPhone !== undefined ? { contactPhone: dto.contactPhone } : {}),
         ...(dto.contactEmail !== undefined ? { contactEmail: dto.contactEmail } : {}),
         ...(dto.photoUrl !== undefined ? { photoUrl: dto.photoUrl } : {}),
@@ -156,6 +161,7 @@ export class EmployeeIdsService {
           holderName: current.holderName,
           position: current.position,
           department: current.department,
+          jobCategory: current.jobCategory,
           contactPhone: current.contactPhone,
           contactEmail: current.contactEmail,
           photoUrl: current.photoUrl,
@@ -333,6 +339,7 @@ export class EmployeeIdsService {
             name: [card.employee.firstName, card.employee.lastName].filter(Boolean).join(' '),
             department: card.employee.department?.name ?? null,
             position: card.employee.position?.title ?? null,
+            jobCategory: card.jobCategory ?? null,
             photoUrl: card.employee.photoUrl ?? null,
           }
         : null,
